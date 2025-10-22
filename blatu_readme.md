@@ -1,0 +1,91 @@
+# Blatu - Blasrohr Turnierverwaltung
+
+Version 1.0.102 - © 2025 Anton Bader
+
+## Beschreibung
+
+Blatu ist eine Desktop-Anwendung zur Verwaltung von Blasrohr-Turnieren. Sie ermöglicht die Erfassung von Schützen, Klassen, Turnierergebnissen und erstellt professionelle PDF-Ergebnislisten.
+
+## Projektstruktur
+
+```
+blatu/
+├── main.py                 # Haupteinstiegspunkt
+├── config.py              # Konfiguration und Konstanten
+├── models/                # Datenmodelle
+│   ├── __init__.py
+│   ├── turnier.py        # Turnier-Datenmodell
+│   └── schuetze.py       # Schützen-Datenmodell
+├── ui/                    # Benutzeroberfläche
+│   ├── __init__.py
+│   ├── main_window.py    # Hauptfenster
+│   ├── turnier_tab.py    # Turnierverwaltung Tab
+│   ├── klassen_tab.py    # Klassenverwaltung Tab
+│   ├── schuetzen_tab.py  # Schützenverwaltung Tab
+│   ├── ergebnisse_tab.py # Ergebniseingabe Tab
+│   ├── ergebnisse_window.py # Ergebnisanzeige Fenster
+│   └── info_tab.py       # Info Tab
+├── utils/                 # Hilfsfunktionen
+│   ├── __init__.py
+│   ├── data_manager.py   # Speichern/Laden von Daten
+│   └── pdf_generator.py  # PDF-Erstellung
+└── README.md
+```
+
+## Installation
+
+### Voraussetzungen
+
+- Python 3.7 oder höher
+- tkinter (meist in Python enthalten)
+- reportlab (für PDF-Erstellung)
+
+### Abhängigkeiten installieren
+
+```bash
+pip install reportlab
+```
+
+## Start der Anwendung
+
+```bash
+python main.py
+```
+
+## Funktionen
+
+- **Turnierverwaltung**: Erfassung von Turniername, Datum und Anzahl der Passen
+- **Klassenverwaltung**: Anlegen und Verwalten von Wettkampfklassen
+- **Schützenverwaltung**: Erfassung von Schützendaten (Name, Vorname, Klasse, Verein)
+- **Ergebniseingabe**: Eingabe von Ergebnissen mit Zusatzwertungen (10er, 9er)
+- **Automatische Ranglistenerstellung**: Nach Punkten und Zusatzwertung
+- **PDF-Export**: Professionelle PDF-Ergebnislisten im Querformat
+- **Datenverwaltung**: Speichern und Laden kompletter Turnierdaten als JSON
+
+## Verwendung
+
+1. **Turnier einrichten**: Geben Sie Turniername, Datum und Anzahl Passen ein
+2. **Klassen anlegen**: Definieren Sie die Wettkampfklassen (z.B. Jugend, Erwachsene, Senioren)
+3. **Schützen erfassen**: Tragen Sie alle Teilnehmer mit ihren Daten ein
+4. **Ergebnisse eingeben**: Erfassen Sie die Schießergebnisse für jeden Schützen
+5. **Ergebnisse anzeigen**: Lassen Sie sich die Rangliste anzeigen
+6. **PDF erstellen**: Exportieren Sie die Ergebnisse als professionelles PDF
+
+## Datenspeicherung
+
+Die Anwendung speichert alle Daten im JSON-Format. Sie können:
+- Jederzeit alle Daten speichern
+- Gespeicherte Turniere später wieder laden
+- Mehrere Turniere verwalten (separate JSON-Dateien)
+
+## Kontakt
+
+**Entwickler**: Anton Bader  
+**E-Mail**: info@anton-bader.de  
+**Website**: https://www.anton-bader.de
+
+## Lizenz
+
+© 2025 Anton Bader. Alle Rechte vorbehalten.
+
+Diese Software ist urheberrechtlich geschützt. Die Nutzung erfolgt auf eigene Verantwortung.
