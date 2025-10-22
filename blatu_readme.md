@@ -1,6 +1,6 @@
 # Blatu - Blasrohr Turnierverwaltung
 
-Version 1.0.102 - © 2025 Anton Bader
+Version 1.1.0 - © 2025 Anton Bader
 
 ## Beschreibung
 
