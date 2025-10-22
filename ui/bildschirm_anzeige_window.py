@@ -6,6 +6,7 @@ Automatisch aktualisierendes Fenster für externe Monitore
 
 import tkinter as tk
 from tkinter import ttk
+import time
 
 from models.schuetze import SchuetzeModel
 from config import MAX_PASSEN_FOR_DISPLAY
@@ -21,14 +22,22 @@ class BildschirmAnzeigeWindow:
         self.window.title("Bildschirmanzeige - Live-Ergebnisse")
         self.window.geometry("1200x800")
         
-        # Scroll-Parameter
+        # Scroll-Parameter (time-based for smoother movement)
         self.scroll_position = 0.0
-        self.scroll_speed = 0.3  # Pixel pro Update (langsamer Scroll)
-        self.scroll_delay = 30  # Millisekunden zwischen Updates
+        # Pixels per second for scrolling (tweakable)
+        self.scroll_speed_px_per_sec = 10.0
+        # Milliseconds between scroll updates (smaller = smoother)
+        self.scroll_interval = 20
         self.scroll_pause_top = 3000  # Pause oben in ms
+        # separate, short pause when the scroller reaches the bottom
+        self.scroll_pause_bottom = 3000  # Pause unten in ms (short)
         self.is_paused = False
         self.pause_counter = 0
-        self.content_height = 0  # Höhe des Original-Inhalts
+        self.content_height = 0  # Höhe desOriginal-Inhalts
+        # Internal timing helpers
+        self._last_scroll_time = None
+        self._last_fraction = None
+    # no bottom-resume scheduling needed for seamless scrolling
         
         # Auto-Update Parameter
         self.update_interval = 2000  # Alle 2 Sekunden auf Änderungen prüfen
@@ -179,29 +188,55 @@ class BildschirmAnzeigeWindow:
         self.scrollable_frame.update_idletasks()
         self.content_height = original_content.winfo_reqheight()
         
-        # Duplikat für nahtloses Scrolling erstellen
-        duplicate_content = ttk.Frame(self.scrollable_frame)
-        duplicate_content.pack(fill=tk.BOTH, expand=True)
-        
-        # Gleichen Inhalt nochmal erstellen
-        for idx, klasse in enumerate(sorted(klassen_ergebnisse.keys())):
-            if idx > 0:
-                ttk.Separator(duplicate_content, orient='horizontal').pack(
-                    fill=tk.X, pady=20
+        # Entscheiden, ob ein Duplikat für nahtloses Scrolling benötigt wird.
+        canvas_height = self.canvas.winfo_height()
+        if self.content_height > canvas_height:
+            # Duplikat für nahtloses Scrolling erstellen (zweiter Satz direkt unter dem ersten)
+            duplicate_content = ttk.Frame(self.scrollable_frame)
+            duplicate_content.pack(fill=tk.BOTH, expand=True)
+
+            # Gleichen Inhalt nochmal erstellen
+            for idx, klasse in enumerate(sorted(klassen_ergebnisse.keys())):
+                if idx > 0:
+                    ttk.Separator(duplicate_content, orient='horizontal').pack(
+                        fill=tk.X, pady=20
+                    )
+
+                self.create_klassen_display(
+                    duplicate_content,
+                    klasse,
+                    klassen_ergebnisse[klasse],
+                    show_passen_details,
+                    show_halves,
+                    anzahl_passen
                 )
-            
-            self.create_klassen_display(
-                duplicate_content,
-                klasse,
-                klassen_ergebnisse[klasse],
-                show_passen_details,
-                show_halves,
-                anzahl_passen
-            )
+            self._has_duplicate = True
+        else:
+            self._has_duplicate = False
         
         # Scroll-Position zurücksetzen
         self.scroll_position = 0.0
         self.canvas.yview_moveto(0)
+        # Pause kurz nach einem Refresh, damit der Benutzer nicht direkt
+        # über einen Layout-Wechsel hinweg springt
+        self.is_paused = True
+        self.pause_counter = 0
+        # reset timing so the next scroll step has a fresh baseline
+        self._last_scroll_time = time.time()
+        self._last_fraction = 0.0
+        # resume after a short delay to allow layout to stabilise
+        try:
+            self.window.after(1000, self._resume_after_refresh)
+        except Exception:
+            pass
+
+    def _resume_after_refresh(self):
+        """Resume helper called after a refresh delay."""
+        self.is_paused = False
+        self.pause_counter = 0
+        self._last_scroll_time = time.time()
+
+    # NOTE: bottom scheduling is removed for seamless scrolling
     
     def create_klassen_display(self, parent, klasse, ergebnisse, 
                                show_passen_details, show_halves, anzahl_passen):
@@ -381,36 +416,62 @@ class BildschirmAnzeigeWindow:
         def auto_scroll():
             if not self.window.winfo_exists():
                 return
-            
+            now = time.time()
+            # initialize last_scroll_time on first run
+            if self._last_scroll_time is None:
+                self._last_scroll_time = now
+
             if self.is_paused:
-                self.pause_counter += self.scroll_delay
-                
+                # accumulate pause time in ms
+                self.pause_counter += self.scroll_interval
+
                 # Pause beenden (nur oben)
                 if self.pause_counter >= self.scroll_pause_top:
                     self.is_paused = False
                     self.pause_counter = 0
+                # reset timing baseline so dt isn't huge after pause
+                self._last_scroll_time = now
             else:
                 if self.content_height > 0:
-                    # Kontinuierliches Scrolling in Pixeln
-                    self.scroll_position += self.scroll_speed
-                    
-                    # Wenn die Hälfte erreicht ist (Original-Inhalt durchgelaufen),
-                    # nahtlos zum Anfang zurückspringen
                     canvas_height = self.canvas.winfo_height()
-                    total_height = self.content_height * 2  # Doppelt wegen Duplikat
-                    
-                    if self.scroll_position >= self.content_height:
-                        # Nahtlos zurück zum Anfang
+                    total_height = self.content_height * 2 if getattr(self, '_has_duplicate', False) else self.content_height
+
+                    # time delta in seconds
+                    dt = now - self._last_scroll_time
+                    # compute pixel movement based on elapsed time
+                    move_pixels = self.scroll_speed_px_per_sec * dt
+                    self.scroll_position += move_pixels
+
+                    # Verhalten bei Überlauf hängt davon ab, ob ein Duplikat vorhanden ist
+                    if not getattr(self, '_has_duplicate', False):
+                        # Kein Duplikat -> kein Scrollen erforderlich, Position zurücksetzen
                         self.scroll_position = 0.0
-                        self.is_paused = True
-                        self.pause_counter = 0
-                    
-                    # Scroll-Position als Fraction berechnen
+                    else:
+                        # Wenn das Original-Inhalt durchgelaufen ist, nahtlos zurück
+                        if self.scroll_position >= self.content_height:
+                            # wrap-around: verschiebe um genau eine content_height
+                            self.scroll_position -= self.content_height
+                            # keep last_fraction in range so the next update is consistent
+                            if self._last_fraction is not None and (total_height - canvas_height) > 0:
+                                self._last_fraction = max(0.0, self._last_fraction - (self.content_height / (total_height - canvas_height)))
+
+                    # Scroll-Position als Fraction berechnen und nur bei
+                    # spürbarer Änderung das Canvas updaten (verringert Jitter)
                     if total_height > canvas_height:
                         fraction = self.scroll_position / (total_height - canvas_height)
-                        self.canvas.yview_moveto(fraction)
-            
-            self.window.after(self.scroll_delay, auto_scroll)
+                        # clamp
+                        fraction = max(0.0, min(1.0, fraction))
+                        if self._last_fraction is None or abs(fraction - self._last_fraction) > 0.0005:
+                            try:
+                                self.canvas.yview_moveto(fraction)
+                            except tk.TclError:
+                                # ignore transient errors when window is closing
+                                pass
+                            self._last_fraction = fraction
+
+                    self._last_scroll_time = now
+
+            self.window.after(self.scroll_interval, auto_scroll)
         
         # Kurz warten bis Layout fertig ist
         self.window.after(500, auto_scroll)
