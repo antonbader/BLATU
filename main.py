@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Blasrohr Turnier Verwaltung (Blatu)
-Version 1.0.102 - (C) 2025 Anton Bader
+Version 1.2.0
 
 Haupteinstiegspunkt der Anwendung
 """
