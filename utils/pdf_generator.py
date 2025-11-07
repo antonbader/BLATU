@@ -276,3 +276,130 @@ class PDFGenerator:
     def get_current_datetime(self):
         """Gibt aktuelles Datum und Zeit formatiert zurück"""
         return datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+
+    def generate_gruppen_pdf(self, schuetzen):
+        """Erstellt ein PDF mit der Gruppenübersicht"""
+        try:
+            from reportlab.lib.pagesizes import A4
+            from reportlab.lib import colors
+            from reportlab.lib.units import cm
+            from reportlab.platypus import (SimpleDocTemplate, Table, TableStyle,
+                                           Paragraph, Spacer, PageBreak)
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib.enums import TA_CENTER, TA_LEFT
+        except ImportError:
+            messagebox.showerror(
+                "Fehler",
+                "Die reportlab-Bibliothek ist nicht installiert.\n\n"
+                "Bitte installieren Sie sie mit:\npip install reportlab"
+            )
+            return
+
+        turnier = self.turnier_model.get_turnier_data()
+
+        # Dateiname Dialog
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".pdf",
+            filetypes=FILE_TYPES_PDF,
+            title="Gruppen-PDF speichern",
+            initialfile=f"Gruppen_{turnier.get('name', 'Turnier').replace(' ', '_')}.pdf"
+        )
+
+        if not file_path:
+            return
+
+        try:
+            doc = SimpleDocTemplate(
+                file_path,
+                pagesize=A4,
+                rightMargin=1.5*cm,
+                leftMargin=1.5*cm,
+                topMargin=1.5*cm,
+                bottomMargin=1.5*cm
+            )
+
+            elements = []
+
+            styles = getSampleStyleSheet()
+            title_style = ParagraphStyle(
+                'CustomTitle',
+                parent=styles['Heading1'],
+                fontSize=18,
+                textColor=colors.HexColor('#1a1a1a'),
+                spaceAfter=12,
+                alignment=TA_CENTER,
+                fontName='Helvetica-Bold'
+            )
+            subtitle_style = ParagraphStyle(
+                'CustomSubtitle',
+                parent=styles['Normal'],
+                fontSize=12,
+                textColor=colors.HexColor('#666666'),
+                spaceAfter=20,
+                alignment=TA_CENTER,
+                fontName='Helvetica'
+            )
+            group_style = ParagraphStyle(
+                'GroupTitle',
+                parent=styles['Heading2'],
+                fontSize=14,
+                textColor=colors.HexColor('#1a1a1a'),
+                spaceAfter=10,
+                fontName='Helvetica-Bold'
+            )
+
+            # Titel
+            elements.append(Paragraph(f"Gruppeneinteilung für {turnier.get('name', 'Turnier')}", title_style))
+            if turnier.get('datum'):
+                elements.append(Paragraph(f"Datum: {turnier['datum']}", subtitle_style))
+            else:
+                elements.append(Spacer(1, 0.5*cm))
+
+            # Gruppen zusammenstellen
+            groups = {}
+            for s in schuetzen:
+                gruppe = s.get('gruppe')
+                if gruppe is not None:
+                    if gruppe not in groups:
+                        groups[gruppe] = []
+                    groups[gruppe].append(s)
+
+            # Für jede Gruppe eine Tabelle erstellen
+            for gruppe_nr in sorted(groups.keys()):
+                group_time = self.turnier_model.get_group_time(gruppe_nr)
+                time_str = f" - Uhrzeit: {group_time}" if group_time else ""
+
+                elements.append(Paragraph(f"Gruppe {gruppe_nr}{time_str}", group_style))
+
+                schuetzen_in_gruppe = sorted(groups[gruppe_nr], key=lambda x: x.get('scheibe', 0))
+
+                table_data = [['Scheibe', 'Name', 'Vorname', 'Verein', 'Klasse']]
+                for s in schuetzen_in_gruppe:
+                    table_data.append([
+                        s.get('scheibe', ''),
+                        s.get('name', ''),
+                        s.get('vorname', ''),
+                        s.get('verein', ''),
+                        s.get('klasse', '')
+                    ])
+
+                table = Table(table_data)
+                table_style = TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(PDF_COLOR_HEADER)),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                    ('TOPPADDING', (0, 0), (-1, 0), 8),
+                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor(PDF_COLOR_ROW_ALT)]),
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                ])
+                table.setStyle(table_style)
+                elements.append(table)
+                elements.append(Spacer(1, 1*cm))
+
+            doc.build(elements)
+            messagebox.showinfo("Erfolg", f"Gruppen-PDF wurde erstellt:\n{file_path}")
+
+        except Exception as e:
+            messagebox.showerror("Fehler", f"Fehler beim Erstellen des Gruppen-PDFs:\n{str(e)}")

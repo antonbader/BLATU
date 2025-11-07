@@ -39,7 +39,8 @@ class DataManager:
                 "turnier": turnier,
                 "schuetzen": schuetzen,
                 "klassen": klassen,
-                "ergebnisse": self.turnier_model.get_all_ergebnisse()
+                "ergebnisse": self.turnier_model.get_all_ergebnisse(),
+                "group_times": self.turnier_model.get_all_group_times()
             }
             
             with open(file_path, 'w', encoding='utf-8') as f:
@@ -75,15 +76,18 @@ class DataManager:
             self.schuetze_model.clear_schuetzen()
             self.turnier_model.clear_klassen()
             self.turnier_model.clear_ergebnisse()
+            self.turnier_model.clear_group_times()
             
             # Neue Daten laden
             if isinstance(data, dict):
                 # Turnierdaten
-                turnier = data.get('turnier', {"name": "", "datum": "", "anzahl_passen": 1})
+                turnier = data.get('turnier', {"name": "", "datum": "", "anzahl_passen": 1, "max_scheiben": 3})
                 self.turnier_model.set_turnier_data(
                     turnier.get('name', ''),
                     turnier.get('datum', ''),
-                    turnier.get('anzahl_passen', 1)
+                    turnier.get('anzahl_passen', 1),
+                    turnier.get('show_halves', False),
+                    turnier.get('max_scheiben', 3)
                 )
                 
                 # Klassen
@@ -93,12 +97,20 @@ class DataManager:
                 # Schützen
                 for schuetze in data.get('schuetzen', []):
                     self.schuetze_model.add_schuetze(
-                        schuetze['name'],
-                        schuetze['vorname'],
-                        schuetze['klasse'],
-                        schuetze.get('verein', '')
+                        schuetze.get('name'),
+                        schuetze.get('vorname'),
+                        schuetze.get('klasse'),
+                        schuetze.get('verein', ''),
+                        schuetze.get('gruppe'),
+                        schuetze.get('scheibe')
                     )
                 
+                # Gruppen-Uhrzeiten
+                group_times = data.get('group_times', {})
+                for group, time in group_times.items():
+                    # Konvertiere group zu int, da JSON keys immer strings sind
+                    self.turnier_model.set_group_time(int(group), time)
+
                 # Ergebnisse
                 ergebnisse = data.get('ergebnisse', {})
                 for schuetze_id, ergebnis in ergebnisse.items():

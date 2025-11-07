@@ -5,6 +5,7 @@ Schützenverwaltung Tab
 
 import tkinter as tk
 from tkinter import ttk, messagebox
+import random
 
 
 class SchuetzenTab:
@@ -32,38 +33,66 @@ class SchuetzenTab:
         input_frame = ttk.LabelFrame(self.frame, text="Schützen bearbeiten", padding="10")
         input_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=10)
         
-        # Name
+        # Name und Vorname
         ttk.Label(input_frame, text="Name:").grid(row=0, column=0, sticky=tk.W, pady=5)
         self.name_entry = ttk.Entry(input_frame, width=30)
         self.name_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), pady=5, padx=5)
         
-        # Vorname
-        ttk.Label(input_frame, text="Vorname:").grid(row=1, column=0, sticky=tk.W, pady=5)
+        ttk.Label(input_frame, text="Vorname:").grid(row=0, column=2, sticky=tk.W, pady=5, padx=(10, 0))
         self.vorname_entry = ttk.Entry(input_frame, width=30)
-        self.vorname_entry.grid(row=1, column=1, sticky=(tk.W, tk.E), pady=5, padx=5)
-        
-        # Klasse
-        ttk.Label(input_frame, text="Klasse:").grid(row=2, column=0, sticky=tk.W, pady=5)
+        self.vorname_entry.grid(row=0, column=3, sticky=(tk.W, tk.E), pady=5, padx=5)
+
+        # Klasse und Verein
+        ttk.Label(input_frame, text="Klasse:").grid(row=1, column=0, sticky=tk.W, pady=5)
         self.klasse_combo = ttk.Combobox(input_frame, width=28, state="readonly")
-        self.klasse_combo.grid(row=2, column=1, sticky=(tk.W, tk.E), pady=5, padx=5)
+        self.klasse_combo.grid(row=1, column=1, sticky=(tk.W, tk.E), pady=5, padx=5)
         
-        # Verein
-        ttk.Label(input_frame, text="Verein:").grid(row=3, column=0, sticky=tk.W, pady=5)
+        ttk.Label(input_frame, text="Verein:").grid(row=1, column=2, sticky=tk.W, pady=5, padx=(10, 0))
         self.verein_entry = ttk.Entry(input_frame, width=30)
-        self.verein_entry.grid(row=3, column=1, sticky=(tk.W, tk.E), pady=5, padx=5)
-        
+        self.verein_entry.grid(row=1, column=3, sticky=(tk.W, tk.E), pady=5, padx=5)
+
         # Button
         self.add_button = ttk.Button(
-            input_frame, 
-            text="Schütze hinzufügen", 
+            input_frame,
+            text="Schütze hinzufügen",
             command=self.add_or_update_schuetze
         )
-        self.add_button.grid(row=4, column=0, columnspan=2, pady=10)
+        self.add_button.grid(row=2, column=0, columnspan=4, pady=10)
+
+        # Grid-Konfiguration für Input-Frame
+        input_frame.columnconfigure(1, weight=1)
+        input_frame.columnconfigure(3, weight=1)
         
         # Listenbereich
         list_frame = ttk.LabelFrame(self.frame, text="Schützenliste", padding="10")
         list_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=10)
         
+        # Scheiben- und Zuweisungs-Frame
+        scheiben_frame = ttk.Frame(list_frame)
+        scheiben_frame.pack(fill=tk.X, pady=5)
+
+        ttk.Label(scheiben_frame, text="Max. Scheiben:").pack(side=tk.LEFT, padx=(0, 5))
+        self.max_scheiben_var = tk.IntVar(value=self.turnier_model.get_turnier_data().get("max_scheiben", 3))
+        self.max_scheiben_entry = ttk.Entry(scheiben_frame, textvariable=self.max_scheiben_var, width=5)
+        self.max_scheiben_entry.pack(side=tk.LEFT, padx=5)
+
+        ttk.Label(scheiben_frame, text="Zuweisungsart:").pack(side=tk.LEFT, padx=(10, 5))
+        self.assign_strategy_var = tk.StringVar(value="Nach Eingabe")
+        self.assign_strategy_combo = ttk.Combobox(
+            scheiben_frame,
+            textvariable=self.assign_strategy_var,
+            values=["Nach Eingabe", "Zufällig", "Nach Klassen"],
+            width=15,
+            state="readonly"
+        )
+        self.assign_strategy_combo.pack(side=tk.LEFT, padx=5)
+
+        ttk.Button(
+            scheiben_frame,
+            text="Automatisch Zuweisen",
+            command=self.auto_assign_scheiben
+        ).pack(side=tk.LEFT, padx=5)
+
         # Hinweis zur Sortierung
         ttk.Label(
             list_frame, 
@@ -77,7 +106,7 @@ class SchuetzenTab:
         
         self.tree = ttk.Treeview(
             list_frame, 
-            columns=("Name", "Vorname", "Klasse", "Verein"), 
+            columns=("Name", "Vorname", "Klasse", "Verein", "Gruppe", "Scheibe"),
             show="headings", 
             yscrollcommand=scrollbar.set, 
             height=15
@@ -86,17 +115,41 @@ class SchuetzenTab:
         self.tree.heading("Vorname", text="Vorname", command=lambda: self.sort_by_column("Vorname"))
         self.tree.heading("Klasse", text="Klasse", command=lambda: self.sort_by_column("Klasse"))
         self.tree.heading("Verein", text="Verein", command=lambda: self.sort_by_column("Verein"))
-        self.tree.column("Name", width=200)
-        self.tree.column("Vorname", width=200)
-        self.tree.column("Klasse", width=150)
-        self.tree.column("Verein", width=200)
+        self.tree.heading("Gruppe", text="Gruppe", command=lambda: self.sort_by_column("Gruppe"))
+        self.tree.heading("Scheibe", text="Scheibe", command=lambda: self.sort_by_column("Scheibe"))
+        self.tree.column("Name", width=150)
+        self.tree.column("Vorname", width=150)
+        self.tree.column("Klasse", width=120)
+        self.tree.column("Verein", width=150)
+        self.tree.column("Gruppe", width=70, anchor="center")
+        self.tree.column("Scheibe", width=70, anchor="center")
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.config(command=self.tree.yview)
         self.tree.bind("<Double-1>", lambda e: self.edit_selected())
         
+        # Manuelle Zuweisung
+        manual_assign_frame = ttk.LabelFrame(self.frame, text="Manuelle Zuweisung", padding="10")
+        manual_assign_frame.grid(row=3, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=10)
+
+        ttk.Label(manual_assign_frame, text="Gruppe:").grid(row=0, column=0, padx=5)
+        self.manual_gruppe_var = tk.StringVar()
+        self.manual_gruppe_entry = ttk.Entry(manual_assign_frame, textvariable=self.manual_gruppe_var, width=5)
+        self.manual_gruppe_entry.grid(row=0, column=1, padx=5)
+
+        ttk.Label(manual_assign_frame, text="Scheibe:").grid(row=0, column=2, padx=5)
+        self.manual_scheibe_var = tk.StringVar()
+        self.manual_scheibe_entry = ttk.Entry(manual_assign_frame, textvariable=self.manual_scheibe_var, width=5)
+        self.manual_scheibe_entry.grid(row=0, column=3, padx=5)
+
+        ttk.Button(
+            manual_assign_frame,
+            text="Ausgewählten Schützen zuweisen",
+            command=self.manual_assign
+        ).grid(row=0, column=4, padx=10)
+
         # Buttons
         button_frame = ttk.Frame(self.frame)
-        button_frame.grid(row=3, column=0, columnspan=3, pady=10)
+        button_frame.grid(row=4, column=0, columnspan=3, pady=10)
         
         ttk.Button(
             button_frame, 
@@ -149,7 +202,11 @@ class SchuetzenTab:
         
         if self.editing_index is not None:
             # Aktualisieren
-            self.schuetze_model.update_schuetze(self.editing_index, name, vorname, klasse, verein)
+            schuetze = self.schuetze_model.get_schuetze(self.editing_index)
+            self.schuetze_model.update_schuetze(
+                self.editing_index, name, vorname, klasse, verein,
+                gruppe=schuetze.get('gruppe'), scheibe=schuetze.get('scheibe')
+            )
             messagebox.showinfo("Erfolg", f"{vorname} {name} wurde aktualisiert!")
             self.editing_index = None
             self.add_button.config(text="Schütze hinzufügen")
@@ -183,6 +240,10 @@ class SchuetzenTab:
                 schuetze['klasse'] == values[2] and 
                 schuetze['verein'] == values[3]):
                 self.editing_index = i
+
+                # Manuelle Zuweisungsfelder füllen
+                self.manual_gruppe_var.set(schuetze.get('gruppe', ''))
+                self.manual_scheibe_var.set(schuetze.get('scheibe', ''))
                 break
         
         # Felder füllen
@@ -277,19 +338,144 @@ class SchuetzenTab:
                 "Name": "name",
                 "Vorname": "vorname",
                 "Klasse": "klasse",
-                "Verein": "verein"
+                "Verein": "verein",
+                "Gruppe": "gruppe",
+                "Scheibe": "scheibe"
             }
             sort_key = column_map.get(self.sort_column, "name")
-            schuetzen = sorted(schuetzen, key=lambda x: x[sort_key].lower(), reverse=self.sort_reverse)
-        
+
+            def sort_func(x):
+                val = x.get(sort_key)
+                if val is None:
+                    return -1 # None-Werte an den Anfang
+                if isinstance(val, str):
+                    return val.lower()
+                return val
+
+            schuetzen = sorted(schuetzen, key=sort_func, reverse=self.sort_reverse)
+
         for schuetze in schuetzen:
             self.tree.insert("", tk.END, values=(
-                schuetze['name'], 
-                schuetze['vorname'], 
-                schuetze['klasse'], 
-                schuetze['verein']
+                schuetze.get('name', ''),
+                schuetze.get('vorname', ''),
+                schuetze.get('klasse', ''),
+                schuetze.get('verein', ''),
+                schuetze.get('gruppe', ''),
+                schuetze.get('scheibe', '')
             ))
     
     def refresh_silent(self):
         """Aktualisiert die Anzeige ohne Sortierung zurückzusetzen (für Callback)"""
         self.refresh()
+
+    def auto_assign_scheiben(self):
+        """Automatische Zuweisung von Gruppen und Scheiben"""
+        try:
+            max_scheiben = self.max_scheiben_var.get()
+            if max_scheiben <= 0:
+                messagebox.showerror("Fehler", "Maximale Anzahl an Scheiben muss größer als 0 sein.")
+                return
+
+            schuetzen = self.schuetze_model.get_all_schuetzen()
+            if not schuetzen:
+                messagebox.showinfo("Info", "Keine Schützen zum Zuweisen vorhanden.")
+                return
+
+            # Zuweisungsstrategie anwenden
+            strategy = self.assign_strategy_var.get()
+            if strategy == "Zufällig":
+                random.shuffle(schuetzen)
+            elif strategy == "Nach Klassen":
+                schuetzen.sort(key=lambda s: s.get('klasse', ''))
+
+            # Bestehende Zuweisungen aufheben und neu zuweisen
+            gruppe = 1
+            scheibe = 1
+
+            # Da die Reihenfolge potenziell geändert wurde, müssen wir die Schützen über ihre eindeutige ID aktualisieren
+            all_schuetzen_original = self.schuetze_model.get_all_schuetzen()
+
+            # Zuerst alle Zuweisungen aufheben
+            for i in range(len(all_schuetzen_original)):
+                s = self.schuetze_model.get_schuetze(i)
+                self.schuetze_model.update_schuetze(i, s['name'], s['vorname'], s['klasse'], s['verein'], gruppe=None, scheibe=None)
+
+            # Dann die neuen Zuweisungen basierend auf der sortierten/gemischten Liste setzen
+            for schuetze_sorted in schuetzen:
+                # Finde den Index des Schützen in der ursprünglichen Liste, um ihn zu aktualisieren
+                for i, s_orig in enumerate(all_schuetzen_original):
+                    if (s_orig['name'] == schuetze_sorted['name'] and
+                        s_orig['vorname'] == schuetze_sorted['vorname'] and
+                        s_orig['klasse'] == schuetze_sorted['klasse']):
+
+                        self.schuetze_model.update_schuetze(
+                            i, s_orig['name'], s_orig['vorname'], s_orig['klasse'], s_orig['verein'],
+                            gruppe=gruppe, scheibe=scheibe
+                        )
+                        break
+
+                scheibe += 1
+                if scheibe > max_scheiben:
+                    scheibe = 1
+                    gruppe += 1
+
+            self.refresh()
+            messagebox.showinfo("Erfolg", "Schützen wurden automatisch zugewiesen.")
+
+            if self.on_schuetzen_changed:
+                self.on_schuetzen_changed()
+
+        except tk.TclError:
+            messagebox.showerror("Fehler", "Ungültiger Wert für maximale Scheiben.")
+
+    def manual_assign(self):
+        """Manuelle Zuweisung von Gruppe und Scheibe"""
+        selected = self.tree.selection()
+        if not selected:
+            messagebox.showwarning("Keine Auswahl", "Bitte wählen Sie einen Schützen aus!")
+            return
+
+        try:
+            gruppe = int(self.manual_gruppe_var.get())
+            scheibe = int(self.manual_scheibe_var.get())
+        except ValueError:
+            messagebox.showerror("Fehler", "Gruppe und Scheibe müssen Zahlen sein.")
+            return
+
+        # Prüfung auf Doppelbelegung
+        schuetzen = self.schuetze_model.get_all_schuetzen()
+        for i, s in enumerate(schuetzen):
+            if s.get('gruppe') == gruppe and s.get('scheibe') == scheibe:
+                if i != self.editing_index:
+                    messagebox.showerror("Fehler", f"Scheibe {scheibe} in Gruppe {gruppe} ist bereits belegt.")
+                    return
+
+        # Index des ausgewählten Schützen finden
+        item = selected[0]
+        values = self.tree.item(item)['values']
+        schuetzen = self.schuetze_model.get_all_schuetzen()
+        selected_index = -1
+        for i, schuetze in enumerate(schuetzen):
+            if (schuetze['name'] == values[0] and
+                schuetze['vorname'] == values[1] and
+                schuetze['klasse'] == values[2] and
+                schuetze['verein'] == values[3]):
+                selected_index = i
+                break
+
+        if selected_index != -1:
+            schuetze = self.schuetze_model.get_schuetze(selected_index)
+            self.schuetze_model.update_schuetze(
+                selected_index,
+                schuetze['name'],
+                schuetze['vorname'],
+                schuetze['klasse'],
+                schuetze['verein'],
+                gruppe=gruppe,
+                scheibe=scheibe
+            )
+            self.refresh()
+            messagebox.showinfo("Erfolg", "Zuweisung erfolgreich.")
+
+            if self.on_schuetzen_changed:
+                self.on_schuetzen_changed()
