@@ -57,7 +57,13 @@ class MainWindow:
             self.schuetze_model,
             self.on_schuetzen_changed
         )
-        self.gruppen_tab = GruppenTab(self.notebook, self.turnier_model, self.schuetze_model, self.pdf_generator)
+        self.gruppen_tab = GruppenTab(
+            self.notebook,
+            self.turnier_model,
+            self.schuetze_model,
+            self.pdf_generator,
+            self.on_assignment_changed
+        )
         self.ergebnisse_tab = ErgebnisseTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.info_tab = InfoTab(self.notebook)
         
@@ -132,3 +138,8 @@ class MainWindow:
             self.ergebnisse_tab.refresh()
         if hasattr(self, 'gruppen_tab'):
             self.gruppen_tab.refresh()
+
+    def on_assignment_changed(self):
+        """Wird aufgerufen, wenn sich eine Zuweisung in der Gruppenverwaltung ändert"""
+        if hasattr(self, 'schuetzen_tab'):
+            self.schuetzen_tab.refresh()
