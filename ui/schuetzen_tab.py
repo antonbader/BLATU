@@ -5,6 +5,7 @@ Schützenverwaltung Tab
 
 import tkinter as tk
 from tkinter import ttk, messagebox
+import random
 
 
 class SchuetzenTab:
@@ -74,6 +75,17 @@ class SchuetzenTab:
         self.max_scheiben_var = tk.IntVar(value=self.turnier_model.get_turnier_data().get("max_scheiben", 3))
         self.max_scheiben_entry = ttk.Entry(scheiben_frame, textvariable=self.max_scheiben_var, width=5)
         self.max_scheiben_entry.pack(side=tk.LEFT, padx=5)
+
+        ttk.Label(scheiben_frame, text="Zuweisungsart:").pack(side=tk.LEFT, padx=(10, 5))
+        self.assign_strategy_var = tk.StringVar(value="Nach Eingabe")
+        self.assign_strategy_combo = ttk.Combobox(
+            scheiben_frame,
+            textvariable=self.assign_strategy_var,
+            values=["Nach Eingabe", "Zufällig", "Nach Klassen"],
+            width=15,
+            state="readonly"
+        )
+        self.assign_strategy_combo.pack(side=tk.LEFT, padx=5)
 
         ttk.Button(
             scheiben_frame,
@@ -369,23 +381,39 @@ class SchuetzenTab:
                 messagebox.showinfo("Info", "Keine Schützen zum Zuweisen vorhanden.")
                 return
 
-            # Bestehende Zuweisungen aufheben
-            for i, schuetze in enumerate(schuetzen):
-                schuetze['gruppe'] = None
-                schuetze['scheibe'] = None
-                self.schuetze_model.update_schuetze(
-                    i, schuetze['name'], schuetze['vorname'], schuetze['klasse'], schuetze['verein'],
-                    gruppe=None, scheibe=None
-                )
+            # Zuweisungsstrategie anwenden
+            strategy = self.assign_strategy_var.get()
+            if strategy == "Zufällig":
+                random.shuffle(schuetzen)
+            elif strategy == "Nach Klassen":
+                schuetzen.sort(key=lambda s: s.get('klasse', ''))
 
-            # Neue Zuweisung
+            # Bestehende Zuweisungen aufheben und neu zuweisen
             gruppe = 1
             scheibe = 1
-            for i, schuetze in enumerate(schuetzen):
-                self.schuetze_model.update_schuetze(
-                    i, schuetze['name'], schuetze['vorname'], schuetze['klasse'], schuetze['verein'],
-                    gruppe=gruppe, scheibe=scheibe
-                )
+
+            # Da die Reihenfolge potenziell geändert wurde, müssen wir die Schützen über ihre eindeutige ID aktualisieren
+            all_schuetzen_original = self.schuetze_model.get_all_schuetzen()
+
+            # Zuerst alle Zuweisungen aufheben
+            for i in range(len(all_schuetzen_original)):
+                s = self.schuetze_model.get_schuetze(i)
+                self.schuetze_model.update_schuetze(i, s['name'], s['vorname'], s['klasse'], s['verein'], gruppe=None, scheibe=None)
+
+            # Dann die neuen Zuweisungen basierend auf der sortierten/gemischten Liste setzen
+            for schuetze_sorted in schuetzen:
+                # Finde den Index des Schützen in der ursprünglichen Liste, um ihn zu aktualisieren
+                for i, s_orig in enumerate(all_schuetzen_original):
+                    if (s_orig['name'] == schuetze_sorted['name'] and
+                        s_orig['vorname'] == schuetze_sorted['vorname'] and
+                        s_orig['klasse'] == schuetze_sorted['klasse']):
+
+                        self.schuetze_model.update_schuetze(
+                            i, s_orig['name'], s_orig['vorname'], s_orig['klasse'], s_orig['verein'],
+                            gruppe=gruppe, scheibe=scheibe
+                        )
+                        break
+
                 scheibe += 1
                 if scheibe > max_scheiben:
                     scheibe = 1

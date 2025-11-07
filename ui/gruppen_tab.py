@@ -26,16 +26,23 @@ class GruppenTab:
             font=("Arial", 16, "bold")
         ).grid(row=0, column=0, columnspan=3, pady=10)
 
-        # Listenbereich
-        list_frame = ttk.LabelFrame(self.frame, text="Gruppenübersicht", padding="10")
-        list_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=10)
+        # Haupt-Frame für die Listen
+        main_list_frame = ttk.Frame(self.frame)
+        main_list_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=10)
+        main_list_frame.rowconfigure(0, weight=1)
+        main_list_frame.columnconfigure(0, weight=3) # Gruppenübersicht bekommt mehr Platz
+        main_list_frame.columnconfigure(1, weight=1)
+
+        # Listenbereich für zugewiesene Schützen
+        list_frame = ttk.LabelFrame(main_list_frame, text="Gruppenübersicht", padding="10")
+        list_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(0, 5))
 
         scrollbar = ttk.Scrollbar(list_frame)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         self.tree = ttk.Treeview(
             list_frame,
-            columns=("Gruppe", "Uhrzeit", "Scheibe", "Schütze", "Verein"),
+            columns=("Gruppe", "Uhrzeit", "Scheibe", "Schütze", "Verein", "Klasse"),
             show="headings",
             yscrollcommand=scrollbar.set,
             height=20
@@ -45,14 +52,40 @@ class GruppenTab:
         self.tree.heading("Scheibe", text="Scheibe")
         self.tree.heading("Schütze", text="Schütze")
         self.tree.heading("Verein", text="Verein")
-        self.tree.column("Gruppe", width=80, anchor="center")
+        self.tree.heading("Klasse", text="Klasse")
+        self.tree.column("Gruppe", width=60, anchor="center")
         self.tree.column("Uhrzeit", width=80, anchor="center")
-        self.tree.column("Scheibe", width=80, anchor="center")
-        self.tree.column("Schütze", width=300)
-        self.tree.column("Verein", width=200)
+        self.tree.column("Scheibe", width=60, anchor="center")
+        self.tree.column("Schütze", width=250)
+        self.tree.column("Verein", width=150)
+        self.tree.column("Klasse", width=120)
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.config(command=self.tree.yview)
         self.tree.bind("<<TreeviewSelect>>", self.on_schuetze_selected)
+
+        # Listenbereich für nicht zugewiesene Schützen
+        unassigned_frame = ttk.LabelFrame(main_list_frame, text="Nicht zugewiesene Schützen", padding="10")
+        unassigned_frame.grid(row=0, column=1, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(5, 0))
+
+        unassigned_scrollbar = ttk.Scrollbar(unassigned_frame)
+        unassigned_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.unassigned_tree = ttk.Treeview(
+            unassigned_frame,
+            columns=("Schütze", "Verein", "Klasse"),
+            show="headings",
+            yscrollcommand=unassigned_scrollbar.set,
+            height=20
+        )
+        self.unassigned_tree.heading("Schütze", text="Schütze")
+        self.unassigned_tree.heading("Verein", text="Verein")
+        self.unassigned_tree.heading("Klasse", text="Klasse")
+        self.unassigned_tree.column("Schütze", width=150)
+        self.unassigned_tree.column("Verein", width=120)
+        self.unassigned_tree.column("Klasse", width=100)
+        self.unassigned_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        unassigned_scrollbar.config(command=self.unassigned_tree.yview)
+        self.unassigned_tree.bind("<<TreeviewSelect>>", self.on_schuetze_selected)
 
         # Bearbeitungs-Frame
         edit_frame = ttk.Frame(self.frame)
@@ -111,16 +144,16 @@ class GruppenTab:
         """Aktualisiert die Anzeige"""
         for item in self.tree.get_children():
             self.tree.delete(item)
+        for item in self.unassigned_tree.get_children():
+            self.unassigned_tree.delete(item)
 
         schuetzen = self.schuetze_model.get_all_schuetzen()
 
-        # Filtere Schützen, die einer Gruppe zugewiesen sind
         assigned_schuetzen = [s for s in schuetzen if s.get('gruppe') is not None]
+        unassigned_schuetzen = [s for s in schuetzen if s.get('gruppe') is None]
 
-        # Sortiere nach Gruppe und dann nach Scheibe
+        # Zugewiesene Schützen
         assigned_schuetzen.sort(key=lambda s: (s.get('gruppe', 0), s.get('scheibe', 0)))
-
-        # Gruppiere Schützen
         groups = {}
         for s in assigned_schuetzen:
             gruppe = s.get('gruppe')
@@ -139,8 +172,17 @@ class GruppenTab:
                     display_time,
                     schuetze.get('scheibe', ''),
                     f"{schuetze.get('vorname', '')} {schuetze.get('name', '')}",
-                    schuetze.get('verein', '')
+                    schuetze.get('verein', ''),
+                    schuetze.get('klasse', '')
                 ))
+
+        # Nicht zugewiesene Schützen
+        for schuetze in unassigned_schuetzen:
+            self.unassigned_tree.insert("", tk.END, values=(
+                f"{schuetze.get('vorname', '')} {schuetze.get('name', '')}",
+                schuetze.get('verein', ''),
+                schuetze.get('klasse', '')
+            ))
 
     def save_group_time(self):
         """Speichert die Uhrzeit für die ausgewählte Gruppe"""
@@ -184,45 +226,72 @@ class GruppenTab:
         self.pdf_generator.generate_gruppen_pdf(assigned_schuetzen)
 
     def on_schuetze_selected(self, event):
-        """Wird aufgerufen, wenn ein Schütze in der Liste ausgewählt wird"""
-        selected = self.tree.selection()
+        """Wird aufgerufen, wenn ein Schütze in einer der Listen ausgewählt wird"""
+        # Deselektiere die andere Liste
+        widget = event.widget
+        if widget == self.tree:
+            if self.unassigned_tree.selection():
+                self.unassigned_tree.selection_remove(self.unassigned_tree.selection())
+        else:
+            if self.tree.selection():
+                self.tree.selection_remove(self.tree.selection())
+
+        selected = widget.selection()
         if not selected:
             return
 
-        item = self.tree.item(selected[0])
+        item = widget.item(selected[0])
         values = item['values']
 
-        # Finde die tatsächliche Gruppennummer
-        gruppe = values[0]
-        if gruppe == "":
-            current_index = self.tree.index(selected[0])
-            for i in range(current_index, -1, -1):
-                prev_item = self.tree.item(self.tree.get_children()[i])
-                if prev_item['values'][0] != "":
-                    gruppe = prev_item['values'][0]
-                    break
-
-        scheibe = values[2]
-
-        self.gruppe_var.set(gruppe)
-        self.scheibe_var.set(scheibe)
+        if widget == self.tree:
+            # Finde die tatsächliche Gruppennummer
+            gruppe = values[0]
+            if gruppe == "":
+                current_index = self.tree.index(selected[0])
+                for i in range(current_index, -1, -1):
+                    prev_item = self.tree.item(self.tree.get_children()[i])
+                    if prev_item['values'][0] != "":
+                        gruppe = prev_item['values'][0]
+                        break
+            scheibe = values[2]
+            self.gruppe_var.set(gruppe)
+            self.scheibe_var.set(scheibe)
+        else: # unassigned_tree
+            self.gruppe_var.set("")
+            self.scheibe_var.set("")
 
     def change_assignment(self):
         """Ändert die Zuweisung für den ausgewählten Schützen"""
-        selected = self.tree.selection()
-        if not selected:
-            messagebox.showwarning("Keine Auswahl", "Bitte wählen Sie einen Schützen aus!")
+        selected_assigned = self.tree.selection()
+        selected_unassigned = self.unassigned_tree.selection()
+
+        if not selected_assigned and not selected_unassigned:
+            messagebox.showwarning("Keine Auswahl", "Bitte wählen Sie einen Schützen aus einer der Listen aus!")
             return
 
+        # Bestimme, aus welcher Liste der Schütze kommt
+        if selected_assigned:
+            selected_tree = self.tree
+            selected_item = selected_assigned[0]
+            name_index = 3
+        else:
+            selected_tree = self.unassigned_tree
+            selected_item = selected_unassigned[0]
+            name_index = 0
+
         try:
-            new_gruppe = int(self.gruppe_var.get())
-            new_scheibe = int(self.scheibe_var.get())
+            new_gruppe = int(self.gruppe_var.get()) if self.gruppe_var.get() else None
+            new_scheibe = int(self.scheibe_var.get()) if self.scheibe_var.get() else None
         except ValueError:
             messagebox.showerror("Fehler", "Gruppe und Scheibe müssen Zahlen sein.")
             return
 
-        item = self.tree.item(selected[0])
-        schuetze_name_full = item['values'][3]
+        if new_gruppe is None or new_scheibe is None:
+            messagebox.showerror("Fehler", "Gruppe und Scheibe dürfen nicht leer sein.")
+            return
+
+        item = selected_tree.item(selected_item)
+        schuetze_name_full = item['values'][name_index]
 
         # Finde den Schützen im Modell
         schuetzen = self.schuetze_model.get_all_schuetzen()
