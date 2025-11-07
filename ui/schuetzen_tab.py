@@ -473,3 +473,6 @@ class SchuetzenTab:
             )
             self.refresh()
             messagebox.showinfo("Erfolg", "Zuweisung erfolgreich.")
+
+            if self.on_schuetzen_changed:
+                self.on_schuetzen_changed()
