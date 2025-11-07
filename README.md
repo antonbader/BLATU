@@ -22,6 +22,7 @@ blatu/
 │   ├── turnier_tab.py    # Turnierverwaltung Tab
 │   ├── klassen_tab.py    # Klassenverwaltung Tab
 │   ├── schuetzen_tab.py  # Schützenverwaltung Tab
+│   ├── gruppen_tab.py    # Gruppenverwaltung Tab
 │   ├── ergebnisse_tab.py # Ergebniseingabe Tab
 │   ├── ergebnisse_window.py # Ergebnisanzeige Fenster
 │   └── info_tab.py       # Info Tab
@@ -57,6 +58,7 @@ python main.py
 - **Turnierverwaltung**: Erfassung von Turniername, Datum und Anzahl der Passen
 - **Klassenverwaltung**: Anlegen und Verwalten von Wettkampfklassen
 - **Schützenverwaltung**: Erfassung von Schützendaten (Name, Vorname, Klasse, Verein)
+- **Gruppenverwaltung**: Zuweisung von Schützen zu Gruppen und Scheiben, inkl. Uhrzeit-Management
 - **Ergebniseingabe**: Eingabe von Ergebnissen mit Zusatzwertungen (10er, 9er)
 - **Automatische Ranglistenerstellung**: Nach Punkten und Zusatzwertung
 - **PDF-Export**: Professionelle PDF-Ergebnislisten im Querformat
@@ -67,9 +69,10 @@ python main.py
 1. **Turnier einrichten**: Geben Sie Turniername, Datum und Anzahl Passen ein
 2. **Klassen anlegen**: Definieren Sie die Wettkampfklassen (z.B. Jugend, Erwachsene, Senioren)
 3. **Schützen erfassen**: Tragen Sie alle Teilnehmer mit ihren Daten ein
-4. **Ergebnisse eingeben**: Erfassen Sie die Schießergebnisse für jeden Schützen
-5. **Ergebnisse anzeigen**: Lassen Sie sich die Rangliste anzeigen
-6. **PDF erstellen**: Exportieren Sie die Ergebnisse als professionelles PDF
+4. **Gruppen zuteilen (optional)**: Weisen Sie den Schützen Gruppen und Scheiben zu
+5. **Ergebnisse eingeben**: Erfassen Sie die Schießergebnisse für jeden Schützen
+6. **Ergebnisse anzeigen**: Lassen Sie sich die Rangliste anzeigen
+7. **PDF erstellen**: Exportieren Sie die Ergebnisse als professionelles PDF
 
 ## Datenspeicherung
 
