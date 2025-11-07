@@ -422,9 +422,6 @@ class SchuetzenTab:
             self.refresh()
             messagebox.showinfo("Erfolg", "Schützen wurden automatisch zugewiesen.")
 
-            if self.on_schuetzen_changed:
-                self.on_schuetzen_changed()
-
         except tk.TclError:
             messagebox.showerror("Fehler", "Ungültiger Wert für maximale Scheiben.")
 
