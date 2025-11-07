@@ -373,13 +373,14 @@ class PDFGenerator:
 
                 schuetzen_in_gruppe = sorted(groups[gruppe_nr], key=lambda x: x.get('scheibe', 0))
 
-                table_data = [['Scheibe', 'Name', 'Vorname', 'Verein']]
+                table_data = [['Scheibe', 'Name', 'Vorname', 'Verein', 'Klasse']]
                 for s in schuetzen_in_gruppe:
                     table_data.append([
                         s.get('scheibe', ''),
                         s.get('name', ''),
                         s.get('vorname', ''),
-                        s.get('verein', '')
+                        s.get('verein', ''),
+                        s.get('klasse', '')
                     ])
 
                 table = Table(table_data)
