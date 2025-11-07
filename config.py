@@ -24,7 +24,8 @@ DEFAULT_TURNIER = {
     "name": "",
     "datum": "",
     "anzahl_passen": 1,
-    "show_halves": False
+    "show_halves": False,
+    "max_scheiben": 3
 }
 
 # Dateifilter

@@ -11,25 +11,29 @@ class SchuetzeModel:
     def __init__(self):
         self.schuetzen = []
     
-    def add_schuetze(self, name, vorname, klasse, verein=""):
+    def add_schuetze(self, name, vorname, klasse, verein="", gruppe=None, scheibe=None):
         """Fügt einen neuen Schützen hinzu"""
         schuetze = {
             "name": name,
             "vorname": vorname,
             "klasse": klasse,
-            "verein": verein
+            "verein": verein,
+            "gruppe": gruppe,
+            "scheibe": scheibe
         }
         self.schuetzen.append(schuetze)
         return len(self.schuetzen) - 1
     
-    def update_schuetze(self, index, name, vorname, klasse, verein=""):
+    def update_schuetze(self, index, name, vorname, klasse, verein="", gruppe=None, scheibe=None):
         """Aktualisiert einen bestehenden Schützen"""
         if 0 <= index < len(self.schuetzen):
             self.schuetzen[index] = {
                 "name": name,
                 "vorname": vorname,
                 "klasse": klasse,
-                "verein": verein
+                "verein": verein,
+                "gruppe": gruppe,
+                "scheibe": scheibe
             }
             return True
         return False

@@ -15,13 +15,14 @@ class TurnierModel:
         self.klassen = []
         self.ergebnisse = {}
     
-    def set_turnier_data(self, name, datum, anzahl_passen, show_halves=False):
+    def set_turnier_data(self, name, datum, anzahl_passen, show_halves=False, max_scheiben=3):
         """Setzt die Turnierdaten"""
         self.turnier = {
             "name": name,
             "datum": datum,
             "anzahl_passen": anzahl_passen,
-            "show_halves": show_halves
+            "show_halves": show_halves,
+            "max_scheiben": max_scheiben
         }
     
     def get_turnier_data(self):

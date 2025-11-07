@@ -79,11 +79,13 @@ class DataManager:
             # Neue Daten laden
             if isinstance(data, dict):
                 # Turnierdaten
-                turnier = data.get('turnier', {"name": "", "datum": "", "anzahl_passen": 1})
+                turnier = data.get('turnier', {"name": "", "datum": "", "anzahl_passen": 1, "max_scheiben": 3})
                 self.turnier_model.set_turnier_data(
                     turnier.get('name', ''),
                     turnier.get('datum', ''),
-                    turnier.get('anzahl_passen', 1)
+                    turnier.get('anzahl_passen', 1),
+                    turnier.get('show_halves', False),
+                    turnier.get('max_scheiben', 3)
                 )
                 
                 # Klassen
@@ -93,10 +95,12 @@ class DataManager:
                 # Schützen
                 for schuetze in data.get('schuetzen', []):
                     self.schuetze_model.add_schuetze(
-                        schuetze['name'],
-                        schuetze['vorname'],
-                        schuetze['klasse'],
-                        schuetze.get('verein', '')
+                        schuetze.get('name'),
+                        schuetze.get('vorname'),
+                        schuetze.get('klasse'),
+                        schuetze.get('verein', ''),
+                        schuetze.get('gruppe'),
+                        schuetze.get('scheibe')
                     )
                 
                 # Ergebnisse
