@@ -32,33 +32,35 @@ class SchuetzenTab:
         input_frame = ttk.LabelFrame(self.frame, text="Schützen bearbeiten", padding="10")
         input_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=10)
         
-        # Name
+        # Name und Vorname
         ttk.Label(input_frame, text="Name:").grid(row=0, column=0, sticky=tk.W, pady=5)
         self.name_entry = ttk.Entry(input_frame, width=30)
         self.name_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), pady=5, padx=5)
         
-        # Vorname
-        ttk.Label(input_frame, text="Vorname:").grid(row=1, column=0, sticky=tk.W, pady=5)
+        ttk.Label(input_frame, text="Vorname:").grid(row=0, column=2, sticky=tk.W, pady=5, padx=(10, 0))
         self.vorname_entry = ttk.Entry(input_frame, width=30)
-        self.vorname_entry.grid(row=1, column=1, sticky=(tk.W, tk.E), pady=5, padx=5)
-        
-        # Klasse
-        ttk.Label(input_frame, text="Klasse:").grid(row=2, column=0, sticky=tk.W, pady=5)
+        self.vorname_entry.grid(row=0, column=3, sticky=(tk.W, tk.E), pady=5, padx=5)
+
+        # Klasse und Verein
+        ttk.Label(input_frame, text="Klasse:").grid(row=1, column=0, sticky=tk.W, pady=5)
         self.klasse_combo = ttk.Combobox(input_frame, width=28, state="readonly")
-        self.klasse_combo.grid(row=2, column=1, sticky=(tk.W, tk.E), pady=5, padx=5)
+        self.klasse_combo.grid(row=1, column=1, sticky=(tk.W, tk.E), pady=5, padx=5)
         
-        # Verein
-        ttk.Label(input_frame, text="Verein:").grid(row=3, column=0, sticky=tk.W, pady=5)
+        ttk.Label(input_frame, text="Verein:").grid(row=1, column=2, sticky=tk.W, pady=5, padx=(10, 0))
         self.verein_entry = ttk.Entry(input_frame, width=30)
-        self.verein_entry.grid(row=3, column=1, sticky=(tk.W, tk.E), pady=5, padx=5)
-        
+        self.verein_entry.grid(row=1, column=3, sticky=(tk.W, tk.E), pady=5, padx=5)
+
         # Button
         self.add_button = ttk.Button(
-            input_frame, 
-            text="Schütze hinzufügen", 
+            input_frame,
+            text="Schütze hinzufügen",
             command=self.add_or_update_schuetze
         )
-        self.add_button.grid(row=4, column=0, columnspan=2, pady=10)
+        self.add_button.grid(row=2, column=0, columnspan=4, pady=10)
+
+        # Grid-Konfiguration für Input-Frame
+        input_frame.columnconfigure(1, weight=1)
+        input_frame.columnconfigure(3, weight=1)
         
         # Listenbereich
         list_frame = ttk.LabelFrame(self.frame, text="Schützenliste", padding="10")

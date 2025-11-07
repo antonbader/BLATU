@@ -9,10 +9,11 @@ from tkinter import ttk, messagebox
 
 from config import WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE
 from models import TurnierModel, SchuetzeModel
-from utils import DataManager
+from utils import DataManager, PDFGenerator
 from .turnier_tab import TurnierTab
 from .klassen_tab import KlassenTab
 from .schuetzen_tab import SchuetzenTab
+from .gruppen_tab import GruppenTab
 from .ergebnisse_tab import ErgebnisseTab
 from .info_tab import InfoTab
 
@@ -29,6 +30,7 @@ class MainWindow:
         self.turnier_model = TurnierModel()
         self.schuetze_model = SchuetzeModel()
         self.data_manager = DataManager(self.turnier_model, self.schuetze_model)
+        self.pdf_generator = PDFGenerator(self.turnier_model)
         
         self.create_widgets()
     
@@ -50,11 +52,12 @@ class MainWindow:
             self.on_klassen_changed  # Callback hinzufügen
         )
         self.schuetzen_tab = SchuetzenTab(
-            self.notebook, 
-            self.turnier_model, 
+            self.notebook,
+            self.turnier_model,
             self.schuetze_model,
-            self.on_schuetzen_changed  # Callback hinzufügen
+            self.on_schuetzen_changed
         )
+        self.gruppen_tab = GruppenTab(self.notebook, self.turnier_model, self.schuetze_model, self.pdf_generator)
         self.ergebnisse_tab = ErgebnisseTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.info_tab = InfoTab(self.notebook)
         
@@ -62,6 +65,7 @@ class MainWindow:
         self.notebook.add(self.turnier_tab.frame, text="Turnierverwaltung")
         self.notebook.add(self.klassen_tab.frame, text="Klassenverwaltung")
         self.notebook.add(self.schuetzen_tab.frame, text="Schützenverwaltung")
+        self.notebook.add(self.gruppen_tab.frame, text="Gruppenverwaltung")
         self.notebook.add(self.ergebnisse_tab.frame, text="Ergebniseingabe")
         self.notebook.add(self.info_tab.frame, text="Info")
     
@@ -103,6 +107,7 @@ class MainWindow:
             self.turnier_tab.refresh()
             self.klassen_tab.refresh()
             self.schuetzen_tab.refresh()
+            self.gruppen_tab.refresh()
             self.ergebnisse_tab.refresh()
             messagebox.showinfo("Erfolg", message)
         elif message:  # Nur Fehler anzeigen, wenn eine Datei ausgewählt wurde
@@ -122,6 +127,8 @@ class MainWindow:
     
     def on_schuetzen_changed(self):
         """Wird aufgerufen wenn sich Schützenliste ändert"""
-        # Ergebniseingabe muss Schützenliste aktualisieren
+        # Ergebniseingabe und Gruppenverwaltung müssen aktualisiert werden
         if hasattr(self, 'ergebnisse_tab'):
             self.ergebnisse_tab.refresh()
+        if hasattr(self, 'gruppen_tab'):
+            self.gruppen_tab.refresh()

@@ -14,6 +14,7 @@ class TurnierModel:
         self.turnier = DEFAULT_TURNIER.copy()
         self.klassen = []
         self.ergebnisse = {}
+        self.group_times = {}
     
     def set_turnier_data(self, name, datum, anzahl_passen, show_halves=False, max_scheiben=3):
         """Setzt die Turnierdaten"""
@@ -72,8 +73,25 @@ class TurnierModel:
         """Löscht alle Ergebnisse"""
         self.ergebnisse = {}
     
+    def set_group_time(self, group, time):
+        """Setzt die Uhrzeit für eine Gruppe"""
+        self.group_times[group] = time
+
+    def get_group_time(self, group):
+        """Gibt die Uhrzeit für eine Gruppe zurück"""
+        return self.group_times.get(group, "")
+
+    def get_all_group_times(self):
+        """Gibt alle Gruppen-Uhrzeiten zurück"""
+        return self.group_times.copy()
+
+    def clear_group_times(self):
+        """Löscht alle Gruppen-Uhrzeiten"""
+        self.group_times = {}
+
     def reset(self):
         """Setzt alle Daten zurück"""
         self.turnier = DEFAULT_TURNIER.copy()
         self.klassen = []
         self.ergebnisse = {}
+        self.group_times = {}
