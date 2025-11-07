@@ -64,6 +64,21 @@ class SchuetzenTab:
         list_frame = ttk.LabelFrame(self.frame, text="Schützenliste", padding="10")
         list_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=10)
         
+        # Scheiben- und Zuweisungs-Frame
+        scheiben_frame = ttk.Frame(list_frame)
+        scheiben_frame.pack(fill=tk.X, pady=5)
+
+        ttk.Label(scheiben_frame, text="Max. Scheiben:").pack(side=tk.LEFT, padx=(0, 5))
+        self.max_scheiben_var = tk.IntVar(value=self.turnier_model.get_turnier_data().get("max_scheiben", 3))
+        self.max_scheiben_entry = ttk.Entry(scheiben_frame, textvariable=self.max_scheiben_var, width=5)
+        self.max_scheiben_entry.pack(side=tk.LEFT, padx=5)
+
+        ttk.Button(
+            scheiben_frame,
+            text="Automatisch Zuweisen",
+            command=self.auto_assign_scheiben
+        ).pack(side=tk.LEFT, padx=5)
+
         # Hinweis zur Sortierung
         ttk.Label(
             list_frame, 
@@ -77,7 +92,7 @@ class SchuetzenTab:
         
         self.tree = ttk.Treeview(
             list_frame, 
-            columns=("Name", "Vorname", "Klasse", "Verein"), 
+            columns=("Name", "Vorname", "Klasse", "Verein", "Gruppe", "Scheibe"),
             show="headings", 
             yscrollcommand=scrollbar.set, 
             height=15
@@ -86,17 +101,41 @@ class SchuetzenTab:
         self.tree.heading("Vorname", text="Vorname", command=lambda: self.sort_by_column("Vorname"))
         self.tree.heading("Klasse", text="Klasse", command=lambda: self.sort_by_column("Klasse"))
         self.tree.heading("Verein", text="Verein", command=lambda: self.sort_by_column("Verein"))
-        self.tree.column("Name", width=200)
-        self.tree.column("Vorname", width=200)
-        self.tree.column("Klasse", width=150)
-        self.tree.column("Verein", width=200)
+        self.tree.heading("Gruppe", text="Gruppe", command=lambda: self.sort_by_column("Gruppe"))
+        self.tree.heading("Scheibe", text="Scheibe", command=lambda: self.sort_by_column("Scheibe"))
+        self.tree.column("Name", width=150)
+        self.tree.column("Vorname", width=150)
+        self.tree.column("Klasse", width=120)
+        self.tree.column("Verein", width=150)
+        self.tree.column("Gruppe", width=70, anchor="center")
+        self.tree.column("Scheibe", width=70, anchor="center")
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.config(command=self.tree.yview)
         self.tree.bind("<Double-1>", lambda e: self.edit_selected())
         
+        # Manuelle Zuweisung
+        manual_assign_frame = ttk.LabelFrame(self.frame, text="Manuelle Zuweisung", padding="10")
+        manual_assign_frame.grid(row=3, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=10)
+
+        ttk.Label(manual_assign_frame, text="Gruppe:").grid(row=0, column=0, padx=5)
+        self.manual_gruppe_var = tk.StringVar()
+        self.manual_gruppe_entry = ttk.Entry(manual_assign_frame, textvariable=self.manual_gruppe_var, width=5)
+        self.manual_gruppe_entry.grid(row=0, column=1, padx=5)
+
+        ttk.Label(manual_assign_frame, text="Scheibe:").grid(row=0, column=2, padx=5)
+        self.manual_scheibe_var = tk.StringVar()
+        self.manual_scheibe_entry = ttk.Entry(manual_assign_frame, textvariable=self.manual_scheibe_var, width=5)
+        self.manual_scheibe_entry.grid(row=0, column=3, padx=5)
+
+        ttk.Button(
+            manual_assign_frame,
+            text="Ausgewählten Schützen zuweisen",
+            command=self.manual_assign
+        ).grid(row=0, column=4, padx=10)
+
         # Buttons
         button_frame = ttk.Frame(self.frame)
-        button_frame.grid(row=3, column=0, columnspan=3, pady=10)
+        button_frame.grid(row=4, column=0, columnspan=3, pady=10)
         
         ttk.Button(
             button_frame, 
@@ -149,7 +188,11 @@ class SchuetzenTab:
         
         if self.editing_index is not None:
             # Aktualisieren
-            self.schuetze_model.update_schuetze(self.editing_index, name, vorname, klasse, verein)
+            schuetze = self.schuetze_model.get_schuetze(self.editing_index)
+            self.schuetze_model.update_schuetze(
+                self.editing_index, name, vorname, klasse, verein,
+                gruppe=schuetze.get('gruppe'), scheibe=schuetze.get('scheibe')
+            )
             messagebox.showinfo("Erfolg", f"{vorname} {name} wurde aktualisiert!")
             self.editing_index = None
             self.add_button.config(text="Schütze hinzufügen")
@@ -183,6 +226,10 @@ class SchuetzenTab:
                 schuetze['klasse'] == values[2] and 
                 schuetze['verein'] == values[3]):
                 self.editing_index = i
+
+                # Manuelle Zuweisungsfelder füllen
+                self.manual_gruppe_var.set(schuetze.get('gruppe', ''))
+                self.manual_scheibe_var.set(schuetze.get('scheibe', ''))
                 break
         
         # Felder füllen
@@ -277,19 +324,122 @@ class SchuetzenTab:
                 "Name": "name",
                 "Vorname": "vorname",
                 "Klasse": "klasse",
-                "Verein": "verein"
+                "Verein": "verein",
+                "Gruppe": "gruppe",
+                "Scheibe": "scheibe"
             }
             sort_key = column_map.get(self.sort_column, "name")
-            schuetzen = sorted(schuetzen, key=lambda x: x[sort_key].lower(), reverse=self.sort_reverse)
-        
+
+            def sort_func(x):
+                val = x.get(sort_key)
+                if val is None:
+                    return -1 # None-Werte an den Anfang
+                if isinstance(val, str):
+                    return val.lower()
+                return val
+
+            schuetzen = sorted(schuetzen, key=sort_func, reverse=self.sort_reverse)
+
         for schuetze in schuetzen:
             self.tree.insert("", tk.END, values=(
-                schuetze['name'], 
-                schuetze['vorname'], 
-                schuetze['klasse'], 
-                schuetze['verein']
+                schuetze.get('name', ''),
+                schuetze.get('vorname', ''),
+                schuetze.get('klasse', ''),
+                schuetze.get('verein', ''),
+                schuetze.get('gruppe', ''),
+                schuetze.get('scheibe', '')
             ))
     
     def refresh_silent(self):
         """Aktualisiert die Anzeige ohne Sortierung zurückzusetzen (für Callback)"""
         self.refresh()
+
+    def auto_assign_scheiben(self):
+        """Automatische Zuweisung von Gruppen und Scheiben"""
+        try:
+            max_scheiben = self.max_scheiben_var.get()
+            if max_scheiben <= 0:
+                messagebox.showerror("Fehler", "Maximale Anzahl an Scheiben muss größer als 0 sein.")
+                return
+
+            schuetzen = self.schuetze_model.get_all_schuetzen()
+            if not schuetzen:
+                messagebox.showinfo("Info", "Keine Schützen zum Zuweisen vorhanden.")
+                return
+
+            # Bestehende Zuweisungen aufheben
+            for i, schuetze in enumerate(schuetzen):
+                schuetze['gruppe'] = None
+                schuetze['scheibe'] = None
+                self.schuetze_model.update_schuetze(
+                    i, schuetze['name'], schuetze['vorname'], schuetze['klasse'], schuetze['verein'],
+                    gruppe=None, scheibe=None
+                )
+
+            # Neue Zuweisung
+            gruppe = 1
+            scheibe = 1
+            for i, schuetze in enumerate(schuetzen):
+                self.schuetze_model.update_schuetze(
+                    i, schuetze['name'], schuetze['vorname'], schuetze['klasse'], schuetze['verein'],
+                    gruppe=gruppe, scheibe=scheibe
+                )
+                scheibe += 1
+                if scheibe > max_scheiben:
+                    scheibe = 1
+                    gruppe += 1
+
+            self.refresh()
+            messagebox.showinfo("Erfolg", "Schützen wurden automatisch zugewiesen.")
+
+        except tk.TclError:
+            messagebox.showerror("Fehler", "Ungültiger Wert für maximale Scheiben.")
+
+    def manual_assign(self):
+        """Manuelle Zuweisung von Gruppe und Scheibe"""
+        selected = self.tree.selection()
+        if not selected:
+            messagebox.showwarning("Keine Auswahl", "Bitte wählen Sie einen Schützen aus!")
+            return
+
+        try:
+            gruppe = int(self.manual_gruppe_var.get())
+            scheibe = int(self.manual_scheibe_var.get())
+        except ValueError:
+            messagebox.showerror("Fehler", "Gruppe und Scheibe müssen Zahlen sein.")
+            return
+
+        # Prüfung auf Doppelbelegung
+        schuetzen = self.schuetze_model.get_all_schuetzen()
+        for i, s in enumerate(schuetzen):
+            if s.get('gruppe') == gruppe and s.get('scheibe') == scheibe:
+                if i != self.editing_index:
+                    messagebox.showerror("Fehler", f"Scheibe {scheibe} in Gruppe {gruppe} ist bereits belegt.")
+                    return
+
+        # Index des ausgewählten Schützen finden
+        item = selected[0]
+        values = self.tree.item(item)['values']
+        schuetzen = self.schuetze_model.get_all_schuetzen()
+        selected_index = -1
+        for i, schuetze in enumerate(schuetzen):
+            if (schuetze['name'] == values[0] and
+                schuetze['vorname'] == values[1] and
+                schuetze['klasse'] == values[2] and
+                schuetze['verein'] == values[3]):
+                selected_index = i
+                break
+
+        if selected_index != -1:
+            schuetze = self.schuetze_model.get_schuetze(selected_index)
+            self.schuetze_model.update_schuetze(
+                selected_index,
+                schuetze['name'],
+                schuetze['vorname'],
+                schuetze['klasse'],
+                schuetze['verein'],
+                gruppe=gruppe,
+                scheibe=scheibe
+            )
+            self.refresh()
+            messagebox.showinfo("Erfolg", "Zuweisung erfolgreich.")
