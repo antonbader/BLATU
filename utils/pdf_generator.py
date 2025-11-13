@@ -403,3 +403,115 @@ class PDFGenerator:
 
         except Exception as e:
             messagebox.showerror("Fehler", f"Fehler beim Erstellen des Gruppen-PDFs:\n{str(e)}")
+
+    def generate_startliste_vereine_pdf(self, schuetzen):
+        """Erstellt für jeden Verein eine PDF-Startliste"""
+        try:
+            from reportlab.lib.pagesizes import A4
+            from reportlab.lib import colors
+            from reportlab.lib.units import cm
+            from reportlab.platypus import (SimpleDocTemplate, Table, TableStyle,
+                                           Paragraph, Spacer)
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib.enums import TA_CENTER, TA_LEFT
+        except ImportError:
+            messagebox.showerror(
+                "Fehler",
+                "Die reportlab-Bibliothek ist nicht installiert.\n\n"
+                "Bitte installieren Sie sie mit:\npip install reportlab"
+            )
+            return
+
+        turnier = self.turnier_model.get_turnier_data()
+        assigned_schuetzen = [s for s in schuetzen if s.get('gruppe') is not None]
+
+        if not assigned_schuetzen:
+            messagebox.showinfo("Info", "Es sind keine Schützen Gruppen zugewiesen. PDFs werden nicht erstellt.")
+            return
+
+        # Verzeichnis für Speicherung abfragen
+        directory = filedialog.askdirectory(title="Speicherort für Vereins-PDFs auswählen")
+        if not directory:
+            return
+
+        # Schützen nach Verein gruppieren
+        vereine = {}
+        for s in assigned_schuetzen:
+            verein = s.get('verein', 'Unbekannt')
+            if verein not in vereine:
+                vereine[verein] = []
+            vereine[verein].append(s)
+
+        # PDF für jeden Verein erstellen
+        for verein, schuetzen_im_verein in vereine.items():
+            # Dateiname erstellen
+            turnier_name = ''.join(c for c in turnier.get('name', 'Turnier') if c.isalnum())
+            turnier_datum = ''.join(c for c in turnier.get('datum', '') if c.isalnum())
+            vereins_name = ''.join(c for c in verein if c.isalnum())
+            file_name = f"{turnier_name}_{turnier_datum}_{vereins_name}.pdf"
+            file_path = os.path.join(directory, file_name)
+
+            try:
+                doc = SimpleDocTemplate(
+                    file_path,
+                    pagesize=A4,
+                    rightMargin=1.5*cm,
+                    leftMargin=1.5*cm,
+                    topMargin=1.5*cm,
+                    bottomMargin=1.5*cm
+                )
+
+                elements = []
+                styles = getSampleStyleSheet()
+
+                title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=16, alignment=TA_CENTER, spaceAfter=6)
+                subtitle_style = ParagraphStyle('CustomSubtitle', parent=styles['Normal'], fontSize=12, alignment=TA_CENTER, spaceAfter=12)
+                verein_style = ParagraphStyle('VereinTitle', parent=styles['Heading2'], fontSize=14, alignment=TA_LEFT, spaceAfter=10)
+
+                # Titel und Datum
+                elements.append(Paragraph(turnier.get('name', 'Turnier'), title_style))
+                if turnier.get('datum'):
+                    elements.append(Paragraph(f"Datum: {turnier['datum']}", subtitle_style))
+                else:
+                    elements.append(Spacer(1, 0.5*cm))
+
+                elements.append(Paragraph(f"Verein: {verein}", verein_style))
+
+                # Schützen sortieren: erst nach Gruppe, dann nach Name
+                schuetzen_im_verein.sort(key=lambda s: (s.get('gruppe', 0), s.get('name', '')))
+
+                # Tabelle erstellen
+                table_data = [['Name', 'Vorname', 'Klasse', 'Gruppe', 'Startzeit', 'Scheibe']]
+                for s in schuetzen_im_verein:
+                    gruppe_nr = s.get('gruppe')
+                    startzeit = self.turnier_model.get_group_time(gruppe_nr) if gruppe_nr else ''
+                    table_data.append([
+                        s.get('name', ''),
+                        s.get('vorname', ''),
+                        s.get('klasse', ''),
+                        s.get('gruppe', ''),
+                        startzeit,
+                        s.get('scheibe', '')
+                    ])
+
+                table = Table(table_data)
+                table_style = TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(PDF_COLOR_HEADER)),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                    ('TOPPADDING', (0, 0), (-1, 0), 8),
+                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor(PDF_COLOR_ROW_ALT)]),
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                ])
+                table.setStyle(table_style)
+                elements.append(table)
+
+                doc.build(elements)
+
+            except Exception as e:
+                messagebox.showerror("Fehler", f"Fehler beim Erstellen des PDFs für {verein}:\n{str(e)}")
+                return # Bei Fehler abbrechen
+
+        messagebox.showinfo("Erfolg", f"Alle {len(vereine)} Vereins-PDFs wurden im Verzeichnis '{directory}' erstellt.")
