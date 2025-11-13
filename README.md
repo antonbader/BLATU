@@ -1,6 +1,6 @@
 # Blatu - Blasrohr Turnierverwaltung
 
-Version 1.2.0 - © 2025 Anton Bader
+Version 1.3.0 - © 2025 Anton Bader
 
 ## Beschreibung
 
@@ -25,6 +25,7 @@ blatu/
 │   ├── gruppen_tab.py    # Gruppenverwaltung Tab
 │   ├── ergebnisse_tab.py # Ergebniseingabe Tab
 │   ├── ergebnisse_window.py # Ergebnisanzeige Fenster
+│   ├── bildschirm_anzeige_window.py # Live-Ergebnisanzeige (für Beamer)
 │   └── info_tab.py       # Info Tab
 ├── utils/                 # Hilfsfunktionen
 │   ├── __init__.py
@@ -61,8 +62,12 @@ python main.py
 - **Gruppenverwaltung**: Zuweisung von Schützen zu Gruppen und Scheiben, inkl. Uhrzeit-Management
 - **Ergebniseingabe**: Eingabe von Ergebnissen mit Zusatzwertungen (10er, 9er)
 - **Automatische Ranglistenerstellung**: Nach Punkten und Zusatzwertung
-- **PDF-Export**: Professionelle PDF-Ergebnislisten im Querformat
+- **PDF-Export**:
+    - Professionelle PDF-Ergebnislisten (klassenweise)
+    - PDF-Gruppenlisten mit Startzeiten
+    - Separate PDF-Startlisten für jeden Verein
 - **Datenverwaltung**: Speichern und Laden kompletter Turnierdaten als JSON
+- **Live-Anzeige**: Automatisches Scrollen und Aktualisieren der Ergebnisse für Zuschauer (Beamer-Modus)
 
 ## Verwendung
 

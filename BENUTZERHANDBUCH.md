@@ -104,6 +104,7 @@ Die Software kann professionelle PDF-Dokumente für die Veröffentlichung erstel
 
 *   **Ergebnisliste als PDF:** Klicken Sie im Fenster "Ergebnisanzeige" auf den Button **"PDF erstellen"**. Sie werden aufgefordert, einen Speicherort für die PDF-Datei zu wählen. Das Layout (einzelne Passen oder Hälften) richtet sich nach der Einstellung im Reiter "Turnier".
 *   **Gruppen-PDF erstellen:** Im Reiter **"Gruppen"** finden Sie den Button **"Gruppen-PDF erstellen"**. Dieses PDF enthält eine übersichtliche Liste aller Gruppen mit den zugewiesenen Schützen und den festgelegten Startzeiten.
+*   **Startlisten pro Verein als PDF:** Im Reiter **"Gruppen"** können Sie über den Button **"Startlisten pro Verein (PDF)"** für jeden teilnehmenden Verein eine eigene PDF-Startliste erstellen. Diese Funktion ist ideal, um den Vereinen ihre individuellen Startzeiten und Scheibenzuweisungen zukommen zu lassen.
 
 ---
 
@@ -114,10 +115,15 @@ Für die Zuschauer oder zur Anzeige auf einem Beamer können Sie eine Live-Ansic
 1.  Wechseln Sie in den Reiter **"Ergebnisse"**.
 2.  Klicken Sie auf den Button **"🖥 Bildschirmanzeige"**.
 
-Ein neues Fenster öffnet sich, das die Ergebnisse in großem, gut lesbarem Format darstellt.
-*   **Automatische Aktualisierung:** Die Anzeige aktualisiert sich alle paar Sekunden automatisch, sobald neue Ergebnisse gespeichert werden.
-*   **Automatisches Scrollen:** Die Liste scrollt langsam von oben nach unten, um alle Teilnehmer zu zeigen.
-*   **Steuerung:** Am unteren Rand des Fensters finden Sie Buttons, um das Scrollen zu pausieren, die Ansicht manuell zu aktualisieren oder in den Vollbildmodus zu wechseln.
+Ein neues, für große Bildschirme optimiertes Fenster öffnet sich.
+
+### Highlights der Live-Anzeige:
+
+*   **Nahtloses Scrollen:** Die Ergebnisliste läuft in einer Endlosschleife von unten nach oben durch, sodass alle Teilnehmer ohne Unterbrechung sichtbar sind.
+*   **Automatische Aktualisierung:** Die Anzeige aktualisiert sich alle paar Sekunden automatisch. Sobald Sie neue Ergebnisse speichern, erscheinen diese ohne weiteres Zutun in der Live-Anzeige.
+*   **Visuelle Hervorhebung:** Die ersten drei Plätze jeder Klasse werden mit Medaillen-Emojis (🥇, 🥈, 🥉) und farblicher Hinterlegung deutlich hervorgehoben.
+*   **Dynamisches Layout:** Die Anzeige passt sich intelligent an die Turnierkonfiguration an. Bei wenigen Passen werden die Einzelergebnisse angezeigt, bei vielen Passen wird auf eine kompakte Gesamtansicht umgeschaltet.
+*   **Einfache Steuerung:** Am unteren Rand des Fensters finden Sie Steuerelemente, um das Scrollen zu pausieren, die Ansicht manuell zu aktualisieren oder in den Vollbildmodus zu wechseln (und ihn mit der `ESC`-Taste wieder zu verlassen).
 
 ---
 
