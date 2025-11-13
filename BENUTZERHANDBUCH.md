@@ -1,8 +1,8 @@
-# Benutzerhandbuch für die Schützenverwaltung
+# Benutzerhandbuch für BLATU
 
 ## 1. Einleitung
 
-Willkommen bei der Schützenverwaltung! Diese Software wurde entwickelt, um die Organisation und Durchführung von Schießwettbewerben so einfach und effizient wie möglich zu gestalten. Von der Einrichtung des Turniers über die Verwaltung der Teilnehmer und die Eingabe der Ergebnisse bis hin zur Erstellung professioneller PDF-Dokumente und einer Live-Anzeige für Zuschauer – hier finden Sie alle Werkzeuge, die Sie benötigen.
+Willkommen bei BLATU! Diese Software wurde entwickelt, um die Organisation und Durchführung von Blasrohr-Turnieren so einfach und effizient wie möglich zu gestalten. Die Software kann aber auch für Bogen- oder andere Schießturniere verwendet werden. Von der Einrichtung des Turniers über die Verwaltung der Teilnehmer und die Eingabe der Ergebnisse bis hin zur Erstellung professioneller PDF-Dokumente und einer Live-Anzeige für Zuschauer – hier finden Sie alle Werkzeuge, die Sie benötigen.
 
 Dieses Handbuch führt Sie schrittweise durch alle Funktionen der Anwendung.
 
