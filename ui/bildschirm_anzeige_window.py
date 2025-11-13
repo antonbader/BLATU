@@ -33,6 +33,7 @@ class BildschirmAnzeigeWindow:
         self.content_height = 0  # Höhe desOriginal-Inhalts
         # Internal timing helpers
         self._last_scroll_time = None
+        self._pixel_accumulator = 0.0
     # no bottom-resume scheduling needed for seamless scrolling
         
         # Auto-Update Parameter
@@ -210,6 +211,8 @@ class BildschirmAnzeigeWindow:
         else:
             self._has_duplicate = False
         
+        # Scroll-Position zurücksetzen
+        self._pixel_accumulator = 0.0
         self.canvas.yview_moveto(0)
         # Pause kurz nach einem Refresh, damit der Benutzer nicht direkt
         # über einen Layout-Wechsel hinweg springt
@@ -422,32 +425,36 @@ class BildschirmAnzeigeWindow:
                 self._last_scroll_time = now
             else:
                 if self.content_height > 0 and getattr(self, '_has_duplicate', False):
-                    # Zeitbasierte, flüssige Bewegung
                     dt = now - self._last_scroll_time
-                    move_pixels = self.scroll_speed_px_per_sec * dt
+                    # Pixel-Bewegung als Fließkommazahl akkumulieren
+                    self._pixel_accumulator += self.scroll_speed_px_per_sec * dt
 
-                    try:
-                        # Canvas um die berechnete Pixelanzahl scrollen
-                        self.canvas.yview_scroll(int(round(move_pixels)), "units")
+                    # Nur scrollen, wenn mindestens ein ganzer Pixel bewegt werden soll
+                    if self._pixel_accumulator >= 1.0:
+                        scroll_amount = int(self._pixel_accumulator)
+                        try:
+                            self.canvas.yview_scroll(scroll_amount, "units")
+                            # Akkumulator um den gescrollten Betrag reduzieren
+                            self._pixel_accumulator -= scroll_amount
 
-                        # Aktuelle Scroll-Position abfragen
-                        # yview() gibt Tupel (top_fraction, bottom_fraction) zurück
-                        current_pos_fraction = self.canvas.yview()[0]
+                            # Nahtlosen Übergang prüfen
+                            # yview() gibt Tupel (top_fraction, bottom_fraction) zurück
+                            current_pos_fraction = self.canvas.yview()[0]
+                            total_scroll_height = self.scrollable_frame.winfo_reqheight()
 
-                        # Die Gesamthöhe des scrollbaren Bereichs (Original + Duplikat)
-                        total_scroll_height = self.scrollable_frame.winfo_height()
+                            # Wenn die Oberkante der Ansicht den Anfang des Duplikats erreicht hat
+                            if current_pos_fraction * total_scroll_height >= self.content_height:
+                                # Unsichtbar an den Anfang zurückspringen
+                                self.canvas.yview_moveto(0)
+                                # Oben eine Pause einlegen
+                                self.is_paused = True
+                                self.pause_counter = 0
+                                # Akkumulator zurücksetzen, um Sprünge zu vermeiden
+                                self._pixel_accumulator = 0.0
 
-                        # Wenn die Ansicht über den Originalinhalt hinaus gescrollt ist
-                        if current_pos_fraction * total_scroll_height >= self.content_height:
-                            # Unsichtbar an den Anfang zurückspringen
-                            self.canvas.yview_moveto(0)
-                            # Pause auslösen
-                            self.is_paused = True
-                            self.pause_counter = 0
-
-                    except tk.TclError:
-                        # Fehler beim Schließen des Fensters ignorieren
-                        pass
+                        except tk.TclError:
+                            # Fehler bei Fensterzerstörung ignorieren
+                            pass
 
                 self._last_scroll_time = now
 
