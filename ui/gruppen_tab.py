@@ -126,13 +126,23 @@ class GruppenTab:
             command=self.change_assignment
         ).grid(row=0, column=4, padx=10)
 
-        # PDF-Button
-        pdf_button = ttk.Button(
-            self.frame,
+        # PDF-Buttons in einem eigenen Frame
+        pdf_frame = ttk.Frame(self.frame)
+        pdf_frame.grid(row=3, column=0, columnspan=3, pady=20)
+
+        group_pdf_button = ttk.Button(
+            pdf_frame,
             text="Gruppen-PDF erstellen",
             command=self.create_group_pdf
         )
-        pdf_button.grid(row=3, column=0, columnspan=3, pady=20)
+        group_pdf_button.pack(side=tk.LEFT, padx=10)
+
+        verein_pdf_button = ttk.Button(
+            pdf_frame,
+            text="Startliste Vereine",
+            command=self.create_startliste_vereine_pdf
+        )
+        verein_pdf_button.pack(side=tk.LEFT, padx=10)
 
         # Grid-Konfiguration
         self.frame.columnconfigure(1, weight=1)
@@ -224,6 +234,11 @@ class GruppenTab:
             return
 
         self.pdf_generator.generate_gruppen_pdf(assigned_schuetzen)
+
+    def create_startliste_vereine_pdf(self):
+        """Erstellt die Vereins-Startlisten-PDFs"""
+        schuetzen = self.schuetze_model.get_all_schuetzen()
+        self.pdf_generator.generate_startliste_vereine_pdf(schuetzen)
 
     def on_schuetze_selected(self, event):
         """Wird aufgerufen, wenn ein Schütze in einer der Listen ausgewählt wird"""
