@@ -66,7 +66,7 @@ class ErgebnisseTab:
         
         self.schuetzen_tree = ttk.Treeview(
             list_frame, 
-            columns=("Name", "Vorname", "Klasse", "Gesamt"), 
+            columns=("Name", "Vorname", "Klasse", "Gruppe", "Scheibe", "Gesamt"),
             show="headings", 
             yscrollcommand=list_scrollbar.set, 
             height=20
@@ -74,10 +74,14 @@ class ErgebnisseTab:
         self.schuetzen_tree.heading("Name", text="Name", command=lambda: self.sort_by_column("Name"))
         self.schuetzen_tree.heading("Vorname", text="Vorname", command=lambda: self.sort_by_column("Vorname"))
         self.schuetzen_tree.heading("Klasse", text="Klasse", command=lambda: self.sort_by_column("Klasse"))
+        self.schuetzen_tree.heading("Gruppe", text="Gruppe", command=lambda: self.sort_by_column("Gruppe"))
+        self.schuetzen_tree.heading("Scheibe", text="Scheibe", command=lambda: self.sort_by_column("Scheibe"))
         self.schuetzen_tree.heading("Gesamt", text="Gesamt", command=lambda: self.sort_by_column("Gesamt"))
         self.schuetzen_tree.column("Name", width=120)
         self.schuetzen_tree.column("Vorname", width=120)
         self.schuetzen_tree.column("Klasse", width=100)
+        self.schuetzen_tree.column("Gruppe", width=80)
+        self.schuetzen_tree.column("Scheibe", width=80)
         self.schuetzen_tree.column("Gesamt", width=80)
         self.schuetzen_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         list_scrollbar.config(command=self.schuetzen_tree.yview)
@@ -243,6 +247,8 @@ class ErgebnisseTab:
                 'name': schuetze['name'],
                 'vorname': schuetze['vorname'],
                 'klasse': schuetze['klasse'],
+                'gruppe': schuetze.get('gruppe', ''),
+                'scheibe': schuetze.get('scheibe', ''),
                 'gesamt': gesamt,
                 'gesamt_str': gesamt_str
             })
@@ -253,16 +259,18 @@ class ErgebnisseTab:
                 "Name": "name",
                 "Vorname": "vorname",
                 "Klasse": "klasse",
+                "Gruppe": "gruppe",
+                "Scheibe": "scheibe",
                 "Gesamt": "gesamt"
             }
             sort_key = column_map.get(self.sort_column, "name")
             
             if sort_key == "gesamt":
                 # Numerische Sortierung für Gesamt
-                schuetzen_list = sorted(schuetzen_list, key=lambda x: x[sort_key], reverse=self.sort_reverse)
+                schuetzen_list = sorted(schuetzen_list, key=lambda x: x.get(sort_key, 0), reverse=self.sort_reverse)
             else:
                 # Alphabetische Sortierung für Text
-                schuetzen_list = sorted(schuetzen_list, key=lambda x: x[sort_key].lower(), reverse=self.sort_reverse)
+                schuetzen_list = sorted(schuetzen_list, key=lambda x: str(x.get(sort_key, '')).lower(), reverse=self.sort_reverse)
         
         # In Tree einfügen
         for schuetze in schuetzen_list:
@@ -270,6 +278,8 @@ class ErgebnisseTab:
                 schuetze['name'], 
                 schuetze['vorname'], 
                 schuetze['klasse'], 
+                schuetze['gruppe'],
+                schuetze['scheibe'],
                 schuetze['gesamt_str']
             ))
     
