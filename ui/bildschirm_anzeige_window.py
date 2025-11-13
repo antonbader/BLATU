@@ -24,10 +24,10 @@ class BildschirmAnzeigeWindow:
         
         # Scroll-Parameter (time-based for smoother movement)
         # Pixels per second for scrolling (tweakable)
-        self.scroll_speed_px_per_sec = 10.0
+        self.scroll_speed_px_per_sec = 1.0
         # Milliseconds between scroll updates (smaller = smoother)
-        self.scroll_interval = 20
-        self.scroll_pause_top = 3000  # Pause oben in ms
+        self.scroll_interval = 10
+        self.scroll_pause_top = 0  # Pause oben in ms
         self.is_paused = False
         self.pause_counter = 0
         self.content_height = 0  # Höhe desOriginal-Inhalts
