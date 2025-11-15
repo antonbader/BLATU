@@ -167,10 +167,10 @@ class BildschirmAnzeigeWindow:
         
         # Für jede Klasse eine Tabelle erstellen
         for idx, klasse in enumerate(sorted(klassen_ergebnisse.keys())):
-            if idx > 0:
-                ttk.Separator(original_content, orient='horizontal').pack(
-                    fill=tk.X, pady=20
-                )
+            # if idx > 0:
+            #     ttk.Separator(original_content, orient='horizontal').pack(
+            #         fill=tk.X, pady=20
+            #     )
             
             self.create_klassen_display(
                 original_content,
@@ -194,10 +194,10 @@ class BildschirmAnzeigeWindow:
 
             # Gleichen Inhalt nochmal erstellen
             for idx, klasse in enumerate(sorted(klassen_ergebnisse.keys())):
-                if idx > 0:
-                    ttk.Separator(duplicate_content, orient='horizontal').pack(
-                        fill=tk.X, pady=20
-                    )
+                # if idx > 0:
+                #     ttk.Separator(duplicate_content, orient='horizontal').pack(
+                #         fill=tk.X, pady=20
+                #     )
 
                 self.create_klassen_display(
                     duplicate_content,
