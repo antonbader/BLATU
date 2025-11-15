@@ -7,7 +7,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from config import (APP_SHORT_NAME, APP_NAME, VERSION, VERSION_DATE, 
-                    COPYRIGHT, EMAIL, WEBSITE, COLOR_PRIMARY, COLOR_LINK)
+                    EMAIL, WEBSITE, COLOR_PRIMARY, COLOR_LINK)
 
 
 class InfoTab:
