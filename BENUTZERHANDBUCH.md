@@ -1,4 +1,4 @@
-# Benutzerhandbuch für BLATU 1.3.0
+# Benutzerhandbuch für BLATU 1.3.1
 
 ## 1. Einleitung
 
@@ -22,6 +22,8 @@ Hier legen Sie die grundlegenden Parameter für Ihren Wettkampf fest:
 
 Nachdem Sie alle Daten eingegeben haben, klicken Sie auf **"Einstellungen speichern"**. Ihre Konfiguration wird nun im rechten Infobereich angezeigt.
 
+**Tipp:** Mit dem Button **"Zurücksetzen"** können Sie alle Eingaben in diesem Reiter auf die Standardwerte zurücksetzen.
+
 ---
 
 ## 3. Teilnehmer und Klassen verwalten
@@ -33,7 +35,7 @@ Bevor Sie Schützen anlegen, sollten Sie die benötigten Wettkampfklassen defini
 *   Geben Sie im Feld **"Klassenname"** den Namen der Klasse ein (z. B. "Schülerklasse A", "Herren I").
 *   Klicken Sie auf **"Klasse hinzufügen"**.
 
-Die Klasse erscheint nun in der Liste. Sie können Klassen jederzeit löschen, indem Sie eine Klasse auswählen und auf **"Ausgewählte Klasse löschen"** klicken.
+Die Klasse erscheint nun in der Liste. Sie können Klassen jederzeit löschen, indem Sie eine Klasse auswählen und auf **"Ausgewählte Klasse löschen"** klicken. Mit **"Alle Klassen löschen"** leeren Sie die komplette Liste.
 
 ### 3.2. Schützen anlegen und bearbeiten
 
