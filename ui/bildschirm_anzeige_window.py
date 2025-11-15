@@ -34,6 +34,7 @@ class BildschirmAnzeigeWindow:
         # Internal timing helpers
         self._last_scroll_time = None
         self._pixel_accumulator = 0.0
+        self._debounce_job = None
     # no bottom-resume scheduling needed for seamless scrolling
         
         # Auto-Update Parameter
@@ -44,6 +45,17 @@ class BildschirmAnzeigeWindow:
         self.start_auto_update()
         self.start_auto_scroll()
     
+    def _on_canvas_configure(self, event):
+        """Wird aufgerufen, wenn sich die Canvas-Größe ändert."""
+        # Breite des scrollbaren Frames an die Canvas-Breite anpassen
+        self.canvas.itemconfig(self.canvas_window, width=event.width)
+
+        # Debounce-Mechanismus für die Neuberechnung des Scrollings
+        if self._debounce_job:
+            self.window.after_cancel(self._debounce_job)
+
+        self._debounce_job = self.window.after(250, self._check_and_manage_scrolling)
+
     def create_widgets(self):
         """Erstellt alle Widgets"""
         # Titel-Frame (immer sichtbar oben)
@@ -81,17 +93,13 @@ class BildschirmAnzeigeWindow:
         self.canvas_window = self.canvas.create_window(
             (0, 0),
             window=self.scrollable_frame,
-            anchor="nw",
-            width=self.canvas.winfo_width()
+            anchor="nw"
         )
         
-        # Canvas-Größe anpassen
-        def on_canvas_configure(event):
-            self.canvas.itemconfig(self.canvas_window, width=event.width)
+        # Event-Handler für Größenänderungen des Canvas
+        self.canvas.bind('<Configure>', self._on_canvas_configure)
         
-        self.canvas.bind('<Configure>', on_canvas_configure)
-        
-        # Scrollregion aktualisieren
+        # Scrollregion aktualisieren, wenn sich der Inhalt des Frames ändert
         self.scrollable_frame.bind(
             "<Configure>",
             lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
@@ -134,93 +142,70 @@ class BildschirmAnzeigeWindow:
         
         # Initiale Anzeige
         self.refresh_display()
-    
-    def refresh_display(self):
-        """Aktualisiert die Ergebnisanzeige"""
-        # Alle vorhandenen Widgets löschen
-        for widget in self.scrollable_frame.winfo_children():
-            widget.destroy()
-        
+
+    def _populate_frame_with_tables(self, parent_frame):
+        """Befüllt einen Frame mit den Ergebnistabellen."""
         # Turnierdaten holen
         turnier = self.turnier_model.get_turnier_data()
         anzahl_passen = turnier.get('anzahl_passen', 1)
         show_halves = turnier.get('show_halves', False)
-        
+
         # Entscheiden ob Passen-Details angezeigt werden
         show_passen_details = anzahl_passen <= MAX_PASSEN_FOR_DISPLAY and not show_halves
-        
+
         # Ergebnisse nach Klassen gruppieren
         klassen_ergebnisse = self.prepare_ergebnisse()
-        
+
         if not klassen_ergebnisse:
             ttk.Label(
-                self.scrollable_frame,
+                parent_frame,
                 text="Noch keine Ergebnisse vorhanden",
                 font=("Arial", 16),
                 foreground="gray"
             ).pack(pady=50)
             return
-        
-        # Container für den Original-Inhalt
-        original_content = ttk.Frame(self.scrollable_frame)
-        original_content.pack(fill=tk.BOTH, expand=True)
-        
+
         # Für jede Klasse eine Tabelle erstellen
-        for idx, klasse in enumerate(sorted(klassen_ergebnisse.keys())):
-            # if idx > 0:
-            #     ttk.Separator(original_content, orient='horizontal').pack(
-            #         fill=tk.X, pady=20
-            #     )
-            
+        for klasse in sorted(klassen_ergebnisse.keys()):
             self.create_klassen_display(
-                original_content,
+                parent_frame,
                 klasse,
                 klassen_ergebnisse[klasse],
                 show_passen_details,
                 show_halves,
                 anzahl_passen
             )
+
+    def refresh_display(self):
+        """Aktualisiert die Ergebnisanzeige"""
+        # Alle vorhandenen Widgets löschen
+        for widget in self.scrollable_frame.winfo_children():
+            widget.destroy()
         
-        # Warten bis das Layout fertig ist
+        # Container für den Original-Inhalt erstellen und befüllen
+        self.original_content = ttk.Frame(self.scrollable_frame)
+        self.original_content.pack(fill=tk.BOTH, expand=True)
+        self._populate_frame_with_tables(self.original_content)
+
+        # Warten, bis das Layout des Original-Inhalts fertig ist
         self.scrollable_frame.update_idletasks()
-        self.content_height = original_content.winfo_reqheight()
-        
-        # Entscheiden, ob ein Duplikat für nahtloses Scrolling benötigt wird.
-        canvas_height = self.canvas.winfo_height()
-        if self.content_height > canvas_height:
-            # Duplikat für nahtloses Scrolling erstellen (zweiter Satz direkt unter dem ersten)
-            duplicate_content = ttk.Frame(self.scrollable_frame)
-            duplicate_content.pack(fill=tk.BOTH, expand=True)
+        self.content_height = self.original_content.winfo_reqheight()
 
-            # Gleichen Inhalt nochmal erstellen
-            for idx, klasse in enumerate(sorted(klassen_ergebnisse.keys())):
-                # if idx > 0:
-                #     ttk.Separator(duplicate_content, orient='horizontal').pack(
-                #         fill=tk.X, pady=20
-                #     )
+        # Platzhalter für das Duplikat
+        self.duplicate_content = None
+        self._has_duplicate = False
 
-                self.create_klassen_display(
-                    duplicate_content,
-                    klasse,
-                    klassen_ergebnisse[klasse],
-                    show_passen_details,
-                    show_halves,
-                    anzahl_passen
-                )
-            self._has_duplicate = True
-        else:
-            self._has_duplicate = False
-        
+        # Initialen Scroll-Zustand herstellen
+        self._check_and_manage_scrolling()
+
         # Scroll-Position zurücksetzen
         self._pixel_accumulator = 0.0
         self.canvas.yview_moveto(0)
-        # Pause kurz nach einem Refresh, damit der Benutzer nicht direkt
-        # über einen Layout-Wechsel hinweg springt
+        # Kurze Pause nach einem Refresh
         self.is_paused = True
         self.pause_counter = 0
-        # reset timing so the next scroll step has a fresh baseline
         self._last_scroll_time = time.time()
-        # resume after a short delay to allow layout to stabilise
+
         try:
             self.window.after(1000, self._resume_after_refresh)
         except Exception:
@@ -231,6 +216,31 @@ class BildschirmAnzeigeWindow:
         self.is_paused = False
         self.pause_counter = 0
         self._last_scroll_time = time.time()
+
+    def _check_and_manage_scrolling(self, event=None):
+        """Prüft, ob Scrolling nötig ist, und erstellt/entfernt das Duplikat."""
+        canvas_height = self.canvas.winfo_height()
+        needs_scrolling = self.content_height > canvas_height
+
+        if needs_scrolling and not self._has_duplicate:
+            # Duplikat für nahtloses Scrolling erstellen
+            self.duplicate_content = ttk.Frame(self.scrollable_frame)
+            self.duplicate_content.pack(fill=tk.BOTH, expand=True)
+            self._populate_frame_with_tables(self.duplicate_content)
+            self._has_duplicate = True
+            # Scroll-Position zurücksetzen, um von vorne zu beginnen
+            self.canvas.yview_moveto(0)
+            self._pixel_accumulator = 0.0
+
+        elif not needs_scrolling and self._has_duplicate:
+            # Duplikat entfernen, wenn nicht mehr benötigt
+            if self.duplicate_content:
+                self.duplicate_content.destroy()
+                self.duplicate_content = None
+            self._has_duplicate = False
+            # Scroll-Position zurücksetzen
+            self.canvas.yview_moveto(0)
+            self._pixel_accumulator = 0.0
 
     # NOTE: bottom scheduling is removed for seamless scrolling
     
