@@ -54,14 +54,7 @@ class InfoTab:
         ).pack(pady=5)
         
         ttk.Separator(content_frame, orient='horizontal').pack(fill=tk.X, pady=10)
-        
-        # Copyright
-        ttk.Label(
-            content_frame, 
-            text=COPYRIGHT, 
-            font=("Arial", 11)
-        ).pack(pady=10)
-        
+             
         # Kontakt
         ttk.Label(
             content_frame, 
