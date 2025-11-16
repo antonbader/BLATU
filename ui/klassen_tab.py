@@ -14,6 +14,7 @@ class KlassenTab:
         self.turnier_model = turnier_model
         self.schuetze_model = schuetze_model
         self.on_klassen_changed = on_klassen_changed  # Callback-Funktion
+        self.on_klassen_changed_callback = None
         self.frame = ttk.Frame(parent, padding="10")
         self.create_widgets()
     
@@ -93,6 +94,8 @@ class KlassenTab:
             # Callback aufrufen um Schützenverwaltung zu aktualisieren
             if self.on_klassen_changed:
                 self.on_klassen_changed()
+            if self.on_klassen_changed_callback:
+                self.on_klassen_changed_callback()
         else:
             messagebox.showwarning("Duplikat", "Diese Klasse existiert bereits!")
     
@@ -122,6 +125,8 @@ class KlassenTab:
         # Callback aufrufen um Schützenverwaltung zu aktualisieren
         if self.on_klassen_changed:
             self.on_klassen_changed()
+        if self.on_klassen_changed_callback:
+            self.on_klassen_changed_callback()
     
     def delete_all(self):
         """Löscht alle Klassen"""
@@ -140,6 +145,8 @@ class KlassenTab:
             # Callback aufrufen um Schützenverwaltung zu aktualisieren
             if self.on_klassen_changed:
                 self.on_klassen_changed()
+            if self.on_klassen_changed_callback:
+                self.on_klassen_changed_callback()
     
     def refresh(self):
         """Aktualisiert die Anzeige"""

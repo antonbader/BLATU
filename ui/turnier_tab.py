@@ -15,6 +15,7 @@ class TurnierTab:
     def __init__(self, parent, turnier_model, on_change_callback):
         self.turnier_model = turnier_model
         self.on_change_callback = on_change_callback
+        self.on_turnier_data_changed_callback = None
         self.frame = ttk.Frame(parent, padding="20")
         self.create_widgets()
     
@@ -165,6 +166,8 @@ class TurnierTab:
         self.turnier_model.set_turnier_data(name, datum, passen, show_halves)
         self.update_info()
         self.on_change_callback()
+        if self.on_turnier_data_changed_callback:
+            self.on_turnier_data_changed_callback()
         messagebox.showinfo("Erfolg", "Turniereinstellungen wurden gespeichert!")
     
     def reset_settings(self):
@@ -175,6 +178,8 @@ class TurnierTab:
         ):
             self.turnier_model.set_turnier_data("", "", 1, False)
             self.refresh()
+            if self.on_turnier_data_changed_callback:
+                self.on_turnier_data_changed_callback()
             messagebox.showinfo("Erfolg", "Turniereinstellungen wurden zurückgesetzt!")
     
     def refresh(self):
