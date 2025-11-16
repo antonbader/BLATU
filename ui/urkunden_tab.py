@@ -75,6 +75,7 @@ class UrkundenTab:
         self.klassen_tree.column("Klasse", width=150)
         self.klassen_tree.column("Anzahl", width=120, anchor="center")
         self.klassen_tree.pack(fill=tk.BOTH, expand=True)
+        self.klassen_tree.bind("<Double-1>", self.edit_cell)
 
         # --- Rechte Spalte: Platzhalter ---
         placeholder_frame = ttk.LabelFrame(main_frame, text="Platzhalter", padding="10")
@@ -101,6 +102,40 @@ class UrkundenTab:
         main_frame.columnconfigure(1, weight=1)
         main_frame.columnconfigure(2, weight=1)
 
+    def edit_cell(self, event):
+        """Handle double-click to edit cell value."""
+        item_id = self.klassen_tree.identify_row(event.y)
+        column_id = self.klassen_tree.identify_column(event.x)
+
+        if not item_id or column_id != "#2":  # Only edit "Anzahl" column
+            return
+
+        # Create an Entry widget over the cell
+        x, y, width, height = self.klassen_tree.bbox(item_id, column_id)
+
+        klasse = self.klassen_tree.item(item_id, "values")[0]
+        var = self.klassen_platz_vars[klasse]
+
+        entry = ttk.Entry(self.klassen_tree, textvariable=var, width=10, justify="center")
+        entry.place(x=x, y=y, width=width, height=height)
+        entry.focus_set()
+
+        def save_edit(event=None):
+            new_value = entry.get()
+            try:
+                if int(new_value) >= 0:
+                    self.klassen_tree.item(item_id, values=(klasse, new_value))
+                else:
+                    raise ValueError()
+            except ValueError:
+                messagebox.showerror("Ungültige Eingabe", "Bitte geben Sie eine positive ganze Zahl ein.")
+                var.set(self.klassen_tree.item(item_id, "values")[1]) # Reset to old value
+            finally:
+                entry.destroy()
+
+        entry.bind("<Return>", save_edit)
+        entry.bind("<FocusOut>", save_edit)
+
     def select_template_file(self):
         """Öffnet Dialog zur Auswahl der Vorlagedatei."""
         filepath = filedialog.askopenfilename(filetypes=[("Word Document", "*.docx")])
@@ -124,13 +159,7 @@ class UrkundenTab:
         for klasse in klassen:
             var = tk.StringVar(value="3")
             self.klassen_platz_vars[klasse] = var
-
-            # This is a bit of a hack to embed an Entry widget
-            # A more robust solution would use a custom Treeview class
-            item = self.klassen_tree.insert("", "end", values=(klasse, ""))
-            entry = ttk.Entry(self.klassen_tree, textvariable=var, width=10, justify="center")
-            self.klassen_tree.item(item, tags=(entry,))
-            self.klassen_tree.window_create(item, "Anzahl", window=entry)
+            self.klassen_tree.insert("", "end", values=(klasse, var.get()))
 
     def toggle_klassen_tree(self):
         """Aktiviert/Deaktiviert die Klasseneingabefelder."""
