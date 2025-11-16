@@ -331,16 +331,16 @@ class BildschirmAnzeigeWindow:
                 half = anzahl_passen // 2
                 erste_haelfte = sum(ergebnis['ergebnisse'][:half])
                 zweite_haelfte = sum(ergebnis['ergebnisse'][half:])
-                werte.append(f"{erste_haelfte:.1f}")
-                werte.append(f"{zweite_haelfte:.1f}")
+                werte.append(str(erste_haelfte))
+                werte.append(str(zweite_haelfte))
             elif show_passen_details:
                 for i in range(anzahl_passen):
                     if i < len(ergebnis['ergebnisse']):
-                        werte.append(f"{ergebnis['ergebnisse'][i]:.1f}")
+                        werte.append(str(int(ergebnis['ergebnisse'][i])))
                     else:
-                        werte.append("0.0")
+                        werte.append("0")
             
-            werte.append(f"{ergebnis['gesamt']:.1f}")
+            werte.append(str(int(ergebnis['gesamt'])))
             werte.append(str(ergebnis['anzahl_10er']))
             werte.append(str(ergebnis['anzahl_9er']))
             
