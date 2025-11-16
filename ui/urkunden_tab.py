@@ -42,9 +42,48 @@ class UrkundenTab:
         main_frame = ttk.Frame(self.frame)
         main_frame.pack(fill=tk.BOTH, expand=True)
 
-        # --- Linke Spalte: Einstellungen ---
+        top_frame = ttk.Frame(main_frame)
+        top_frame.pack(fill=tk.BOTH, expand=True)
+
+        # --- Linke Spalte: Klassen ---
+        klassen_frame = ttk.LabelFrame(top_frame, text="Anzahl pro Klasse", padding="10")
+        klassen_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+        alle_schuetzen_check = ttk.Checkbutton(klassen_frame, text="Für alle Schützen erstellen", variable=self.alle_schuetzen_var, command=self.toggle_klassen_tree)
+        alle_schuetzen_check.pack(pady=5)
+
+        ttk.Label(
+            klassen_frame,
+            text="💡 Doppelklick auf eine Zahl, um sie zu bearbeiten.",
+            font=("Arial", 8),
+            foreground="gray"
+        ).pack(pady=(0, 5))
+
+        self.klassen_tree = ttk.Treeview(klassen_frame, columns=("Klasse", "Anzahl"), show="headings", height=10)
+        self.klassen_tree.heading("Klasse", text="Klasse")
+        self.klassen_tree.heading("Anzahl", text="Anzahl Urkunden")
+        self.klassen_tree.column("Klasse", width=150)
+        self.klassen_tree.column("Anzahl", width=120, anchor="center")
+        self.klassen_tree.pack(fill=tk.BOTH, expand=True)
+        self.klassen_tree.bind("<Double-1>", self.edit_cell)
+
+        # --- Rechte Spalte: Platzhalter ---
+        placeholder_frame = ttk.LabelFrame(top_frame, text="Platzhalter", padding="10")
+        placeholder_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+
+        placeholders = [
+            "[Turniername]", "[Datum]", "[Klasse]", "[Vorname]",
+            "[Name]", "[Verein]", "[Ergebnis]", "[Platz]"
+        ]
+
+        for i, p_text in enumerate(placeholders):
+            var = tk.BooleanVar(value=True)
+            self.placeholder_vars[p_text] = var
+            ttk.Checkbutton(placeholder_frame, text=p_text, variable=var).grid(row=i, column=0, sticky="w")
+
+        # --- Unterer Bereich: Einstellungen ---
         settings_frame = ttk.LabelFrame(main_frame, text="Einstellungen", padding="10")
-        settings_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        settings_frame.pack(fill=tk.X, expand=False, pady=10)
 
         # Vorlage
         ttk.Label(settings_frame, text="Word-Vorlage:").grid(row=0, column=0, sticky="w", pady=(0, 5))
@@ -62,45 +101,15 @@ class UrkundenTab:
         unterordner_check = ttk.Checkbutton(settings_frame, text="Unterordner für jede Klasse erstellen", variable=self.unterordner_var)
         unterordner_check.grid(row=4, column=0, columnspan=2, sticky="w", pady=5)
 
-        # --- Mittlere Spalte: Klassen ---
-        klassen_frame = ttk.LabelFrame(main_frame, text="Anzahl pro Klasse", padding="10")
-        klassen_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
-
-        alle_schuetzen_check = ttk.Checkbutton(klassen_frame, text="Für alle Schützen erstellen", variable=self.alle_schuetzen_var, command=self.toggle_klassen_tree)
-        alle_schuetzen_check.pack(pady=5)
-
-        self.klassen_tree = ttk.Treeview(klassen_frame, columns=("Klasse", "Anzahl"), show="headings", height=10)
-        self.klassen_tree.heading("Klasse", text="Klasse")
-        self.klassen_tree.heading("Anzahl", text="Anzahl Urkunden")
-        self.klassen_tree.column("Klasse", width=150)
-        self.klassen_tree.column("Anzahl", width=120, anchor="center")
-        self.klassen_tree.pack(fill=tk.BOTH, expand=True)
-        self.klassen_tree.bind("<Double-1>", self.edit_cell)
-
-        # --- Rechte Spalte: Platzhalter ---
-        placeholder_frame = ttk.LabelFrame(main_frame, text="Platzhalter", padding="10")
-        placeholder_frame.grid(row=0, column=2, padx=10, pady=10, sticky="nsew")
-
-        placeholders = [
-            "[Turniername]", "[Datum]", "[Klasse]", "[Vorname]",
-            "[Name]", "[Verein]", "[Ergebnis]", "[Platz]"
-        ]
-
-        for i, p_text in enumerate(placeholders):
-            var = tk.BooleanVar(value=True)
-            self.placeholder_vars[p_text] = var
-            ttk.Checkbutton(placeholder_frame, text=p_text, variable=var).grid(row=i, column=0, sticky="w")
-
-        # --- Unterer Bereich: Aktion ---
+        # --- Unterster Bereich: Aktion ---
         action_frame = ttk.Frame(main_frame)
-        action_frame.grid(row=1, column=0, columnspan=3, pady=20)
+        action_frame.pack(pady=20)
 
         generate_button = ttk.Button(action_frame, text="🚀 Urkunden erstellen", command=self.generate_urkunden, style="Accent.TButton")
         generate_button.pack()
 
-        main_frame.columnconfigure(0, weight=2)
-        main_frame.columnconfigure(1, weight=1)
-        main_frame.columnconfigure(2, weight=1)
+        top_frame.columnconfigure(0, weight=1)
+        top_frame.columnconfigure(1, weight=1)
 
     def edit_cell(self, event):
         """Handle double-click to edit cell value."""
@@ -164,9 +173,12 @@ class UrkundenTab:
     def toggle_klassen_tree(self):
         """Aktiviert/Deaktiviert die Klasseneingabefelder."""
         state = "disabled" if self.alle_schuetzen_var.get() else "normal"
-        for item in self.klassen_tree.get_children():
-            entry_widget = self.klassen_tree.item(item, "tags")[0]
-            entry_widget.config(state=state)
+        # Since we can't disable the cell, we just prevent editing
+        if state == "disabled":
+            self.klassen_tree.unbind("<Double-1>")
+        else:
+            self.klassen_tree.bind("<Double-1>", self.edit_cell)
+
 
     def refresh(self):
         """Wird aufgerufen, wenn der Tab sichtbar wird."""
@@ -189,8 +201,9 @@ class UrkundenTab:
         # 2. Daten vorbereiten
         try:
             ergebnisse = self.schuetze_model.calculate_results(self.turnier_model)
-            turnier_name = self.turnier_model.get_turnier_name()
-            turnier_datum = self.turnier_model.get_turnier_datum()
+            turnier_data = self.turnier_model.get_turnier_data()
+            turnier_name = turnier_data.get("name", "Unbenanntes Turnier")
+            turnier_datum = turnier_data.get("datum", "")
         except Exception as e:
             messagebox.showerror("Fehler bei der Datenverarbeitung", f"Ein unerwarteter Fehler ist aufgetreten:\n{e}")
             return

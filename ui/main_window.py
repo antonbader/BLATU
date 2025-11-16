@@ -68,6 +68,10 @@ class MainWindow:
         self.ergebnisse_tab = ErgebnisseTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.urkunden_tab = UrkundenTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.info_tab = InfoTab(self.notebook)
+
+        # Connect callbacks
+        self.klassen_tab.on_klassen_changed_callback = self.on_klassen_changed_for_urkunden
+        self.turnier_tab.on_turnier_data_changed_callback = self.on_klassen_changed_for_urkunden
         
         # Tabs zum Notebook hinzufügen
         self.notebook.add(self.turnier_tab.frame, text="Turnierverwaltung")
@@ -146,3 +150,8 @@ class MainWindow:
         """Wird aufgerufen, wenn sich eine Zuweisung in der Gruppenverwaltung ändert"""
         if hasattr(self, 'schuetzen_tab'):
             self.schuetzen_tab.refresh()
+
+    def on_klassen_changed_for_urkunden(self):
+        """Callback specifically for updating the Urkunden tab."""
+        if hasattr(self, 'urkunden_tab'):
+            self.urkunden_tab.refresh()
