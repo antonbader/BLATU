@@ -108,15 +108,15 @@ class SchuetzeModel:
                 reverse=True
             )
             # Platzierung hinzufügen (mit korrekter Behandlung von Gleichständen)
-            rank = 1
+            platz = 1
             for i, schuetze in enumerate(results_by_class[klasse]):
                 if i > 0:
                     prev_schuetze = results_by_class[klasse][i - 1]
                     # Prüfen ob punktgleich
-                    if (schuetze['Gesamt'] != prev_schuetze['Gesamt'] or
-                        schuetze['Anzahl10er'] != prev_schuetze['Anzahl10er'] or
-                        schuetze['Anzahl9er'] != prev_schuetze['Anzahl9er']):
-                        rank = i + 1
-                schuetze['Platz'] = rank
+                    if not (schuetze['Gesamt'] == prev_schuetze['Gesamt'] and
+                            schuetze['Anzahl10er'] == prev_schuetze['Anzahl10er'] and
+                            schuetze['Anzahl9er'] == prev_schuetze['Anzahl9er']):
+                        platz = i + 1
+                schuetze['Platz'] = platz
 
         return results_by_class
