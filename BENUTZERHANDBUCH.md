@@ -90,7 +90,7 @@ Wechseln Sie zum Reiter **"Ergebnisse"**, um die Wettkampfergebnisse zu erfassen
 
 1.  **Schütze auswählen:** Wählen Sie den gewünschten Schützen aus der Liste auf der linken Seite aus. Sie können die Liste über das Suchfeld filtern.
 2.  **Ergebnisse laden:** Doppelklicken Sie auf den Schützen oder wählen Sie ihn aus und drücken Sie die Eingabetaste. Seine Daten und die Eingabefelder für die Passen werden auf der rechten Seite geladen.
-3.  **Ergebnisse eingeben:** Tragen Sie die Ergebnisse für jede Passe in die entsprechenden Felder ein. Das Gesamtergebnis wird automatisch berechnet und unten angezeigt.
+3.  **Ergebnisse eingeben:** Tragen Sie die Ergebnisse für jede Passe in die entsprechenden Felder ein. **Bitte beachten Sie, dass nur ganze Zahlen (ohne Kommastellen) als Ergebnisse akzeptiert werden.** Das Gesamtergebnis wird automatisch berechnet und unten angezeigt.
 4.  **Zusatzwertung:** Geben Sie die **Anzahl der 10er und 9er** ein. Diese Werte werden zur Ermittlung der Platzierung bei Ergebnisgleichheit herangezogen.
 5.  **Speichern:** Klicken Sie auf **"Ergebnisse speichern"**. Das Gesamtergebnis des Schützen wird nun in der Liste links angezeigt.
 
