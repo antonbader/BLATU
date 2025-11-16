@@ -23,7 +23,6 @@ class UrkundenTab:
         self.output_dir_var = tk.StringVar()
         self.unterordner_var = tk.BooleanVar()
         self.alle_schuetzen_var = tk.BooleanVar()
-        self.placeholder_vars = {}
         self.klassen_platz_vars = {}
 
         self.create_widgets()
@@ -44,11 +43,11 @@ class UrkundenTab:
         main_frame.pack(fill=tk.BOTH, expand=True)
 
         top_frame = ttk.Frame(main_frame)
-        top_frame.pack(fill=tk.BOTH, expand=True)
+        top_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
 
         # --- Linke Spalte: Klassen ---
         klassen_frame = ttk.LabelFrame(top_frame, text="Urkunden pro Platzierung", padding="10")
-        klassen_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        klassen_frame.grid(row=0, column=0, padx=(0, 10), pady=10, sticky="nsew")
 
         alle_schuetzen_check = ttk.Checkbutton(klassen_frame, text="Für alle Schützen erstellen", variable=self.alle_schuetzen_var, command=self.toggle_klassen_tree)
         alle_schuetzen_check.pack(pady=5)
@@ -68,39 +67,43 @@ class UrkundenTab:
         self.klassen_tree.pack(fill=tk.BOTH, expand=True)
         self.klassen_tree.bind("<Double-1>", self.edit_cell)
 
-        # --- Rechte Spalte: Platzhalter ---
-        placeholder_frame = ttk.LabelFrame(top_frame, text="Platzhalter", padding="10")
-        placeholder_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+        # --- Rechte Spalte: Einstellungen ---
+        settings_frame = ttk.LabelFrame(top_frame, text="Einstellungen", padding="10")
+        settings_frame.grid(row=0, column=1, padx=(10, 0), pady=10, sticky="nsew")
+
+        # Vorlage
+        ttk.Label(settings_frame, text="Word-Vorlage:").grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 5))
+        template_entry = ttk.Entry(settings_frame, textvariable=self.template_path_var, width=40)
+        template_entry.grid(row=1, column=0, sticky="we")
+        ttk.Button(settings_frame, text="Durchsuchen...", command=self.select_template_file).grid(row=1, column=1, sticky="w", padx=(5, 0))
+
+        # Speicherort
+        ttk.Label(settings_frame, text="Speicherort:").grid(row=2, column=0, columnspan=2, sticky="w", pady=(10, 5))
+        output_dir_entry = ttk.Entry(settings_frame, textvariable=self.output_dir_var, width=40)
+        output_dir_entry.grid(row=3, column=0, sticky="we")
+        ttk.Button(settings_frame, text="Durchsuchen...", command=self.select_output_dir).grid(row=3, column=1, sticky="w", padx=(5, 0))
+
+        self.unterordner_var.set(True)
+        unterordner_check = ttk.Checkbutton(settings_frame, text="Unterordner für jede Klasse erstellen", variable=self.unterordner_var)
+        unterordner_check.grid(row=4, column=0, columnspan=2, sticky="w", pady=10)
+
+        # --- Unterer Bereich: Platzhalter ---
+        placeholder_frame = ttk.LabelFrame(main_frame, text="Verfügbare Platzhalter", padding="10")
+        placeholder_frame.pack(fill=tk.X, expand=False, pady=10)
 
         placeholders = [
             "[Turniername]", "[Datum]", "[Klasse]", "[Vorname]",
             "[Name]", "[Verein]", "[Ergebnis]", "[Platz]"
         ]
 
-        for i, p_text in enumerate(placeholders):
-            var = tk.BooleanVar(value=True)
-            self.placeholder_vars[p_text] = var
-            ttk.Checkbutton(placeholder_frame, text=p_text, variable=var).grid(row=i, column=0, sticky="w")
-
-        # --- Unterer Bereich: Einstellungen ---
-        settings_frame = ttk.LabelFrame(main_frame, text="Einstellungen", padding="10")
-        settings_frame.pack(fill=tk.X, expand=False, pady=10)
-
-        # Vorlage
-        ttk.Label(settings_frame, text="Word-Vorlage:").grid(row=0, column=0, sticky="w", pady=(0, 5))
-        template_entry = ttk.Entry(settings_frame, textvariable=self.template_path_var, width=50)
-        template_entry.grid(row=1, column=0, columnspan=2, sticky="we")
-        ttk.Button(settings_frame, text="Durchsuchen...", command=self.select_template_file).grid(row=1, column=2, sticky="w", padx=(5, 0))
-
-        # Speicherort
-        ttk.Label(settings_frame, text="Speicherort:").grid(row=2, column=0, sticky="w", pady=(10, 5))
-        output_dir_entry = ttk.Entry(settings_frame, textvariable=self.output_dir_var, width=50)
-        output_dir_entry.grid(row=3, column=0, columnspan=2, sticky="we")
-        ttk.Button(settings_frame, text="Durchsuchen...", command=self.select_output_dir).grid(row=3, column=2, sticky="w", padx=(5, 0))
-
-        self.unterordner_var.set(True)
-        unterordner_check = ttk.Checkbutton(settings_frame, text="Unterordner für jede Klasse erstellen", variable=self.unterordner_var)
-        unterordner_check.grid(row=4, column=0, columnspan=2, sticky="w", pady=5)
+        # Display placeholders as a wrapped label
+        placeholder_text = ", ".join(placeholders)
+        ttk.Label(
+            placeholder_frame,
+            text=placeholder_text,
+            wraplength=700,
+            justify="center"
+        ).pack(pady=5)
 
         # --- Unterster Bereich: Aktion ---
         action_frame = ttk.Frame(main_frame)
@@ -263,9 +266,6 @@ class UrkundenTab:
                     "[Platz]": str(platz) # Platz ohne Suffix in der Urkunde
                 }
 
-                # Nur ausgewählte Platzhalter verwenden
-                final_data = {key: value for key, value in platzhalter_data.items() if self.placeholder_vars.get(key) and self.placeholder_vars[key].get()}
-
                 # Dateiname erstellen
                 clean_turnier_name = re.sub(r'[^\w\-]', '', turnier_name.replace(' ', ''))
                 clean_klasse = re.sub(r'[^\w\-]', '', klasse.replace(' ', ''))
@@ -281,7 +281,7 @@ class UrkundenTab:
                 output_path = os.path.join(current_output_dir, filename)
 
                 # Urkunde generieren
-                success, error = word_generator.generate_certificate(output_path, final_data)
+                success, error = word_generator.generate_certificate(output_path, platzhalter_data)
                 if success:
                     erstellte_dateien += 1
                 else:
