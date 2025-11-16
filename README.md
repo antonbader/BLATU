@@ -61,6 +61,7 @@ python main.py
 - **Schützenverwaltung**: Erfassung von Schützendaten (Name, Vorname, Klasse, Verein)
 - **Gruppenverwaltung**: Zuweisung von Schützen zu Gruppen und Scheiben, inkl. Uhrzeit-Management
 - **Ergebniseingabe**: Eingabe von Ergebnissen mit Zusatzwertungen (10er, 9er)
+- **Urkundenerstellung**: Generierung von individualisierten Urkunden als Word-Dateien (.docx) basierend auf einer Vorlage.
 - **Automatische Ranglistenerstellung**: Nach Punkten und Zusatzwertung
 - **PDF-Export**:
     - Professionelle PDF-Ergebnislisten (klassenweise)
