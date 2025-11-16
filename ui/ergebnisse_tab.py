@@ -241,7 +241,7 @@ class ErgebnisseTab:
             if ergebnis:
                 passen = ergebnis.get('passen', [])
                 gesamt = sum(passen)
-                gesamt_str = f"{gesamt:.1f}"
+                gesamt_str = str(gesamt)
             
             schuetzen_list.append({
                 'name': schuetze['name'],
@@ -336,7 +336,7 @@ class ErgebnisseTab:
             
             for i, entry in enumerate(self.passen_entries):
                 if i < len(passen):
-                    entry.insert(0, str(passen[i]))
+                    entry.insert(0, str(int(passen[i])))
             
             self.anzahl_10er_entry.delete(0, tk.END)
             self.anzahl_10er_entry.insert(0, str(anzahl_10er))
@@ -352,10 +352,10 @@ class ErgebnisseTab:
             try:
                 wert = entry.get().strip()
                 if wert:
-                    gesamt += float(wert)
+                    gesamt += int(wert)
             except ValueError:
                 pass
-        self.gesamt_label.config(text=f"{gesamt:.1f}")
+        self.gesamt_label.config(text=f"{gesamt}")
     
     def save_ergebnisse(self):
         """Speichert die Ergebnisse"""
@@ -371,9 +371,9 @@ class ErgebnisseTab:
         for entry in self.passen_entries:
             try:
                 wert = entry.get().strip()
-                ergebnisse.append(float(wert) if wert else 0)
+                ergebnisse.append(int(wert) if wert else 0)
             except ValueError:
-                messagebox.showwarning("Eingabefehler", "Bitte nur Zahlen eingeben!")
+                messagebox.showwarning("Eingabefehler", "Bitte nur ganze Zahlen für Passen eingeben!")
                 return
         
         # Zusatzwertung

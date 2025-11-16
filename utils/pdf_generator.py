@@ -186,14 +186,14 @@ class PDFGenerator:
                         half = turnier['anzahl_passen'] // 2
                         erste_haelfte = sum(ergebnis['ergebnisse'][:half])
                         zweite_haelfte = sum(ergebnis['ergebnisse'][half:])
-                        row.append(f"{erste_haelfte:.1f}")
-                        row.append(f"{zweite_haelfte:.1f}")
+                        row.append(str(erste_haelfte))
+                        row.append(str(zweite_haelfte))
                     elif show_passen_details:
                         # Einzelne Passen
                         for passe in ergebnis['ergebnisse']:
-                            row.append(f"{passe:.1f}")
+                            row.append(str(int(passe)))
                     
-                    row.append(f"{ergebnis['gesamt']:.1f}")
+                    row.append(str(int(ergebnis['gesamt'])))
                     row.append(str(ergebnis['anzahl_10er']))
                     row.append(str(ergebnis['anzahl_9er']))
                     
