@@ -129,6 +129,55 @@ Ein neues, für große Bildschirme optimiertes Fenster öffnet sich.
 
 ---
 
-## 8. Über die Software
+## 8. Urkunden erstellen
+
+Die Software bietet eine leistungsstarke Funktion, um individuelle Urkunden für Ihre Teilnehmer zu erstellen. Wechseln Sie dazu in den Reiter **"Urkunden"**.
+
+### 8.1. Funktionsweise
+
+Die Urkundenerstellung basiert auf einer von Ihnen bereitgestellten Word-Vorlage (`.docx`). In dieser Vorlage definieren Sie mit Platzhaltern, wo die Daten der Schützen (Name, Platz, Ergebnis etc.) eingefügt werden sollen. Die Software ersetzt diese Platzhalter automatisch und erstellt für jeden ausgewählten Schützen eine separate Word-Datei.
+
+### 8.2. Konfiguration
+
+Im oberen Bereich des Reiters finden Sie alle notwendigen Einstellungen:
+
+*   **Urkunden pro Platzierung:** Hier legen Sie fest, für wie viele Platzierungen pro Klasse Urkunden erstellt werden sollen.
+    *   **Beispiel:** Wenn Sie "3" eintragen, werden Urkunden für alle Schützen auf den Plätzen 1, 2 und 3 erstellt.
+    *   **Besonderheit bei Punktgleichheit:** Befinden sich mehrere Schützen auf einem Platz (z. B. zwei Schützen auf Platz 2), erhalten alle eine Urkunde. Die Software ist intelligent und stellt sicher, dass alle relevanten Ränge berücksichtigt werden.
+    *   **Bearbeiten:** Machen Sie einen Doppelklick auf die Zahl in der Spalte "Anzahl Platzierungen", um den Wert für die jeweilige Klasse zu ändern.
+    *   **Für alle Schützen erstellen:** Aktivieren Sie diese Option, um die Platzierungs-Logik zu ignorieren und für jeden Teilnehmer (der ein Ergebnis hat) eine Urkunde zu erstellen.
+
+*   **Einstellungen:**
+    *   **Word-Vorlage:** Wählen Sie über den "Durchsuchen..."-Button die `.docx`-Datei aus, die als Vorlage dienen soll.
+    *   **Speicherort:** Wählen Sie den Ordner, in dem die erstellten Urkunden-Dateien gespeichert werden sollen.
+    *   **Unterordner für jede Klasse erstellen:** Wenn diese Option aktiviert ist, erstellt die Software im Ziel-Speicherort für jede Wettkampfklasse einen eigenen Unterordner (z. B. "Herren_I", "Jugend"), in den die jeweiligen Urkunden sortiert werden.
+
+### 8.3. Verfügbare Platzhalter
+
+Ihre Word-Vorlage kann die folgenden Platzhalter enthalten. Achten Sie darauf, die eckigen Klammern exakt wie angegeben zu verwenden.
+
+*   `[Turniername]` - Der Name des Turniers.
+*   `[Datum]` - Das Datum des Turniers.
+*   `[Klasse]` - Die Wettkampfklasse des Schützen.
+*   `[Vorname]` - Der Vorname des Schützen.
+*   `[Name]` - Der Nachname des Schützen.
+*   `[Verein]` - Der Verein des Schützen.
+*   `[Ergebnis]` - Das Gesamtergebnis des Schützen.
+*   `[Platz]` - Die Platzierung des Schützen innerhalb seiner Klasse.
+
+### 8.4. Erstellungsprozess
+
+Wenn Sie alle Einstellungen vorgenommen haben, klicken Sie auf den Button **"🚀 Urkunden erstellen"**. Die Software führt nun folgende Schritte aus:
+
+1.  Sie berechnet die finalen Platzierungen (inkl. korrekter Sortierung bei Punktgleichheit).
+2.  Sie wählt die zu ehrenden Schützen basierend auf Ihren Platzierungs-Vorgaben aus. Schützen mit einem Ergebnis von 0 werden ignoriert.
+3.  Für jeden ausgewählten Schützen wird eine neue Word-Datei basierend auf Ihrer Vorlage erstellt und die Platzhalter werden ersetzt.
+4.  Die Dateien werden im Ziel-Speicherort abgelegt. Bei Punktgleichheit wird der Dateiname automatisch angepasst (z. B. `..._Platz_2a.docx`, `..._Platz_2b.docx`), um Dateikonflikte zu vermeiden.
+
+Nach Abschluss des Vorgangs erhalten Sie eine Erfolgsmeldung.
+
+---
+
+## 9. Über die Software
 
 Im Reiter **"Info"** finden Sie die aktuelle Versionsnummer der Software sowie Kontaktinformationen.
