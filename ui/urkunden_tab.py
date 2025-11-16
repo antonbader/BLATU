@@ -230,6 +230,10 @@ class UrkundenTab:
                 continue
 
             for schuetze in schuetzen[:limit]:
+                # Überspringe Schützen mit 0 Punkten
+                if schuetze.get('Gesamt', 0) == 0:
+                    continue
+
                 # Platzhalterdaten zusammenstellen
                 platzhalter_data = {
                     "[Turniername]": turnier_name,
@@ -238,7 +242,7 @@ class UrkundenTab:
                     "[Vorname]": schuetze.get('vorname', ''),
                     "[Name]": schuetze.get('name', ''),
                     "[Verein]": schuetze.get('verein', ''),
-                    "[Ergebnis]": schuetze.get('Gesamt', 0),
+                    "[Ergebnis]": str(schuetze.get('Gesamt', 0)),
                     "[Platz]": schuetze.get('Platz', 0)
                 }
 

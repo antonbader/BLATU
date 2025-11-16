@@ -82,12 +82,18 @@ class SchuetzeModel:
 
             if ergebnis_data:
                 gesamt = sum(ergebnis_data.get('passen', [0]))
+                anzahl_10er = ergebnis_data.get('anzahl_10er', 0)
+                anzahl_9er = ergebnis_data.get('anzahl_9er', 0)
             else:
                 gesamt = 0
+                anzahl_10er = 0
+                anzahl_9er = 0
 
             # Erstelle eine Kopie, um das Original nicht zu verändern
             schuetze_with_result = schuetze.copy()
             schuetze_with_result['Gesamt'] = gesamt
+            schuetze_with_result['Anzahl10er'] = anzahl_10er
+            schuetze_with_result['Anzahl9er'] = anzahl_9er
 
             klasse = schuetze['klasse']
             if klasse not in results_by_class:
@@ -95,11 +101,22 @@ class SchuetzeModel:
 
             results_by_class[klasse].append(schuetze_with_result)
 
-        # Sortiere die Schützen in jeder Klasse nach dem Gesamtergebnis
+        # Sortiere die Schützen in jeder Klasse nach dem Gesamtergebnis (und 10ern/9ern)
         for klasse in results_by_class:
-            results_by_class[klasse].sort(key=lambda s: s.get('Gesamt', 0), reverse=True)
-            # Platzierung hinzufügen
+            results_by_class[klasse].sort(
+                key=lambda s: (s.get('Gesamt', 0), s.get('Anzahl10er', 0), s.get('Anzahl9er', 0)),
+                reverse=True
+            )
+            # Platzierung hinzufügen (mit korrekter Behandlung von Gleichständen)
+            rank = 1
             for i, schuetze in enumerate(results_by_class[klasse]):
-                schuetze['Platz'] = i + 1
+                if i > 0:
+                    prev_schuetze = results_by_class[klasse][i - 1]
+                    # Prüfen ob punktgleich
+                    if (schuetze['Gesamt'] != prev_schuetze['Gesamt'] or
+                        schuetze['Anzahl10er'] != prev_schuetze['Anzahl10er'] or
+                        schuetze['Anzahl9er'] != prev_schuetze['Anzahl9er']):
+                        rank = i + 1
+                schuetze['Platz'] = rank
 
         return results_by_class
