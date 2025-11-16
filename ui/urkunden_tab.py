@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import os
 import re
+from collections import defaultdict
 from utils.word_generator import WordGenerator
 
 class UrkundenTab:
@@ -46,7 +47,7 @@ class UrkundenTab:
         top_frame.pack(fill=tk.BOTH, expand=True)
 
         # --- Linke Spalte: Klassen ---
-        klassen_frame = ttk.LabelFrame(top_frame, text="Anzahl pro Klasse", padding="10")
+        klassen_frame = ttk.LabelFrame(top_frame, text="Urkunden pro Platzierung", padding="10")
         klassen_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         alle_schuetzen_check = ttk.Checkbutton(klassen_frame, text="Für alle Schützen erstellen", variable=self.alle_schuetzen_var, command=self.toggle_klassen_tree)
@@ -54,14 +55,14 @@ class UrkundenTab:
 
         ttk.Label(
             klassen_frame,
-            text="💡 Doppelklick auf eine Zahl, um sie zu bearbeiten.",
+            text="💡 Doppelklick auf eine Zahl, um die Anzahl der Plätze zu ändern.",
             font=("Arial", 8),
             foreground="gray"
         ).pack(pady=(0, 5))
 
         self.klassen_tree = ttk.Treeview(klassen_frame, columns=("Klasse", "Anzahl"), show="headings", height=10)
         self.klassen_tree.heading("Klasse", text="Klasse")
-        self.klassen_tree.heading("Anzahl", text="Anzahl Urkunden")
+        self.klassen_tree.heading("Anzahl", text="Anzahl Platzierungen")
         self.klassen_tree.column("Klasse", width=150)
         self.klassen_tree.column("Anzahl", width=120, anchor="center")
         self.klassen_tree.pack(fill=tk.BOTH, expand=True)
@@ -208,7 +209,7 @@ class UrkundenTab:
             messagebox.showerror("Fehler bei der Datenverarbeitung", f"Ein unerwarteter Fehler ist aufgetreten:\n{e}")
             return
 
-        # 4. Urkunden erstellen
+        # 3. Urkunden erstellen
         word_generator = WordGenerator(template_path)
         erstellte_dateien = 0
 
@@ -216,23 +217,39 @@ class UrkundenTab:
             if not schuetzen:
                 continue
 
-            limit = 0
+            # Schützen für die Urkundenerstellung auswählen
+            schuetzen_fuer_urkunden = []
             if self.alle_schuetzen_var.get():
-                limit = len(schuetzen)
+                schuetzen_fuer_urkunden = schuetzen
             else:
                 try:
-                    limit = int(self.klassen_platz_vars[klasse].get())
+                    max_platz = int(self.klassen_platz_vars[klasse].get())
+                    if max_platz > 0:
+                        schuetzen_fuer_urkunden = [s for s in schuetzen if s.get('Platz', 0) <= max_platz]
                 except (KeyError, ValueError):
-                    messagebox.showwarning("Fehlerhafte Eingabe", f"Für die Klasse '{klasse}' ist keine gültige Anzahl an Urkunden angegeben. Sie wird übersprungen.")
+                    messagebox.showwarning("Fehlerhafte Eingabe", f"Für die Klasse '{klasse}' ist keine gültige Anzahl an Platzierungen angegeben. Sie wird übersprungen.")
                     continue
 
-            if limit <= 0:
-                continue
+            # Zähle, wie oft jeder Platz vorkommt (für Dateinamen-Suffix)
+            platz_counts = defaultdict(int)
+            for s in schuetzen_fuer_urkunden:
+                platz_counts[s['Platz']] += 1
 
-            for schuetze in schuetzen[:limit]:
+            platz_suffixes = defaultdict(lambda: 'a')
+
+            for schuetze in schuetzen_fuer_urkunden:
                 # Überspringe Schützen mit 0 Punkten
                 if schuetze.get('Gesamt', 0) == 0:
                     continue
+
+                platz = schuetze.get('Platz', 0)
+                platz_str = str(platz)
+
+                # Dateinamen-Suffix bei Gleichstand hinzufügen
+                if platz_counts[platz] > 1:
+                    platz_str += platz_suffixes[platz]
+                    # Increment suffix for the next person with the same rank
+                    platz_suffixes[platz] = chr(ord(platz_suffixes[platz]) + 1)
 
                 # Platzhalterdaten zusammenstellen
                 platzhalter_data = {
@@ -243,7 +260,7 @@ class UrkundenTab:
                     "[Name]": schuetze.get('name', ''),
                     "[Verein]": schuetze.get('verein', ''),
                     "[Ergebnis]": str(schuetze.get('Gesamt', 0)),
-                    "[Platz]": schuetze.get('Platz', 0)
+                    "[Platz]": str(platz) # Platz ohne Suffix in der Urkunde
                 }
 
                 # Nur ausgewählte Platzhalter verwenden
@@ -252,8 +269,7 @@ class UrkundenTab:
                 # Dateiname erstellen
                 clean_turnier_name = re.sub(r'[^\w\-]', '', turnier_name.replace(' ', ''))
                 clean_klasse = re.sub(r'[^\w\-]', '', klasse.replace(' ', ''))
-                platz = schuetze.get('Platz', 0)
-                filename = f"{clean_turnier_name}_{turnier_datum}_{clean_klasse}_{platz}.docx"
+                filename = f"{clean_turnier_name}_{turnier_datum}_{clean_klasse}_{platz_str}.docx"
 
                 # Speicherpfad bestimmen
                 current_output_dir = output_dir
