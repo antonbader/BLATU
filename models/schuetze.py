@@ -71,3 +71,35 @@ class SchuetzeModel:
     def get_schuetze_id(schuetze):
         """Erzeugt eine eindeutige ID für einen Schützen"""
         return f"{schuetze['name']}_{schuetze['vorname']}_{schuetze['klasse']}"
+
+    def calculate_results(self, turnier_model):
+        """Berechnet und gruppiert die Ergebnisse für alle Schützen."""
+        results_by_class = {}
+
+        for schuetze in self.schuetzen:
+            schuetze_id = self.get_schuetze_id(schuetze)
+            ergebnis_data = turnier_model.get_ergebnis(schuetze_id)
+
+            if ergebnis_data:
+                gesamt = sum(ergebnis_data.get('passen', [0]))
+            else:
+                gesamt = 0
+
+            # Erstelle eine Kopie, um das Original nicht zu verändern
+            schuetze_with_result = schuetze.copy()
+            schuetze_with_result['Gesamt'] = gesamt
+
+            klasse = schuetze['klasse']
+            if klasse not in results_by_class:
+                results_by_class[klasse] = []
+
+            results_by_class[klasse].append(schuetze_with_result)
+
+        # Sortiere die Schützen in jeder Klasse nach dem Gesamtergebnis
+        for klasse in results_by_class:
+            results_by_class[klasse].sort(key=lambda s: s.get('Gesamt', 0), reverse=True)
+            # Platzierung hinzufügen
+            for i, schuetze in enumerate(results_by_class[klasse]):
+                schuetze['Platz'] = i + 1
+
+        return results_by_class
