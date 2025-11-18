@@ -24,7 +24,11 @@ DEFAULT_TURNIER = {
     "datum": "",
     "anzahl_passen": 1,
     "show_halves": False,
-    "max_scheiben": 3
+    "max_scheiben": 3,
+    "startgeld_erheben": False,
+    "iban": "",
+    "kontoinhaber": "",
+    "zahldatum": ""
 }
 
 # Dateifilter

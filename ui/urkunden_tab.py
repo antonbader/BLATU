@@ -168,11 +168,12 @@ class UrkundenTab:
 
         self.klassen_platz_vars.clear()
 
-        klassen = self.turnier_model.get_klassen()
-        for klasse in klassen:
+        klassen_data = self.turnier_model.get_klassen()
+        for klasse_dict in klassen_data:
+            klasse_name = klasse_dict['name']
             var = tk.StringVar(value="3")
-            self.klassen_platz_vars[klasse] = var
-            self.klassen_tree.insert("", "end", values=(klasse, var.get()))
+            self.klassen_platz_vars[klasse_name] = var
+            self.klassen_tree.insert("", "end", values=(klasse_name, var.get()))
 
     def toggle_klassen_tree(self):
         """Aktiviert/Deaktiviert die Klasseneingabefelder."""

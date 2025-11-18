@@ -311,7 +311,7 @@ class SchuetzenTab:
         self.name_entry.delete(0, tk.END)
         self.vorname_entry.delete(0, tk.END)
         self.verein_entry.delete(0, tk.END)
-        klassen = self.turnier_model.get_klassen()
+        klassen = self.turnier_model.get_klassen_names()
         if klassen:
             self.klasse_combo.current(0)
         self.editing_index = None
@@ -320,7 +320,7 @@ class SchuetzenTab:
     def refresh(self):
         """Aktualisiert die Anzeige"""
         # Klassen-Combobox aktualisieren
-        klassen = self.turnier_model.get_klassen()
+        klassen = self.turnier_model.get_klassen_names()
         self.klasse_combo['values'] = klassen
         if klassen and not self.klasse_combo.get():
             self.klasse_combo.current(0)

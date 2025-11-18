@@ -44,17 +44,16 @@ class KlassenTab:
         list_frame = ttk.LabelFrame(self.frame, text="Vorhandene Klassen", padding="10")
         list_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=10)
         
-        scrollbar = ttk.Scrollbar(list_frame)
+        self.tree = ttk.Treeview(list_frame, columns=("Klassenname", "Startgeld"), show="headings")
+        self.tree.heading("Klassenname", text="Klassenname")
+        self.tree.heading("Startgeld", text="Startgeld (€)")
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        scrollbar = ttk.Scrollbar(list_frame, orient="vertical", command=self.tree.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.tree.configure(yscrollcommand=scrollbar.set)
         
-        self.listbox = tk.Listbox(
-            list_frame, 
-            yscrollcommand=scrollbar.set, 
-            height=20, 
-            font=("Arial", 11)
-        )
-        self.listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.config(command=self.listbox.yview)
+        self.tree.bind("<Double-1>", self.on_double_click)
         
         # Buttons
         button_frame = ttk.Frame(self.frame)
@@ -78,6 +77,63 @@ class KlassenTab:
         
         self.refresh()
     
+    def on_double_click(self, event):
+        """Behandelt Doppelklick auf eine Zeile zum Bearbeiten des Startgelds."""
+        region = self.tree.identify("region", event.x, event.y)
+        if region != "cell":
+            return
+
+        column = self.tree.identify_column(event.x)
+        if column != "#2":  # Nur die Startgeld-Spalte ist editierbar
+            return
+
+        item = self.tree.identify_row(event.y)
+
+        x, y, width, height = self.tree.bbox(item, column)
+
+        entry = ttk.Entry(self.tree)
+        entry.place(x=x, y=y, width=width, height=height)
+
+        current_value = self.tree.item(item, "values")[1]
+        entry.insert(0, current_value)
+        entry.focus()
+
+        entry.bind("<Return>", lambda e, i=item: self.save_startgeld(entry, i))
+        entry.bind("<FocusOut>", lambda e, i=item: self.save_startgeld(entry, i))
+
+    def save_startgeld(self, entry, item):
+        """Speichert das geänderte Startgeld."""
+        new_value_str = entry.get().replace(",", ".").strip()
+        entry.destroy()
+
+        try:
+            new_value = float(new_value_str)
+            if new_value < 0:
+                messagebox.showerror("Fehler", "Startgeld darf nicht negativ sein.")
+                return
+        except ValueError:
+            messagebox.showerror("Fehler", "Ungültiger Wert für Startgeld.")
+            return
+
+        klasse_name = self.tree.item(item, "values")[0]
+
+        if self.turnier_model.update_klasse_startgeld(klasse_name, new_value):
+            # Status aller Schützen dieser Klasse auf "überprüfen" setzen
+            all_schuetzen = self.schuetze_model.get_all_schuetzen()
+            for i, schuetze in enumerate(all_schuetzen):
+                if schuetze['klasse'] == klasse_name:
+                    self.schuetze_model.update_schuetze_startgeld_status(i, "überprüfen")
+
+            messagebox.showinfo("Erfolg", f"Startgeld für {klasse_name} aktualisiert.")
+            self.refresh()
+            # Callback für andere Tabs
+            if self.on_klassen_changed:
+                self.on_klassen_changed()
+            if self.on_klassen_changed_callback:
+                self.on_klassen_changed_callback()
+        else:
+            messagebox.showerror("Fehler", "Startgeld konnte nicht aktualisiert werden.")
+
     def add_klasse(self):
         """Fügt eine neue Klasse hinzu"""
         klasse = self.klasse_entry.get().strip()
@@ -101,15 +157,16 @@ class KlassenTab:
     
     def delete_klasse(self):
         """Löscht die ausgewählte Klasse"""
-        selection = self.listbox.curselection()
-        if not selection:
+        selected_item = self.tree.selection()
+        if not selected_item:
             messagebox.showwarning("Keine Auswahl", "Bitte wählen Sie eine Klasse aus!")
             return
         
-        klasse = self.listbox.get(selection[0])
+        item = selected_item[0]
+        klasse_name = self.tree.item(item, "values")[0]
         
         # Prüfen ob Schützen in dieser Klasse sind
-        count = self.schuetze_model.count_schuetzen_by_klasse(klasse)
+        count = self.schuetze_model.count_schuetzen_by_klasse(klasse_name)
         if count > 0:
             if not messagebox.askyesno(
                 "Warnung", 
@@ -118,9 +175,9 @@ class KlassenTab:
             ):
                 return
         
-        self.turnier_model.remove_klasse(klasse)
+        self.turnier_model.remove_klasse(klasse_name)
         self.refresh()
-        messagebox.showinfo("Erfolg", f"Klasse '{klasse}' wurde gelöscht!")
+        messagebox.showinfo("Erfolg", f"Klasse '{klasse_name}' wurde gelöscht!")
         
         # Callback aufrufen um Schützenverwaltung zu aktualisieren
         if self.on_klassen_changed:
@@ -150,6 +207,11 @@ class KlassenTab:
     
     def refresh(self):
         """Aktualisiert die Anzeige"""
-        self.listbox.delete(0, tk.END)
+        # Alte Einträge löschen
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+        # Neue Einträge hinzufügen
         for klasse in self.turnier_model.get_klassen():
-            self.listbox.insert(tk.END, klasse)
+            startgeld_euro = f"{klasse.get('startgeld', 0) / 100.0:.2f}"
+            self.tree.insert("", tk.END, values=(klasse['name'], startgeld_euro))

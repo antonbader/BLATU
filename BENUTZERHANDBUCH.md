@@ -1,4 +1,4 @@
-# Benutzerhandbuch für BLATU 1.4.0
+# Benutzerhandbuch für BLATU 1.6.0
 
 ## 1. Einleitung
 
@@ -22,6 +22,19 @@ Hier legen Sie die grundlegenden Parameter für Ihren Wettkampf fest:
 
 Nachdem Sie alle Daten eingegeben haben, klicken Sie auf **"Einstellungen speichern"**. Ihre Konfiguration wird nun im rechten Infobereich angezeigt.
 
+### 2.1. Bankverbindung für Startgeld hinterlegen
+
+Wenn Sie das Startgeld per Überweisung einsammeln möchten, können Sie die notwendigen Bankdaten direkt im Turnier hinterlegen. Diese Informationen werden dann automatisch auf die Startlisten-PDFs für die Vereine gedruckt.
+
+1.  Aktivieren Sie die Checkbox **"Startgeld erheben und Bankdaten auf PDFs anzeigen"**.
+2.  Füllen Sie die nun aktivierten Felder aus:
+    *   **Kontonummer (IBAN)**
+    *   **Kontoinhaber**
+    *   **Zu bezahlen bis:** Geben Sie hier das Fälligkeitsdatum für die Zahlung an.
+3.  Speichern Sie die Einstellungen.
+
+Wenn die Checkbox deaktiviert ist, sind die Felder ausgegraut und die Informationen werden nicht auf den PDFs angedruckt.
+
 **Tipp:** Mit dem Button **"Zurücksetzen"** können Sie alle Eingaben in diesem Reiter auf die Standardwerte zurücksetzen.
 
 ---
@@ -35,7 +48,11 @@ Bevor Sie Schützen anlegen, sollten Sie die benötigten Wettkampfklassen defini
 *   Geben Sie im Feld **"Klassenname"** den Namen der Klasse ein (z. B. "Schülerklasse A", "Herren I").
 *   Klicken Sie auf **"Klasse hinzufügen"**.
 
-Die Klasse erscheint nun in der Liste. Sie können Klassen jederzeit löschen, indem Sie eine Klasse auswählen und auf **"Ausgewählte Klasse löschen"** klicken. Mit **"Alle Klassen löschen"** leeren Sie die komplette Liste.
+Die Klasse erscheint nun in der Liste. Diese Liste enthält nun auch eine Spalte **"Startgeld (€)"**.
+
+*   **Startgeld bearbeiten:** Machen Sie einen Doppelklick auf den Betrag in der Spalte "Startgeld", um diesen direkt in der Tabelle zu bearbeiten. Geben Sie den Wert ein und bestätigen Sie mit der `Enter`-Taste. Das Startgeld wird mit zwei Nachkommastellen gespeichert.
+
+Sie können Klassen jederzeit löschen, indem Sie eine Klasse auswählen und auf **"Ausgewählte Klasse löschen"** klicken.
 
 ### 3.2. Schützen anlegen und bearbeiten
 
@@ -100,7 +117,42 @@ Klicken Sie auf den Button **"Ergebnisanzeige"**. Ein neues Fenster öffnet sich
 
 ---
 
-## 6. PDF-Export
+## 6. Startgeldverwaltung
+
+Der Reiter **"Startgeld"** ist die zentrale Anlaufstelle, um den Überblick über die bezahlten Startgelder zu behalten.
+
+### 6.1. Die Oberfläche
+
+Der Reiter ist in zwei Hauptbereiche unterteilt:
+
+1.  **Alle Schützen (obere Liste):** Hier sehen Sie jeden einzelnen Teilnehmer mit seinem Namen, Verein, dem fälligen Startgeld (basierend auf seiner Klasse) und dem Bezahlstatus.
+2.  **Vereine (untere Liste):** Diese Liste fasst die Informationen pro Verein zusammen. Sie sehen das gesamte fällige Startgeld pro Verein und den Gesamt-Bezahlstatus.
+
+### 6.2. Bezahlstatus ändern
+
+Sie können den Status ganz einfach per Mausklick ändern:
+
+*   **Einzelner Schütze:** Klicken Sie auf die Checkbox in der ersten Spalte der Schützenliste, um den Status eines Teilnehmers zwischen "bezahlt" (grün) und "unbezahlt" (rot) zu wechseln.
+*   **Ganzer Verein:** Klicken Sie auf die Checkbox in der ersten Spalte der Vereinsliste, um den Status für **alle** Schützen dieses Vereins gleichzeitig zu ändern. Wenn noch nicht alle Mitglieder bezahlt haben, werden alle auf "bezahlt" gesetzt. Sind bereits alle als bezahlt markiert, werden alle auf "unbezahlt" zurückgesetzt.
+
+### 6.3. Farbcodierung und Status
+
+Die Software nutzt Farben, um den Status schnell erfassbar zu machen:
+
+*   **Grün:** Der Schütze oder der gesamte Verein hat das Startgeld bezahlt.
+*   **Rot:** Das Startgeld wurde noch nicht bezahlt.
+*   **Orange:**
+    *   **Beim Verein:** Einige, aber nicht alle Mitglieder des Vereins haben bezahlt.
+    *   **Beim Schützen (Status "Überprüfen"):** Dieser Status wird automatisch gesetzt, wenn sich etwas an den Rahmenbedingungen ändert (z. B. der Schütze wird einer neuen Klasse zugewiesen oder das Startgeld der Klasse wird geändert). Dies dient als Hinweis, dass der ursprünglich erfasste Bezahlstatus eventuell nicht mehr korrekt ist und manuell bestätigt werden muss.
+
+### 6.4. Schützen filtern und sortieren
+
+*   **Filtern:** Nutzen Sie das Suchfeld oben, um die Schützenliste in Echtzeit zu filtern. Geben Sie einfach einen Teil des Namens oder Vereins ein.
+*   **Sortieren:** Klicken Sie auf eine Spaltenüberschrift in einer der beiden Listen, um die Daten nach dieser Spalte zu sortieren. Ein erneuter Klick kehrt die Sortierreihenfolge um.
+
+---
+
+## 7. PDF-Export
 
 Die Software kann professionelle PDF-Dokumente für die Veröffentlichung erstellen.
 
@@ -110,7 +162,7 @@ Die Software kann professionelle PDF-Dokumente für die Veröffentlichung erstel
 
 ---
 
-## 7. Live-Anzeige für Bildschirme
+## 8. Live-Anzeige für Bildschirme
 
 Für die Zuschauer oder zur Anzeige auf einem Beamer können Sie eine Live-Ansicht der Ergebnisse starten.
 
@@ -129,7 +181,7 @@ Ein neues, für große Bildschirme optimiertes Fenster öffnet sich.
 
 ---
 
-## 8. Urkunden erstellen
+## 9. Urkunden erstellen
 
 Die Software bietet eine leistungsstarke Funktion, um individuelle Urkunden für Ihre Teilnehmer zu erstellen. Wechseln Sie dazu in den Reiter **"Urkunden"**.
 
@@ -165,7 +217,7 @@ Ihre Word-Vorlage kann die folgenden Platzhalter enthalten. Achten Sie darauf, d
 *   `[Ergebnis]` - Das Gesamtergebnis des Schützen.
 *   `[Platz]` - Die Platzierung des Schützen innerhalb seiner Klasse.
 
-### 8.4. Erstellungsprozess
+### 9.4. Erstellungsprozess
 
 Wenn Sie alle Einstellungen vorgenommen haben, klicken Sie auf den Button **"🚀 Urkunden erstellen"**. Die Software führt nun folgende Schritte aus:
 
@@ -178,6 +230,6 @@ Nach Abschluss des Vorgangs erhalten Sie eine Erfolgsmeldung.
 
 ---
 
-## 9. Über die Software
+## 10. Über die Software
 
 Im Reiter **"Info"** finden Sie die aktuelle Versionsnummer der Software sowie Kontaktinformationen.

@@ -16,14 +16,19 @@ class TurnierModel:
         self.ergebnisse = {}
         self.group_times = {}
     
-    def set_turnier_data(self, name, datum, anzahl_passen, show_halves=False, max_scheiben=3):
-        """Setzt die Turnierdaten"""
+    def set_turnier_data(self, name, datum, anzahl_passen, *, show_halves=False, max_scheiben=3,
+                         startgeld_erheben=False, iban="", kontoinhaber="", zahldatum=""):
+        """Setzt die Turnierdaten und stellt eine flache Struktur sicher."""
         self.turnier = {
-            "name": name,
-            "datum": datum,
-            "anzahl_passen": anzahl_passen,
-            "show_halves": show_halves,
-            "max_scheiben": max_scheiben
+            'name': name,
+            'datum': datum,
+            'anzahl_passen': anzahl_passen,
+            'show_halves': show_halves,
+            'max_scheiben': max_scheiben,
+            'startgeld_erheben': startgeld_erheben,
+            'iban': iban,
+            'kontoinhaber': kontoinhaber,
+            'zahldatum': zahldatum
         }
     
     def get_turnier_data(self):
@@ -32,23 +37,45 @@ class TurnierModel:
     
     def add_klasse(self, klasse_name):
         """Fügt eine neue Klasse hinzu"""
-        if klasse_name and klasse_name not in self.klassen:
-            self.klassen.append(klasse_name)
-            self.klassen.sort()
+        if klasse_name and not any(k['name'] == klasse_name for k in self.klassen):
+            self.klassen.append({'name': klasse_name, 'startgeld': 0})
+            self.klassen.sort(key=lambda k: k['name'])
             return True
         return False
-    
+
+    def update_klasse_startgeld(self, klasse_name, startgeld):
+        """Aktualisiert das Startgeld für eine Klasse"""
+        for klasse in self.klassen:
+            if klasse['name'] == klasse_name:
+                try:
+                    # Speichere als Integer in Cent
+                    klasse['startgeld'] = int(float(startgeld) * 100)
+                    return True
+                except (ValueError, TypeError):
+                    return False
+        return False
+
+    def get_klasse_startgeld(self, klasse_name):
+        """Gibt das Startgeld für eine Klasse in Cent zurück"""
+        for klasse in self.klassen:
+            if klasse['name'] == klasse_name:
+                return klasse.get('startgeld', 0)
+        return 0
+
     def remove_klasse(self, klasse_name):
         """Entfernt eine Klasse"""
-        if klasse_name in self.klassen:
-            self.klassen.remove(klasse_name)
-            return True
-        return False
-    
+        initial_len = len(self.klassen)
+        self.klassen = [k for k in self.klassen if k['name'] != klasse_name]
+        return len(self.klassen) < initial_len
+
     def get_klassen(self):
-        """Gibt alle Klassen zurück"""
+        """Gibt alle Klassen als Liste von Dictionaries zurück"""
         return self.klassen.copy()
-    
+
+    def get_klassen_names(self):
+        """Gibt eine Liste aller Klassennamen zurück"""
+        return [k['name'] for k in self.klassen]
+
     def clear_klassen(self):
         """Löscht alle Klassen"""
         self.klassen = []
