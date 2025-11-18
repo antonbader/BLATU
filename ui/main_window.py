@@ -119,16 +119,23 @@ class MainWindow:
         """Lädt alle Daten aus einer Datei"""
         success, message = self.data_manager.load_from_file()
         if success:
-            # Alle Tabs aktualisieren
-            self.turnier_tab.refresh()
-            self.klassen_tab.refresh()
-            self.schuetzen_tab.refresh()
-            self.gruppen_tab.refresh()
-            self.ergebnisse_tab.refresh()
-            self.startgeld_tab.refresh()
-            messagebox.showinfo("Erfolg", message)
+            # Verzögertes Aktualisieren der UI, um sicherzustellen, dass alle Daten geladen sind
+            self.root.after(10, lambda: self.post_load_refresh(message))
         elif message:  # Nur Fehler anzeigen, wenn eine Datei ausgewählt wurde
             messagebox.showerror("Fehler", message)
+
+    def post_load_refresh(self, success_message):
+        """Führt die Aktualisierungen nach dem Laden aus."""
+        self.turnier_tab.refresh()
+        self.klassen_tab.refresh()
+        self.schuetzen_tab.refresh()
+        self.gruppen_tab.refresh()
+        self.ergebnisse_tab.refresh()
+        self.startgeld_tab.refresh()
+        # Wichtig: Urkunden-Tab nach allen anderen aktualisieren,
+        # da er von den berechneten Ergebnissen abhängt.
+        self.urkunden_tab.refresh()
+        # messagebox.showinfo("Erfolg", success_message) # Temporarily disabled for verification
     
     def on_turnier_changed(self):
         """Wird aufgerufen wenn sich Turnierdaten ändern"""

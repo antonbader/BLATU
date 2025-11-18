@@ -1,0 +1,30 @@
+{
+    "turnier": {
+        "name": "Test Cup 2025",
+        "datum": "25.12.2025",
+        "anzahl_passen": 2,
+        "max_scheiben": 3,
+        "show_halves": false,
+        "startgeld_erheben": true,
+        "iban": "DE12345678901234567890",
+        "kontoinhaber": "Max Mustermann",
+        "zahldatum": "20.12.2025"
+    },
+    "klassen": [
+        {
+            "name": "Schützenklasse",
+            "startgeld": "15.00"
+        }
+    ],
+    "schuetzen": [
+        {
+            "id": "1",
+            "name": "Meier",
+            "vorname": "Hans",
+            "verein": "SV Musterhausen",
+            "klasse": "Schützenklasse",
+            "geschlecht": "m",
+            "startgeld_bezahlt": "unbezahlt"
+        }
+    ]
+}

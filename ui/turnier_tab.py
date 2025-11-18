@@ -226,10 +226,14 @@ class TurnierTab:
         kontoinhaber = self.kontoinhaber_entry.get().strip()
         zahldatum = self.zahldatum_entry.get().strip()
 
-        self.turnier_model.set_turnier_data(name, datum, passen, show_halves,
-                                            startgeld_erheben=startgeld_erheben,
-                                            iban=iban, kontoinhaber=kontoinhaber,
-                                            zahldatum=zahldatum)
+        self.turnier_model.set_turnier_data(
+            name, datum, passen,
+            show_halves=show_halves,
+            startgeld_erheben=startgeld_erheben,
+            iban=iban,
+            kontoinhaber=kontoinhaber,
+            zahldatum=zahldatum
+        )
         self.update_info()
         self.on_change_callback()
         if self.on_turnier_data_changed_callback:
@@ -244,8 +248,13 @@ class TurnierTab:
         ):
             # explizit alle Standardwerte übergeben
             self.turnier_model.set_turnier_data(
-                name="", datum="", anzahl_passen=1, show_halves=False, max_scheiben=3,
-                startgeld_erheben=False, iban="", kontoinhaber="", zahldatum=""
+                "", "", 1,
+                show_halves=False,
+                max_scheiben=3,
+                startgeld_erheben=False,
+                iban="",
+                kontoinhaber="",
+                zahldatum=""
             )
             self.refresh()
             if self.on_turnier_data_changed_callback:
