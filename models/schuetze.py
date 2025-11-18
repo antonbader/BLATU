@@ -19,7 +19,8 @@ class SchuetzeModel:
             "klasse": klasse,
             "verein": verein,
             "gruppe": gruppe,
-            "scheibe": scheibe
+            "scheibe": scheibe,
+            "startgeld_status": "unbezahlt"  # Standardwert
         }
         self.schuetzen.append(schuetze)
         return len(self.schuetzen) - 1
@@ -27,17 +28,33 @@ class SchuetzeModel:
     def update_schuetze(self, index, name, vorname, klasse, verein="", gruppe=None, scheibe=None):
         """Aktualisiert einen bestehenden Schützen"""
         if 0 <= index < len(self.schuetzen):
+            # Bewahre den Status, wenn der Schütze aktualisiert wird
+            status = self.schuetzen[index].get("startgeld_status", "unbezahlt")
+
+            # Wenn sich die Klasse ändert, setze den Status auf "überprüfen"
+            if self.schuetzen[index]['klasse'] != klasse:
+                status = "überprüfen"
+
             self.schuetzen[index] = {
                 "name": name,
                 "vorname": vorname,
                 "klasse": klasse,
                 "verein": verein,
                 "gruppe": gruppe,
-                "scheibe": scheibe
+                "scheibe": scheibe,
+                "startgeld_status": status
             }
             return True
         return False
     
+    def update_schuetze_startgeld_status(self, index, status):
+        """Aktualisiert den Startgeld-Status eines Schützen"""
+        if 0 <= index < len(self.schuetzen):
+            if status in ["bezahlt", "unbezahlt", "überprüfen"]:
+                self.schuetzen[index]["startgeld_status"] = status
+                return True
+        return False
+
     def remove_schuetze(self, index):
         """Entfernt einen Schützen"""
         if 0 <= index < len(self.schuetzen):

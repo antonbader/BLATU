@@ -91,12 +91,21 @@ class DataManager:
                 )
                 
                 # Klassen
-                for klasse in data.get('klassen', []):
-                    self.turnier_model.add_klasse(klasse)
-                
+                for klasse_data in data.get('klassen', []):
+                    if isinstance(klasse_data, dict):
+                        # Neues Format: {'name': 'Name', 'startgeld': 1000}
+                        klasse_name = klasse_data.get('name')
+                        startgeld = klasse_data.get('startgeld', 0)
+                        if self.turnier_model.add_klasse(klasse_name):
+                             # Startgeld wird in Cent gespeichert, also direkt übergeben
+                            self.turnier_model.update_klasse_startgeld(klasse_name, float(startgeld) / 100.0)
+                    else:
+                        # Altes Format: 'Klassenname'
+                        self.turnier_model.add_klasse(klasse_data)
+
                 # Schützen
                 for schuetze in data.get('schuetzen', []):
-                    self.schuetze_model.add_schuetze(
+                    new_schuetze_index = self.schuetze_model.add_schuetze(
                         schuetze.get('name'),
                         schuetze.get('vorname'),
                         schuetze.get('klasse'),
@@ -104,7 +113,11 @@ class DataManager:
                         schuetze.get('gruppe'),
                         schuetze.get('scheibe')
                     )
-                
+                    # Lade optional den Startgeld-Status
+                    status = schuetze.get('startgeld_status')
+                    if status:
+                        self.schuetze_model.update_schuetze_startgeld_status(new_schuetze_index, status)
+
                 # Gruppen-Uhrzeiten
                 group_times = data.get('group_times', {})
                 for group, time in group_times.items():

@@ -16,6 +16,7 @@ from .schuetzen_tab import SchuetzenTab
 from .gruppen_tab import GruppenTab
 from .ergebnisse_tab import ErgebnisseTab
 from .urkunden_tab import UrkundenTab
+from .startgeld_tab import StartgeldTab
 from .info_tab import InfoTab
 
 
@@ -50,7 +51,7 @@ class MainWindow:
             self.notebook, 
             self.turnier_model, 
             self.schuetze_model,
-            self.on_klassen_changed  # Callback hinzufügen
+            self.on_klassen_changed
         )
         self.schuetzen_tab = SchuetzenTab(
             self.notebook,
@@ -67,6 +68,7 @@ class MainWindow:
         )
         self.ergebnisse_tab = ErgebnisseTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.urkunden_tab = UrkundenTab(self.notebook, self.turnier_model, self.schuetze_model)
+        self.startgeld_tab = StartgeldTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.info_tab = InfoTab(self.notebook)
 
         # Connect callbacks
@@ -80,6 +82,7 @@ class MainWindow:
         self.notebook.add(self.gruppen_tab.frame, text="Gruppenverwaltung")
         self.notebook.add(self.ergebnisse_tab.frame, text="Ergebniseingabe")
         self.notebook.add(self.urkunden_tab.frame, text="Urkunden")
+        self.notebook.add(self.startgeld_tab.frame, text="Startgeld")
         self.notebook.add(self.info_tab.frame, text="Info")
     
     def create_main_buttons(self):
@@ -122,6 +125,7 @@ class MainWindow:
             self.schuetzen_tab.refresh()
             self.gruppen_tab.refresh()
             self.ergebnisse_tab.refresh()
+            self.startgeld_tab.refresh()
             messagebox.showinfo("Erfolg", message)
         elif message:  # Nur Fehler anzeigen, wenn eine Datei ausgewählt wurde
             messagebox.showerror("Fehler", message)
@@ -134,17 +138,19 @@ class MainWindow:
     
     def on_klassen_changed(self):
         """Wird aufgerufen wenn sich Klassen ändern"""
-        # Schützenverwaltung muss Dropdown aktualisieren
         if hasattr(self, 'schuetzen_tab'):
             self.schuetzen_tab.refresh()
+        if hasattr(self, 'startgeld_tab'):
+            self.startgeld_tab.refresh()
     
     def on_schuetzen_changed(self):
         """Wird aufgerufen wenn sich Schützenliste ändert"""
-        # Ergebniseingabe und Gruppenverwaltung müssen aktualisiert werden
         if hasattr(self, 'ergebnisse_tab'):
             self.ergebnisse_tab.refresh()
         if hasattr(self, 'gruppen_tab'):
             self.gruppen_tab.refresh()
+        if hasattr(self, 'startgeld_tab'):
+            self.startgeld_tab.refresh()
 
     def on_assignment_changed(self):
         """Wird aufgerufen, wenn sich eine Zuweisung in der Gruppenverwaltung ändert"""
