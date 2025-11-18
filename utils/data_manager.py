@@ -87,7 +87,11 @@ class DataManager:
                     turnier.get('datum', ''),
                     turnier.get('anzahl_passen', 1),
                     turnier.get('show_halves', False),
-                    turnier.get('max_scheiben', 3)
+                    turnier.get('max_scheiben', 3),
+                    turnier.get('startgeld_erheben', False),
+                    turnier.get('iban', ''),
+                    turnier.get('kontoinhaber', ''),
+                    turnier.get('zahldatum', '')
                 )
                 
                 # Klassen

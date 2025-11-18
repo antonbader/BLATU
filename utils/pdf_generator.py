@@ -508,6 +508,24 @@ class PDFGenerator:
                 table.setStyle(table_style)
                 elements.append(table)
 
+                # Startgeld-Informationen hinzufügen, falls aktiviert
+                if turnier.get('startgeld_erheben'):
+                    elements.append(Spacer(1, 1*cm))
+
+                    iban = turnier.get('iban', '')
+                    kontoinhaber = turnier.get('kontoinhaber', '')
+                    zahldatum = turnier.get('zahldatum', '')
+                    turniername = turnier.get('name', '')
+
+                    text = (
+                        f"Bitte überweisen sie das Startgeld bis zum {zahldatum} "
+                        f"unter Angabe des Buchungszwecks \"{turniername} - {verein}\" "
+                        f"auf folgendes Konto: {iban} Kontoinhaber: {kontoinhaber}"
+                    )
+
+                    p_style = ParagraphStyle('PaymentInfo', parent=styles['Normal'], fontSize=10, alignment=TA_LEFT)
+                    elements.append(Paragraph(text, p_style))
+
                 doc.build(elements)
 
             except Exception as e:

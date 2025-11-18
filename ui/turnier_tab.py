@@ -98,9 +98,45 @@ class TurnierTab:
             command=self.reset_settings
         ).pack(side=tk.LEFT, padx=5)
         
+        # Bankdaten-Bereich
+        bank_frame = ttk.LabelFrame(self.frame, text="Bankverbindung für Startgeld", padding="20")
+        bank_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
+
+        self.startgeld_erheben_var = tk.BooleanVar()
+        self.startgeld_erheben_check = ttk.Checkbutton(
+            bank_frame,
+            text="Startgeld erheben und Bankdaten auf PDFs anzeigen",
+            variable=self.startgeld_erheben_var,
+            command=self.toggle_bank_fields
+        )
+        self.startgeld_erheben_check.grid(row=0, column=0, columnspan=2, sticky=tk.W, pady=10)
+
+        self.iban_label = ttk.Label(bank_frame, text="Kontonummer (IBAN):", font=("Arial", 10))
+        self.iban_label.grid(row=1, column=0, sticky=tk.W, pady=5)
+        self.iban_entry = ttk.Entry(bank_frame, width=50, font=("Arial", 10))
+        self.iban_entry.grid(row=1, column=1, sticky=(tk.W, tk.E), pady=5, padx=10)
+
+        self.kontoinhaber_label = ttk.Label(bank_frame, text="Kontoinhaber:", font=("Arial", 10))
+        self.kontoinhaber_label.grid(row=2, column=0, sticky=tk.W, pady=5)
+        self.kontoinhaber_entry = ttk.Entry(bank_frame, width=50, font=("Arial", 10))
+        self.kontoinhaber_entry.grid(row=2, column=1, sticky=(tk.W, tk.E), pady=5, padx=10)
+
+        self.zahldatum_label = ttk.Label(bank_frame, text="Zu bezahlen bis:", font=("Arial", 10))
+        self.zahldatum_label.grid(row=3, column=0, sticky=tk.W, pady=5)
+        self.zahldatum_entry = ttk.Entry(bank_frame, width=50, font=("Arial", 10))
+        self.zahldatum_entry.grid(row=3, column=1, sticky=(tk.W, tk.E), pady=5, padx=10)
+        ttk.Label(
+            bank_frame,
+            text="(z.B. tt.mm.jjjj)",
+            font=("Arial", 9),
+            foreground="gray"
+        ).grid(row=4, column=1, sticky=tk.W, padx=10)
+
+        bank_frame.columnconfigure(1, weight=1)
+
         # Info-Bereich
         info_frame = ttk.LabelFrame(self.frame, text="Aktuelle Einstellungen", padding="20")
-        info_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=20)
+        info_frame.grid(row=3, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=20)
         
         self.info_label = ttk.Label(
             info_frame, 
@@ -113,10 +149,21 @@ class TurnierTab:
         # Grid-Konfiguration
         input_frame.columnconfigure(1, weight=1)
         self.frame.columnconfigure(0, weight=1)
-        self.frame.rowconfigure(2, weight=1)
+        self.frame.rowconfigure(3, weight=1)
         
         self.refresh()
     
+    def toggle_bank_fields(self):
+        """Aktiviert oder deaktiviert die Bankdaten-Eingabefelder."""
+        state = tk.NORMAL if self.startgeld_erheben_var.get() else tk.DISABLED
+
+        self.iban_label.config(state=state)
+        self.iban_entry.config(state=state)
+        self.kontoinhaber_label.config(state=state)
+        self.kontoinhaber_entry.config(state=state)
+        self.zahldatum_label.config(state=state)
+        self.zahldatum_entry.config(state=state)
+
     def on_halves_changed(self):
         """Wird aufgerufen wenn die Checkbox geändert wird"""
         try:
@@ -163,7 +210,15 @@ class TurnierTab:
             )
             return
         
-        self.turnier_model.set_turnier_data(name, datum, passen, show_halves)
+        startgeld_erheben = self.startgeld_erheben_var.get()
+        iban = self.iban_entry.get().strip()
+        kontoinhaber = self.kontoinhaber_entry.get().strip()
+        zahldatum = self.zahldatum_entry.get().strip()
+
+        self.turnier_model.set_turnier_data(name, datum, passen, show_halves,
+                                            startgeld_erheben=startgeld_erheben,
+                                            iban=iban, kontoinhaber=kontoinhaber,
+                                            zahldatum=zahldatum)
         self.update_info()
         self.on_change_callback()
         if self.on_turnier_data_changed_callback:
@@ -195,6 +250,15 @@ class TurnierTab:
         self.passen_spinbox.set(turnier.get("anzahl_passen", 1))
         self.show_halves_var.set(turnier.get("show_halves", False))
         
+        self.startgeld_erheben_var.set(turnier.get("startgeld_erheben", False))
+        self.iban_entry.delete(0, tk.END)
+        self.iban_entry.insert(0, turnier.get("iban", ""))
+        self.kontoinhaber_entry.delete(0, tk.END)
+        self.kontoinhaber_entry.insert(0, turnier.get("kontoinhaber", ""))
+        self.zahldatum_entry.delete(0, tk.END)
+        self.zahldatum_entry.insert(0, turnier.get("zahldatum", ""))
+
+        self.toggle_bank_fields()
         self.update_info()
     
     def update_info(self):

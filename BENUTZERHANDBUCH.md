@@ -1,4 +1,4 @@
-# Benutzerhandbuch für BLATU 1.5.0
+# Benutzerhandbuch für BLATU 1.6.0
 
 ## 1. Einleitung
 
@@ -21,6 +21,19 @@ Hier legen Sie die grundlegenden Parameter für Ihren Wettkampf fest:
 *   **Ergebnisse als 1. und 2. Hälfte anzeigen:** Wenn Sie diese Option aktivieren, werden die Ergebnisse in den Auswertungen und PDFs nicht als einzelne Passen, sondern als Summe der ersten und zweiten Wettkampfhälfte dargestellt. **Wichtiger Hinweis:** Diese Option ist nur verfügbar, wenn eine gerade Anzahl an Passen eingestellt ist.
 
 Nachdem Sie alle Daten eingegeben haben, klicken Sie auf **"Einstellungen speichern"**. Ihre Konfiguration wird nun im rechten Infobereich angezeigt.
+
+### 2.1. Bankverbindung für Startgeld hinterlegen
+
+Wenn Sie das Startgeld per Überweisung einsammeln möchten, können Sie die notwendigen Bankdaten direkt im Turnier hinterlegen. Diese Informationen werden dann automatisch auf die Startlisten-PDFs für die Vereine gedruckt.
+
+1.  Aktivieren Sie die Checkbox **"Startgeld erheben und Bankdaten auf PDFs anzeigen"**.
+2.  Füllen Sie die nun aktivierten Felder aus:
+    *   **Kontonummer (IBAN)**
+    *   **Kontoinhaber**
+    *   **Zu bezahlen bis:** Geben Sie hier das Fälligkeitsdatum für die Zahlung an.
+3.  Speichern Sie die Einstellungen.
+
+Wenn die Checkbox deaktiviert ist, sind die Felder ausgegraut und die Informationen werden nicht auf den PDFs angedruckt.
 
 **Tipp:** Mit dem Button **"Zurücksetzen"** können Sie alle Eingaben in diesem Reiter auf die Standardwerte zurücksetzen.
 
