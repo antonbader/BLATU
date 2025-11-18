@@ -4,7 +4,7 @@ Startgeld-Verwaltung Tab
 """
 
 import tkinter as tk
-from tkinter import ttk, PhotoImage
+from tkinter import ttk
 
 class StartgeldTab:
     """Tab für die Startgeld-Verwaltung"""
@@ -24,16 +24,6 @@ class StartgeldTab:
 
     def create_widgets(self):
         """Erstellt alle Widgets für den Tab"""
-
-        # Checkbox-Bilder erst hier erstellen, wenn das Root-Fenster existiert
-        self.checked_img = PhotoImage(
-            name="checked",
-            data=b"R0lGODlhEAAQAMQAAORHVO5KWe5NW+9QY/BUZ/BVa/FYa/FZa/Fcb/FecfFfc/Fhd/FjePFke/Flf/Fmg/FnhvFsh/Fth/Fvh/Fzh/F1ifF5j/F9k/GEkvGMl/Gqm/Gsm/Gwn/G0oP///yH5BAEKAA8ALAAAAAAQABAAAAUuYCaOZekxQElgE0h8f8AofmN8oE4sUBwNl+i0Xh8i7sZlc9kBCwEAOw=="
-        )
-        self.unchecked_img = PhotoImage(
-            name="unchecked",
-            data=b"R0lGODlhEAAQAMQAAO7f3+/g4O/g4fDh4fHi4vHi4/Lj4/Pj4/Tk4/Xk4/Xl4/Xm5Pbk5PXm5fbm5fbn5vbn5/fo5/fo6Pfp6Pjq6fjq6vjr6vns6/nt7Pvu7fvv7vvw7vzz8v708///yH5BAEKAA8ALAAAAAAQABAAAAUqYCaOZekxQElgE0h8f8AofmN8oE4sUBwNl+i0Xh8i7sZlc9kBCwEAOw=="
-        )
 
         # Titel
         ttk.Label(
@@ -187,9 +177,8 @@ class StartgeldTab:
 
             self.schuetzen_tree.insert(
                 "", tk.END, iid=str(i), tags=(tag,),
-                image=self.checked_img if status == 'bezahlt' else self.unchecked_img,
                 values=(
-                    "", # Platzhalter für Bild
+                    "Ja" if status == 'bezahlt' else "Nein",
                     schuetze.get('gruppe', ''), schuetze.get('scheibe', ''),
                     schuetze.get('name', ''), schuetze.get('vorname', ''),
                     schuetze.get('verein', ''), startgeld_euro, status.capitalize()
@@ -227,8 +216,7 @@ class StartgeldTab:
 
             self.vereine_tree.insert(
                 "", tk.END, iid=verein, tags=(tag,),
-                image=self.checked_img if tag == 'bezahlt' else self.unchecked_img,
-                values=("", verein, startgeld_euro, status_text)
+                values=("Ja" if tag == 'bezahlt' else "Nein", verein, startgeld_euro, status_text)
             )
 
     def get_verein_status_display(self, data):
