@@ -22,15 +22,18 @@ blatu/
 │   ├── turnier_tab.py    # Turnierverwaltung Tab
 │   ├── klassen_tab.py    # Klassenverwaltung Tab
 │   ├── schuetzen_tab.py  # Schützenverwaltung Tab
+│   ├── startgeld_tab.py  # Startgeldverwaltung Tab
 │   ├── gruppen_tab.py    # Gruppenverwaltung Tab
 │   ├── ergebnisse_tab.py # Ergebniseingabe Tab
+│   ├── urkunden_tab.py   # Urkundenerstellung Tab
 │   ├── ergebnisse_window.py # Ergebnisanzeige Fenster
 │   ├── bildschirm_anzeige_window.py # Live-Ergebnisanzeige (für Beamer)
 │   └── info_tab.py       # Info Tab
 ├── utils/                 # Hilfsfunktionen
 │   ├── __init__.py
 │   ├── data_manager.py   # Speichern/Laden von Daten
-│   └── pdf_generator.py  # PDF-Erstellung
+│   ├── pdf_generator.py  # PDF-Erstellung
+│   └── word_generator.py # Word-Dokument Erstellung
 └── README.md
 ```
 
@@ -41,11 +44,13 @@ blatu/
 - Python 3.7 oder höher
 - tkinter (meist in Python enthalten)
 - reportlab (für PDF-Erstellung)
+- python-docx (für Word-Urkunden)
+- Pillow (für Screenshot-Funktionalität)
 
 ### Abhängigkeiten installieren
 
 ```bash
-pip install reportlab
+pip install reportlab python-docx Pillow
 ```
 
 ## Start der Anwendung
@@ -60,6 +65,7 @@ python main.py
 - **Klassenverwaltung**: Anlegen und Verwalten von Wettkampfklassen
 - **Schützenverwaltung**: Erfassung von Schützendaten (Name, Vorname, Klasse, Verein)
 - **Gruppenverwaltung**: Zuweisung von Schützen zu Gruppen und Scheiben, inkl. Uhrzeit-Management
+- **Startgeldverwaltung**: Übersicht und Verwaltung des Bezahlstatus pro Schütze und Verein
 - **Ergebniseingabe**: Eingabe von Ergebnissen mit Zusatzwertungen (10er, 9er)
 - **Urkundenerstellung**: Generierung von individualisierten Urkunden als Word-Dateien (.docx) basierend auf einer Vorlage.
 - **Automatische Ranglistenerstellung**: Nach Punkten und Zusatzwertung
