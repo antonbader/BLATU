@@ -169,8 +169,13 @@ class StartgeldTab:
             schuetzen_to_display.sort(key=sort_function, reverse=self.sort_reverse_schuetzen)
 
         for i, schuetze in schuetzen_to_display:
-            status = schuetze.get('startgeld_status', 'unbezahlt')
             startgeld_cent = self.turnier_model.get_klasse_startgeld(schuetze.get('klasse', ''))
+            status = schuetze.get('startgeld_status', 'unbezahlt')
+
+            # Wenn Startgeld 0 ist, immer als bezahlt behandeln
+            if startgeld_cent == 0:
+                status = 'bezahlt'
+
             startgeld_euro = f"{startgeld_cent / 100.0:.2f} €"
 
             tag = status
@@ -201,7 +206,9 @@ class StartgeldTab:
             status = schuetze.get('startgeld_status', 'unbezahlt')
             vereine_data[verein]['total_startgeld'] += startgeld
             vereine_data[verein]['total_schuetzen'] += 1
-            if status == 'bezahlt':
+
+            # Wenn Startgeld 0 ist, immer als bezahlt zählen
+            if status == 'bezahlt' or startgeld == 0:
                 vereine_data[verein]['bezahlt_count'] += 1
             elif status == 'ueberpruefen':
                 vereine_data[verein]['ueberpruefen_count'] += 1
@@ -243,7 +250,14 @@ class StartgeldTab:
             if not item_id: return
 
             schuetze_index = int(item_id)
-            current_status = self.schuetze_model.get_schuetze(schuetze_index).get('startgeld_status', 'unbezahlt')
+            schuetze = self.schuetze_model.get_schuetze(schuetze_index)
+            startgeld_cent = self.turnier_model.get_klasse_startgeld(schuetze.get('klasse', ''))
+
+            # Bei Startgeld 0 keine Statusänderung zulassen
+            if startgeld_cent == 0:
+                return
+
+            current_status = schuetze.get('startgeld_status', 'unbezahlt')
             new_status = 'bezahlt' if current_status != 'bezahlt' else 'unbezahlt'
 
             self.schuetze_model.update_schuetze_startgeld_status(schuetze_index, new_status)
