@@ -19,17 +19,15 @@ class TurnierModel:
     def set_turnier_data(self, name, datum, anzahl_passen, show_halves=False, max_scheiben=3,
                          startgeld_erheben=False, iban="", kontoinhaber="", zahldatum=""):
         """Setzt die Turnierdaten"""
-        self.turnier = {
-            "name": name,
-            "datum": datum,
-            "anzahl_passen": anzahl_passen,
-            "show_halves": show_halves,
-            "max_scheiben": max_scheiben,
-            "startgeld_erheben": startgeld_erheben,
-            "iban": iban,
-            "kontoinhaber": kontoinhaber,
-            "zahldatum": zahldatum
-        }
+        self.turnier['name'] = name
+        self.turnier['datum'] = datum
+        self.turnier['anzahl_passen'] = anzahl_passen
+        self.turnier['show_halves'] = show_halves
+        self.turnier['max_scheiben'] = max_scheiben
+        self.turnier['startgeld_erheben'] = startgeld_erheben
+        self.turnier['iban'] = iban
+        self.turnier['kontoinhaber'] = kontoinhaber
+        self.turnier['zahldatum'] = zahldatum
     
     def get_turnier_data(self):
         """Gibt die Turnierdaten zurück"""

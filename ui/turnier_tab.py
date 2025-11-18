@@ -128,23 +128,27 @@ class TurnierTab:
 
         # Buttons
         button_frame = ttk.Frame(self.frame)
-        button_frame.grid(row=2, column=0, columnspan=2, pady=20)
+        button_frame.grid(row=2, column=0, columnspan=2, pady=20, sticky="ew")
+
+        # Center the buttons within the frame
+        button_frame.columnconfigure(0, weight=1)
+        button_frame.columnconfigure(3, weight=1)
 
         ttk.Button(
             button_frame,
             text="Einstellungen speichern",
             command=self.save_settings
-        ).pack(side=tk.LEFT, padx=5)
+        ).grid(row=0, column=1, padx=5)
 
         ttk.Button(
             button_frame,
             text="Zurücksetzen",
             command=self.reset_settings
-        ).pack(side=tk.LEFT, padx=5)
+        ).grid(row=0, column=2, padx=5)
 
         # Info-Bereich
         info_frame = ttk.LabelFrame(self.frame, text="Aktuelle Einstellungen", padding="20")
-        info_frame.grid(row=4, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=20)
+        info_frame.grid(row=3, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=20)
         
         self.info_label = ttk.Label(
             info_frame, 
@@ -155,7 +159,6 @@ class TurnierTab:
         self.info_label.pack(anchor=tk.W)
         
         # Grid-Konfiguration
-        input_frame.columnconfigure(1, weight=1)
         self.frame.columnconfigure(0, weight=1)
         self.frame.rowconfigure(3, weight=1)
         
@@ -272,19 +275,6 @@ class TurnierTab:
 
         self.toggle_bank_fields()
         self.update_info()
-
-        # Explizites Update der Modelldaten, um Konsistenz sicherzustellen
-        self.turnier_model.set_turnier_data(
-            turnier.get("name", ""),
-            turnier.get("datum", ""),
-            turnier.get("anzahl_passen", 1),
-            turnier.get("show_halves", False),
-            turnier.get("max_scheiben", 3),
-            startgeld_erheben=turnier.get("startgeld_erheben", False),
-            iban=turnier.get("iban", ""),
-            kontoinhaber=turnier.get("kontoinhaber", ""),
-            zahldatum=turnier.get("zahldatum", "")
-        )
     
     def update_info(self):
         """Aktualisiert den Info-Text"""
