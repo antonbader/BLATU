@@ -45,13 +45,7 @@ blatu/
 - tkinter (meist in Python enthalten)
 - reportlab (für PDF-Erstellung)
 - python-docx (für Word-Urkunden)
-- Pillow (für Screenshot-Funktionalität)
 
-### Abhängigkeiten installieren
-
-```bash
-pip install reportlab python-docx Pillow
-```
 
 ## Start der Anwendung
 
