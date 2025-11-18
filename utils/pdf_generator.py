@@ -480,18 +480,24 @@ class PDFGenerator:
                 # Schützen sortieren: erst nach Gruppe, dann nach Name
                 schuetzen_im_verein.sort(key=lambda s: (s.get('gruppe', 0), s.get('name', '')))
 
-                # Tabelle erstellen
-                table_data = [['Name', 'Vorname', 'Klasse', 'Gruppe', 'Startzeit', 'Scheibe']]
+                # Tabelle erstellen und Gesamtstartgeld berechnen
+                table_data = [['Name', 'Vorname', 'Klasse', 'Gruppe', 'Startzeit', 'Scheibe', 'Startgeld']]
+                total_startgeld_verein = 0
                 for s in schuetzen_im_verein:
                     gruppe_nr = s.get('gruppe')
                     startzeit = self.turnier_model.get_group_time(gruppe_nr) if gruppe_nr else ''
+                    startgeld_cent = self.turnier_model.get_klasse_startgeld(s.get('klasse', ''))
+                    total_startgeld_verein += startgeld_cent
+                    startgeld_euro = f"{startgeld_cent / 100.0:.2f} €"
+
                     table_data.append([
                         s.get('name', ''),
                         s.get('vorname', ''),
                         s.get('klasse', ''),
                         s.get('gruppe', ''),
                         startzeit,
-                        s.get('scheibe', '')
+                        s.get('scheibe', ''),
+                        startgeld_euro
                     ])
 
                 table = Table(table_data)
@@ -508,8 +514,14 @@ class PDFGenerator:
                 table.setStyle(table_style)
                 elements.append(table)
 
-                # Startgeld-Informationen hinzufügen, falls aktiviert
-                if turnier.get('startgeld_erheben'):
+                # Gesamtstartgeld anzeigen
+                elements.append(Spacer(1, 0.5*cm))
+                total_startgeld_euro = f"{total_startgeld_verein / 100.0:.2f} €"
+                total_text = f"<b>Gesamtstartgeld für den Verein: {total_startgeld_euro}</b>"
+                elements.append(Paragraph(total_text, styles['Normal']))
+
+                # Startgeld-Informationen hinzufügen, falls aktiviert und Summe > 0
+                if turnier.get('startgeld_erheben') and total_startgeld_verein > 0:
                     elements.append(Spacer(1, 1*cm))
 
                     iban = turnier.get('iban', '')
