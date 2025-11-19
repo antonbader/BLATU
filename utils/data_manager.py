@@ -65,7 +65,7 @@ class DataManager:
             title="Alle Daten laden"
         )
         if not file_path:
-            return False, ""  # Benutzer hat abgebrochen
+            return False, "", None  # Benutzer hat abgebrochen
         
         return self.load_from_filepath(file_path)
 
@@ -75,8 +75,10 @@ class DataManager:
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
-            self._process_data(data)
+            # Die _process_data Methode setzt die Daten in den Models.
+            turnier_data_from_file = self._process_data(data)
             
+            # Hole die Daten aus den Models, um sicherzustellen, dass sie konsistent sind.
             turnier = self.turnier_model.get_turnier_data()
             schuetzen = self.schuetze_model.get_all_schuetzen()
             klassen = self.turnier_model.get_klassen()
@@ -87,10 +89,11 @@ class DataManager:
                 f"{len(schuetzen)} Schützen, {len(klassen)} Klassen und "
                 f"{len(ergebnisse)} Ergebnisse wurden geladen!"
             )
-            return True, message
+            # Gib die direkt aus der Datei verarbeiteten Turnierdaten zurück.
+            return True, message, turnier_data_from_file
             
         except Exception as e:
-            return False, f"Fehler beim Laden von {file_path}:\n{str(e)}"
+            return False, f"Fehler beim Laden von {file_path}:\n{str(e)}", None
 
     def _process_data(self, data):
         """Verarbeitet die geladenen JSON-Daten und aktualisiert die Modelle."""
@@ -100,6 +103,7 @@ class DataManager:
         self.turnier_model.clear_ergebnisse()
         self.turnier_model.clear_group_times()
 
+        turnier_data_from_file = None
         if isinstance(data, dict):
             # Turnierdaten
             turnier = data.get('turnier', {})
@@ -114,6 +118,7 @@ class DataManager:
                 kontoinhaber=turnier.get('kontoinhaber', ''),
                 zahldatum=turnier.get('zahldatum', '')
             )
+            turnier_data_from_file = turnier
 
             # Klassen
             for klasse_data in data.get('klassen', []):
@@ -164,3 +169,4 @@ class DataManager:
                     schuetze.get('klasse'),
                     schuetze.get('verein', '')
                 )
+        return turnier_data_from_file
