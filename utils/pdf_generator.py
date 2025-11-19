@@ -530,7 +530,7 @@ class PDFGenerator:
                     turniername = turnier.get('name', '')
 
                     text = (
-                        f"Bitte überweisen sie das Startgeld bis zum {zahldatum} "
+                        f"Bitte überweisen Sie das Startgeld bis zum {zahldatum} "
                         f"unter Angabe des Buchungszwecks \"{turniername} - {verein}\" "
                         f"auf folgendes Konto: {iban} Kontoinhaber: {kontoinhaber}"
                     )
