@@ -261,9 +261,9 @@ class TurnierTab:
                 self.on_turnier_data_changed_callback()
             messagebox.showinfo("Erfolg", "Turniereinstellungen wurden zurückgesetzt!")
     
-    def refresh(self):
-        """Aktualisiert die Anzeige"""
-        turnier = self.turnier_model.get_turnier_data()
+    def refresh(self, turnier_data=None):
+        """Aktualisiert die Anzeige."""
+        turnier = turnier_data if turnier_data is not None else self.turnier_model.get_turnier_data()
         
         self.name_entry.delete(0, tk.END)
         self.name_entry.insert(0, turnier.get("name", ""))
@@ -275,6 +275,13 @@ class TurnierTab:
         self.show_halves_var.set(turnier.get("show_halves", False))
         
         self.startgeld_erheben_var.set(turnier.get("startgeld_erheben", False))
+
+        # FIX: Widgets müssen den korrekten Status haben (aktiviert/deaktiviert),
+        # bevor ihnen Inhalt zugewiesen wird.
+        self.frame.update_idletasks()
+        self.toggle_bank_fields()
+
+        # Jetzt die Bankdatenfelder befüllen
         self.iban_entry.delete(0, tk.END)
         self.iban_entry.insert(0, turnier.get("iban", ""))
         self.kontoinhaber_entry.delete(0, tk.END)
@@ -282,7 +289,6 @@ class TurnierTab:
         self.zahldatum_entry.delete(0, tk.END)
         self.zahldatum_entry.insert(0, turnier.get("zahldatum", ""))
 
-        self.toggle_bank_fields()
         self.update_info()
     
     def update_info(self):

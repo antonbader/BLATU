@@ -44,12 +44,25 @@ class TurnierModel:
         return False
 
     def update_klasse_startgeld(self, klasse_name, startgeld):
-        """Aktualisiert das Startgeld für eine Klasse"""
+        """Aktualisiert das Startgeld für eine Klasse.
+
+        Akzeptiert einen String (z.B. "15.00") aus der UI oder einen Integer
+        (z.B. 1500) aus der geladenen Datei.
+        """
         for klasse in self.klassen:
             if klasse['name'] == klasse_name:
                 try:
-                    # Speichere als Integer in Cent
-                    klasse['startgeld'] = int(float(startgeld) * 100)
+                    # Wenn der Input ein String ist (aus der UI), in Cent umrechnen
+                    if isinstance(startgeld, str):
+                        # Ersetze Komma durch Punkt für die Umwandlung
+                        startgeld_float = float(startgeld.replace(',', '.'))
+                        klasse['startgeld'] = int(startgeld_float * 100)
+                    # Wenn der Input bereits ein Integer ist (aus der Datei), direkt verwenden
+                    elif isinstance(startgeld, int):
+                        klasse['startgeld'] = startgeld
+                    else:
+                        # Fallback für unerwartete Typen
+                        klasse['startgeld'] = int(float(startgeld) * 100)
                     return True
                 except (ValueError, TypeError):
                     return False

@@ -11,13 +11,12 @@ import tkinter as tk
 from ui.main_window import MainWindow
 
 
-def main():
+def run_app():
     """Hauptfunktion zum Starten der Anwendung"""
     root = tk.Tk()
-    app = MainWindow(root)
-
+    MainWindow(root)
     root.mainloop()
 
 
 if __name__ == "__main__":
-    main()
+    run_app()

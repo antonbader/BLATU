@@ -117,16 +117,17 @@ class MainWindow:
     
     def load_all_data(self):
         """Lädt alle Daten aus einer Datei"""
-        success, message = self.data_manager.load_from_file()
+        success, message, turnier_data = self.data_manager.load_from_file()
         if success:
             # Verzögertes Aktualisieren der UI, um sicherzustellen, dass alle Daten geladen sind
-            self.root.after(10, lambda: self.post_load_refresh(message))
+            self.root.after(10, lambda: self.post_load_refresh(message, turnier_data))
         elif message:  # Nur Fehler anzeigen, wenn eine Datei ausgewählt wurde
             messagebox.showerror("Fehler", message)
 
-    def post_load_refresh(self, success_message):
+    def post_load_refresh(self, success_message, turnier_data=None):
         """Führt die Aktualisierungen nach dem Laden aus."""
-        self.turnier_tab.refresh()
+        # Das Turnier-Tab benötigt die expliziten Daten, um den Race-Condition zu vermeiden
+        self.turnier_tab.refresh(turnier_data=turnier_data)
         self.klassen_tab.refresh()
         self.schuetzen_tab.refresh()
         self.gruppen_tab.refresh()
