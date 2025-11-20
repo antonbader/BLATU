@@ -5,6 +5,7 @@ Dienstprogramm zur Erstellung von Word-Dokumenten aus Vorlagen
 
 import os
 from docx import Document
+from docxcompose.composer import Composer
 import re
 
 class WordGenerator:
@@ -12,46 +13,6 @@ class WordGenerator:
 
     def __init__(self, template_path):
         self.template_path = template_path
-
-    def _replace_placeholder(self, paragraph, placeholder, value):
-        """Ersetzt einen Platzhalter in einem Paragraphen, auch wenn er über mehrere Runs verteilt ist."""
-        # Regex to find placeholder text, including the brackets
-        placeholder_regex = re.compile(re.escape(placeholder))
-
-        # We need to work with the full text of the paragraph to find the placeholder
-        full_text = ''.join(run.text for run in paragraph.runs)
-
-        if placeholder_regex.search(full_text):
-            # If found, clear the existing runs and add a new one with the replaced text
-            # This will lose original formatting within the paragraph, but is robust for replacement.
-            # A more complex implementation would be needed to preserve mixed formatting.
-
-            # Find the starting run
-            current_len = 0
-            for run in paragraph.runs:
-                if placeholder in run.text:
-                    # Simple case: placeholder is within a single run
-                    run.text = run.text.replace(placeholder, value)
-                    return # Done with this paragraph
-
-                # Check for placeholders spanning multiple runs
-                # This part is complex. The simple approach below handles most cases.
-
-            # If we reach here, the placeholder might be split.
-            # A robust but format-losing way:
-            new_text = full_text.replace(placeholder, value)
-
-            # Clear all runs in the paragraph
-            for run in paragraph.runs:
-                run.text = ''
-
-            # Add a new run with the updated text
-            # This takes the style of the first original run
-            if paragraph.runs:
-                paragraph.runs[0].text = new_text
-            else:
-                paragraph.add_run(new_text)
-
 
     def generate_certificate(self, output_path, data):
         """
@@ -61,25 +22,88 @@ class WordGenerator:
         """
         try:
             document = Document(self.template_path)
-
-            # Paragraphs
-            for p in document.paragraphs:
-                for key, value in data.items():
-                    # Use a more robust replacement function
-                    self._replace_placeholder_in_paragraph(p, key, str(value))
-
-            # Tables
-            for table in document.tables:
-                for row in table.rows:
-                    for cell in row.cells:
-                        for p in cell.paragraphs:
-                            for key, value in data.items():
-                                self._replace_placeholder_in_paragraph(p, key, str(value))
-
+            self._replace_placeholders_in_document(document, data)
             document.save(output_path)
             return True, None
         except Exception as e:
             return False, str(e)
+
+    def generate_schiesszettel(self, output_path, shooters_list, template_path, turnier_data):
+        """
+        Erstellt Schießzettel für eine Gruppe von Schützen in einer Datei.
+        Verwendet docxcompose, um mehrere Seiten (eine pro 4 Schützen) zusammenzufügen.
+        """
+        try:
+            # Sortieren nach Scheibe
+            shooters_list.sort(key=lambda s: s.get('scheibe', 0))
+
+            # Chunking in 4er Gruppen
+            chunks = [shooters_list[i:i + 4] for i in range(0, len(shooters_list), 4)]
+
+            master_doc = None
+            composer = None
+
+            for chunk in chunks:
+                # Vorbereiten der Daten für diesen Chunk
+                data = {}
+
+                # Turnierdaten
+                data["[Turniername]"] = turnier_data.get('name', '')
+                data["[Turnierdatum]"] = turnier_data.get('datum', '')
+
+                # Schützendaten
+                for i in range(4):
+                    suffix = f"_{i+1}"
+                    if i < len(chunk):
+                        schuetze = chunk[i]
+                        data[f"[Name{suffix}]"] = str(schuetze.get('name', ''))
+                        data[f"[Vorname{suffix}]"] = str(schuetze.get('vorname', ''))
+                        data[f"[Gruppe{suffix}]"] = str(schuetze.get('gruppe', ''))
+                        data[f"[Scheibe{suffix}]"] = str(schuetze.get('scheibe', ''))
+                    else:
+                        # Leere Platzhalter für fehlende Schützen
+                        data[f"[Name{suffix}]"] = ""
+                        data[f"[Vorname{suffix}]"] = ""
+                        data[f"[Gruppe{suffix}]"] = ""
+                        data[f"[Scheibe{suffix}]"] = ""
+
+                # Dokument für diesen Chunk erstellen
+                doc = Document(template_path)
+                self._replace_placeholders_in_document(doc, data)
+
+                # Mergen
+                if master_doc is None:
+                    master_doc = doc
+                    composer = Composer(master_doc)
+                else:
+                    # Seiteumbruch im Master-Dokument hinzufügen, BEVOR das neue Dokument angehängt wird
+                    master_doc.add_page_break()
+                    composer.append(doc)
+
+            if master_doc:
+                composer.save(output_path)
+                return True, None
+            else:
+                 # Fallback: Leeres Dokument oder Fehler, sollte nicht passieren wenn Liste nicht leer
+                 return False, "Keine Schützen für Schießzettel vorhanden."
+
+        except Exception as e:
+            return False, str(e)
+
+    def _replace_placeholders_in_document(self, document, data):
+        """Ersetzt Platzhalter im gesamten Dokument (Paragraphen und Tabellen)."""
+        # Paragraphs
+        for p in document.paragraphs:
+            for key, value in data.items():
+                self._replace_placeholder_in_paragraph(p, key, str(value))
+
+        # Tables
+        for table in document.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for p in cell.paragraphs:
+                        for key, value in data.items():
+                            self._replace_placeholder_in_paragraph(p, key, str(value))
 
     def _replace_placeholder_in_paragraph(self, paragraph, placeholder, value):
         """Replaces a placeholder in a paragraph, handling split runs."""
