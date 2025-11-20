@@ -4,7 +4,20 @@ GUI Helper Utilities
 """
 import tkinter as tk
 import os
+import sys
 import ctypes
+
+def resource_path(relative_path):
+    """
+    Get absolute path to resource, works for dev and for PyInstaller
+    """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 def set_taskbar_icon():
     """
@@ -23,13 +36,25 @@ def set_taskbar_icon():
 def set_window_icon(window):
     """
     Setzt das Icon für das übergebene Fenster.
-    Versucht 'blatu.ico' im Root-Verzeichnis zu laden.
+    Nutzt resource_path um das Icon auch in der One-File-Exe zu finden.
     """
-    icon_path = "blatu.ico"
+    icon_name = "blatu.ico"
+    # Versuche Pfad aufzulösen (wichtig für PyInstaller onefile)
+    icon_path = resource_path(icon_name)
+
+    # Fallback: Falls Datei nicht gefunden (z.B. Entwicklungsumgebung anders strukturiert),
+    # versuche lokalen Pfad direkt
+    if not os.path.exists(icon_path):
+        icon_path = icon_name
 
     if os.path.exists(icon_path):
         try:
-            window.iconbitmap(icon_path)
+            if isinstance(window, tk.Tk):
+                # Bei Root-Fenster als Standard für die ganze App setzen
+                window.iconbitmap(default=icon_path)
+            else:
+                # Bei normalen Fenstern direkt setzen
+                window.iconbitmap(icon_path)
         except tk.TclError:
             # Kann passieren, wenn das .ico-Format beschädigt ist oder vom OS nicht unterstützt wird
             print(f"Warnung: Icon '{icon_path}' konnte nicht geladen werden.")
