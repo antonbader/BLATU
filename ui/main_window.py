@@ -17,6 +17,7 @@ from .gruppen_tab import GruppenTab
 from .ergebnisse_tab import ErgebnisseTab
 from .online_eingabe_tab import OnlineEingabeTab
 from .urkunden_tab import UrkundenTab
+from .schiesszettel_tab import SchiesszettelTab
 from .startgeld_tab import StartgeldTab
 from .info_tab import InfoTab
 
@@ -88,6 +89,7 @@ class MainWindow:
         self.ergebnisse_tab = ErgebnisseTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.online_eingabe_tab = OnlineEingabeTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.urkunden_tab = UrkundenTab(self.notebook, self.turnier_model, self.schuetze_model)
+        self.schiesszettel_tab = SchiesszettelTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.startgeld_tab = StartgeldTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.info_tab = InfoTab(self.notebook)
 
@@ -103,9 +105,13 @@ class MainWindow:
         self.notebook.add(self.ergebnisse_tab.frame, text="Ergebniseingabe")
         self.notebook.add(self.online_eingabe_tab.frame, text="Online-Eingabe")
         self.notebook.add(self.urkunden_tab.frame, text="Urkunden")
+        self.notebook.add(self.schiesszettel_tab.frame, text="Schießzettel")
         self.notebook.add(self.startgeld_tab.frame, text="Startgeld")
         self.notebook.add(self.info_tab.frame, text="Info")
     
+        # Tab Change Listener für Schießzettel (um Gruppen zu aktualisieren)
+        self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
+
     def create_main_buttons(self):
         """Erstellt die Hauptbuttons zum Speichern/Laden"""
         main_button_frame = ttk.Frame(self.root, padding="10")
@@ -154,6 +160,7 @@ class MainWindow:
         self.gruppen_tab.refresh()
         self.ergebnisse_tab.refresh()
         self.startgeld_tab.refresh()
+        self.schiesszettel_tab.refresh()
         # Wichtig: Urkunden-Tab nach allen anderen aktualisieren,
         # da er von den berechneten Ergebnissen abhängt.
         self.urkunden_tab.refresh()
@@ -180,13 +187,27 @@ class MainWindow:
             self.gruppen_tab.refresh()
         if hasattr(self, 'startgeld_tab'):
             self.startgeld_tab.refresh()
+        if hasattr(self, 'schiesszettel_tab'):
+            self.schiesszettel_tab.refresh()
 
     def on_assignment_changed(self):
         """Wird aufgerufen, wenn sich eine Zuweisung in der Gruppenverwaltung ändert"""
         if hasattr(self, 'schuetzen_tab'):
             self.schuetzen_tab.refresh()
+        if hasattr(self, 'schiesszettel_tab'):
+            self.schiesszettel_tab.refresh()
 
     def on_klassen_changed_for_urkunden(self):
         """Callback specifically for updating the Urkunden tab."""
         if hasattr(self, 'urkunden_tab'):
             self.urkunden_tab.refresh()
+
+    def on_tab_changed(self, event):
+        """Handler for tab changes to trigger refresh"""
+        selected_tab = event.widget.select()
+        tab_text = event.widget.tab(selected_tab, "text")
+
+        if tab_text == "Schießzettel":
+             self.schiesszettel_tab.refresh()
+        elif tab_text == "Gruppenverwaltung":
+            self.gruppen_tab.refresh()

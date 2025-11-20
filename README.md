@@ -25,6 +25,7 @@ blatu/
 │   ├── schuetzen_tab.py  # Schützenverwaltung Tab
 │   ├── startgeld_tab.py  # Startgeldverwaltung Tab
 │   ├── gruppen_tab.py    # Gruppenverwaltung Tab
+│   ├── schiesszettel_tab.py # Schießzettel Tab
 │   ├── ergebnisse_tab.py # Ergebniseingabe Tab
 │   ├── online_eingabe_tab.py # Tab für Webserver-Steuerung
 │   ├── urkunden_tab.py   # Urkundenerstellung Tab
@@ -47,6 +48,12 @@ blatu/
 - tkinter (meist in Python enthalten)
 - reportlab (für PDF-Erstellung)
 - python-docx (für Word-Urkunden)
+- docxcompose (für das Zusammenfügen von Schießzetteln)
+
+Die Abhängigkeiten können wie folgt installiert werden:
+
+```bash
+pip install reportlab python-docx docxcompose
 - flask (für Online-Eingabe)
 
 ```bash
@@ -69,6 +76,7 @@ python main.py
 - **Ergebniseingabe**: Eingabe von Ergebnissen mit Zusatzwertungen (10er, 9er)
 - **Online-Eingabe**: Mobile Weboberfläche für die dezentrale Ergebniseingabe durch Schützen (Mehrbenutzerfähig, Live-Updates)
 - **Urkundenerstellung**: Generierung von individualisierten Urkunden als Word-Dateien (.docx) basierend auf einer Vorlage.
+- **Schießzettelgenerierung**: Erstellung von Schießzetteln (Word) für Gruppen, inkl. automatischem Seitenumbruch.
 - **Automatische Ranglistenerstellung**: Nach Punkten und Zusatzwertung
 - **PDF-Export**:
     - Professionelle PDF-Ergebnislisten (klassenweise)
