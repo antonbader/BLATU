@@ -28,7 +28,8 @@ class BildschirmAnzeigeWindow:
         # Milliseconds between scroll updates (smaller = smoother)
         self.scroll_interval = 10
         self.scroll_pause_top = 0  # Pause oben in ms
-        self.is_paused = False
+        self.is_paused = False # Interne Pause für den Top-Loop
+        self.manual_pause = False # Manuelle Pause durch User
         self.pause_counter = 0
         self.content_height = 0  # Höhe desOriginal-Inhalts
         # Internal timing helpers
@@ -127,12 +128,13 @@ class BildschirmAnzeigeWindow:
             command=self.toggle_fullscreen
         ).pack(side=tk.LEFT, padx=10)
         
-        ttk.Label(
+        self.status_label = ttk.Label(
             control_frame,
             text="💡 Automatische Aktualisierung aktiv",
             font=("Arial", 9),
             foreground="green"
-        ).pack(side=tk.LEFT, padx=20)
+        )
+        self.status_label.pack(side=tk.LEFT, padx=20)
         
         ttk.Button(
             control_frame,
@@ -404,18 +406,26 @@ class BildschirmAnzeigeWindow:
                 data.append((schuetze_id, str(ergebnis)))
         return str(sorted(data))
     
+    def _perform_update_check(self):
+        """Führt die Prüfung auf Updates durch"""
+        if not self.window.winfo_exists():
+            return
+
+        current_hash = self.get_data_hash()
+        if self.last_data_hash != current_hash:
+            self.refresh_display()
+            self.last_data_hash = current_hash
+
     def start_auto_update(self):
         """Startet die automatische Aktualisierung"""
-        def check_for_updates():
+        def auto_update_loop():
             if self.window.winfo_exists():
-                current_hash = self.get_data_hash()
-                if self.last_data_hash != current_hash:
-                    self.refresh_display()
-                    self.last_data_hash = current_hash
-                self.window.after(self.update_interval, check_for_updates)
+                if not self.manual_pause:
+                    self._perform_update_check()
+                self.window.after(self.update_interval, auto_update_loop)
         
         self.last_data_hash = self.get_data_hash()
-        self.window.after(self.update_interval, check_for_updates)
+        self.window.after(self.update_interval, auto_update_loop)
     
     def start_auto_scroll(self):
         """Startet das automatische, nahtlose Scrolling"""
@@ -426,6 +436,12 @@ class BildschirmAnzeigeWindow:
             now = time.time()
             if self._last_scroll_time is None:
                 self._last_scroll_time = now
+
+            # Wenn manuell pausiert, Loop am Leben erhalten, aber nichts tun
+            if self.manual_pause:
+                self._last_scroll_time = now
+                self.window.after(self.scroll_interval, auto_scroll)
+                return
 
             if self.is_paused:
                 self.pause_counter += self.scroll_interval
@@ -473,13 +489,29 @@ class BildschirmAnzeigeWindow:
         # Warten, bis das Layout vollständig initialisiert ist
         self.window.after(500, auto_scroll)
     
-
-    
     def toggle_pause(self):
-        """Pausiert/Startet das Scrolling manuell"""
-        self.is_paused = not self.is_paused
-        if not self.is_paused:
-            self.pause_counter = 0
+        """Pausiert/Startet das Scrolling und die Aktualisierung manuell"""
+        self.manual_pause = not self.manual_pause
+
+        if self.manual_pause:
+            # Pausiert: Status rot anzeigen
+            self.status_label.configure(
+                text="Automatische Aktualisierung angehalten",
+                foreground="red"
+            )
+        else:
+            # Weiter: Status grün anzeigen
+            self.status_label.configure(
+                text="💡 Automatische Aktualisierung aktiv",
+                foreground="green"
+            )
+            # Sofortige Aktualisierung prüfen, wenn fortgesetzt wird
+            self._perform_update_check()
+
+            # Pause-Counter zurücksetzen, damit es sofort weitergeht (falls interne Pause aktiv war)
+            if self.is_paused:
+                self.pause_counter = 0
+                self.is_paused = False
     
     def toggle_fullscreen(self):
         """Schaltet Vollbildmodus um"""
