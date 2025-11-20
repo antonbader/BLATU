@@ -9,11 +9,13 @@ Haupteinstiegspunkt der Anwendung
 
 import tkinter as tk
 from ui.main_window import MainWindow
+from utils.gui_helper import set_window_icon
 
 
 def run_app():
     """Hauptfunktion zum Starten der Anwendung"""
     root = tk.Tk()
+    set_window_icon(root)
     MainWindow(root)
     root.mainloop()
 
