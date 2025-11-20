@@ -108,21 +108,31 @@ class TurnierTab:
         self.iban_entry = ttk.Entry(bank_frame, width=30, font=("Arial", 10))
         self.iban_entry.grid(row=1, column=1, sticky=(tk.W, tk.E), pady=5, padx=10)
 
+        self.bic_label = ttk.Label(bank_frame, text="BIC:", font=("Arial", 10))
+        self.bic_label.grid(row=2, column=0, sticky=tk.W, pady=5)
+        self.bic_entry = ttk.Entry(bank_frame, width=30, font=("Arial", 10))
+        self.bic_entry.grid(row=2, column=1, sticky=(tk.W, tk.E), pady=5, padx=10)
+
+        self.bankname_label = ttk.Label(bank_frame, text="Bankname:", font=("Arial", 10))
+        self.bankname_label.grid(row=3, column=0, sticky=tk.W, pady=5)
+        self.bankname_entry = ttk.Entry(bank_frame, width=30, font=("Arial", 10))
+        self.bankname_entry.grid(row=3, column=1, sticky=(tk.W, tk.E), pady=5, padx=10)
+
         self.kontoinhaber_label = ttk.Label(bank_frame, text="Kontoinhaber:", font=("Arial", 10))
-        self.kontoinhaber_label.grid(row=2, column=0, sticky=tk.W, pady=5)
+        self.kontoinhaber_label.grid(row=4, column=0, sticky=tk.W, pady=5)
         self.kontoinhaber_entry = ttk.Entry(bank_frame, width=30, font=("Arial", 10))
-        self.kontoinhaber_entry.grid(row=2, column=1, sticky=(tk.W, tk.E), pady=5, padx=10)
+        self.kontoinhaber_entry.grid(row=4, column=1, sticky=(tk.W, tk.E), pady=5, padx=10)
 
         self.zahldatum_label = ttk.Label(bank_frame, text="Zu bezahlen bis:", font=("Arial", 10))
-        self.zahldatum_label.grid(row=3, column=0, sticky=tk.W, pady=5)
+        self.zahldatum_label.grid(row=5, column=0, sticky=tk.W, pady=5)
         self.zahldatum_entry = ttk.Entry(bank_frame, width=30, font=("Arial", 10))
-        self.zahldatum_entry.grid(row=3, column=1, sticky=(tk.W, tk.E), pady=5, padx=10)
+        self.zahldatum_entry.grid(row=5, column=1, sticky=(tk.W, tk.E), pady=5, padx=10)
         ttk.Label(
             bank_frame,
             text="(z.B. tt.mm.jjjj)",
             font=("Arial", 9),
             foreground="gray"
-        ).grid(row=4, column=1, sticky=tk.W, padx=10)
+        ).grid(row=6, column=1, sticky=tk.W, padx=10)
 
         bank_frame.columnconfigure(1, weight=1)
 
@@ -170,6 +180,10 @@ class TurnierTab:
 
         self.iban_label.config(state=state)
         self.iban_entry.config(state=state)
+        self.bic_label.config(state=state)
+        self.bic_entry.config(state=state)
+        self.bankname_label.config(state=state)
+        self.bankname_entry.config(state=state)
         self.kontoinhaber_label.config(state=state)
         self.kontoinhaber_entry.config(state=state)
         self.zahldatum_label.config(state=state)
@@ -223,6 +237,8 @@ class TurnierTab:
         
         startgeld_erheben = self.startgeld_erheben_var.get()
         iban = self.iban_entry.get().strip()
+        bic = self.bic_entry.get().strip()
+        bankname = self.bankname_entry.get().strip()
         kontoinhaber = self.kontoinhaber_entry.get().strip()
         zahldatum = self.zahldatum_entry.get().strip()
 
@@ -231,6 +247,8 @@ class TurnierTab:
             show_halves=show_halves,
             startgeld_erheben=startgeld_erheben,
             iban=iban,
+            bic=bic,
+            bankname=bankname,
             kontoinhaber=kontoinhaber,
             zahldatum=zahldatum
         )
@@ -253,6 +271,8 @@ class TurnierTab:
                 max_scheiben=3,
                 startgeld_erheben=False,
                 iban="",
+                bic="",
+                bankname="",
                 kontoinhaber="",
                 zahldatum=""
             )
@@ -284,6 +304,10 @@ class TurnierTab:
         # Jetzt die Bankdatenfelder befüllen
         self.iban_entry.delete(0, tk.END)
         self.iban_entry.insert(0, turnier.get("iban", ""))
+        self.bic_entry.delete(0, tk.END)
+        self.bic_entry.insert(0, turnier.get("bic", ""))
+        self.bankname_entry.delete(0, tk.END)
+        self.bankname_entry.insert(0, turnier.get("bankname", ""))
         self.kontoinhaber_entry.delete(0, tk.END)
         self.kontoinhaber_entry.insert(0, turnier.get("kontoinhaber", ""))
         self.zahldatum_entry.delete(0, tk.END)

@@ -17,7 +17,7 @@ class TurnierModel:
         self.group_times = {}
     
     def set_turnier_data(self, name, datum, anzahl_passen, *, show_halves=False, max_scheiben=3,
-                         startgeld_erheben=False, iban="", kontoinhaber="", zahldatum=""):
+                         startgeld_erheben=False, iban="", bic="", bankname="", kontoinhaber="", zahldatum=""):
         """Setzt die Turnierdaten und stellt eine flache Struktur sicher."""
         self.turnier = {
             'name': name,
@@ -27,6 +27,8 @@ class TurnierModel:
             'max_scheiben': max_scheiben,
             'startgeld_erheben': startgeld_erheben,
             'iban': iban,
+            'bic': bic,
+            'bankname': bankname,
             'kontoinhaber': kontoinhaber,
             'zahldatum': zahldatum
         }

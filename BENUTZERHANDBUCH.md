@@ -29,6 +29,8 @@ Wenn Sie das Startgeld per Überweisung einsammeln möchten, können Sie die not
 1.  Aktivieren Sie die Checkbox **"Startgeld erheben und Bankdaten auf PDFs anzeigen"**.
 2.  Füllen Sie die nun aktivierten Felder aus:
     *   **Kontonummer (IBAN)**
+    *   **BIC**
+    *   **Bankname**
     *   **Kontoinhaber**
     *   **Zu bezahlen bis:** Geben Sie hier das Fälligkeitsdatum für die Zahlung an.
 3.  Speichern Sie die Einstellungen.

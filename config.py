@@ -27,6 +27,8 @@ DEFAULT_TURNIER = {
     "max_scheiben": 3,
     "startgeld_erheben": False,
     "iban": "",
+    "bic": "",
+    "bankname": "",
     "kontoinhaber": "",
     "zahldatum": ""
 }
