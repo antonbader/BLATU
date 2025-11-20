@@ -177,6 +177,30 @@ class ErgebnisseTab:
         eingabe_canvas.create_window((0, 0), window=self.eingabe_frame, anchor="nw")
         eingabe_canvas.configure(yscrollcommand=eingabe_scrollbar.set)
         
+        # Mousewheel-Binding für Scrolling
+        def _on_mousewheel(event):
+            if eingabe_canvas.yview() != (0.0, 1.0):  # Nur scrollen wenn nötig
+                if event.num == 4:  # Linux Scroll Up
+                    eingabe_canvas.yview_scroll(-1, "units")
+                elif event.num == 5:  # Linux Scroll Down
+                    eingabe_canvas.yview_scroll(1, "units")
+                else:  # Windows/Mac
+                    eingabe_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+        def _bind_mousewheel(event):
+            eingabe_canvas.bind_all("<MouseWheel>", _on_mousewheel)
+            eingabe_canvas.bind_all("<Button-4>", _on_mousewheel)
+            eingabe_canvas.bind_all("<Button-5>", _on_mousewheel)
+
+        def _unbind_mousewheel(event):
+            eingabe_canvas.unbind_all("<MouseWheel>")
+            eingabe_canvas.unbind_all("<Button-4>")
+            eingabe_canvas.unbind_all("<Button-5>")
+
+        # Bindings aktivieren wenn Maus über dem Canvas ist
+        eingabe_canvas.bind("<Enter>", _bind_mousewheel)
+        eingabe_canvas.bind("<Leave>", _unbind_mousewheel)
+
         eingabe_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         eingabe_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
