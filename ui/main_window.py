@@ -15,6 +15,7 @@ from .klassen_tab import KlassenTab
 from .schuetzen_tab import SchuetzenTab
 from .gruppen_tab import GruppenTab
 from .ergebnisse_tab import ErgebnisseTab
+from .online_eingabe_tab import OnlineEingabeTab
 from .urkunden_tab import UrkundenTab
 from .startgeld_tab import StartgeldTab
 from .info_tab import InfoTab
@@ -67,6 +68,7 @@ class MainWindow:
             self.on_assignment_changed
         )
         self.ergebnisse_tab = ErgebnisseTab(self.notebook, self.turnier_model, self.schuetze_model)
+        self.online_eingabe_tab = OnlineEingabeTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.urkunden_tab = UrkundenTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.startgeld_tab = StartgeldTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.info_tab = InfoTab(self.notebook)
@@ -81,6 +83,7 @@ class MainWindow:
         self.notebook.add(self.schuetzen_tab.frame, text="Schützenverwaltung")
         self.notebook.add(self.gruppen_tab.frame, text="Gruppenverwaltung")
         self.notebook.add(self.ergebnisse_tab.frame, text="Ergebniseingabe")
+        self.notebook.add(self.online_eingabe_tab.frame, text="Online-Eingabe")
         self.notebook.add(self.urkunden_tab.frame, text="Urkunden")
         self.notebook.add(self.startgeld_tab.frame, text="Startgeld")
         self.notebook.add(self.info_tab.frame, text="Info")

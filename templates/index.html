@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ergebniseingabe</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .search-box { width: 100%; padding: 10px; font-size: 16px; box-sizing: border-box; margin-bottom: 20px; }
+        .shooter-list { list-style: none; padding: 0; }
+        .shooter-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .shooter-item:hover { background-color: #f9f9f9; }
+        .shooter-item:last-child { border-bottom: none; }
+        .shooter-info { font-weight: bold; }
+        .shooter-details { color: #666; font-size: 0.9em; }
+        .btn { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .btn:disabled { background-color: #ccc; }
+        .error { color: red; margin-top: 10px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Ergebniseingabe</h1>
+        <p>Bitte wählen Sie einen Schützen aus.</p>
+    </div>
+
+    <input type="text" id="searchInput" class="search-box" placeholder="Namen suchen..." onkeyup="filterShooters()">
+
+    <div class="card">
+        <ul class="shooter-list" id="shooterList">
+            {% for s in schuetzen %}
+            <li class="shooter-item" onclick="selectShooter('{{ s.id }}')">
+                <div>
+                    <div class="shooter-info">{{ s.vorname }} {{ s.name }}</div>
+                    <div class="shooter-details">{{ s.klasse }} • {{ s.verein }}</div>
+                </div>
+                <div>➡️</div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% if not schuetzen %}
+        <p style="text-align: center; color: #666;">Keine Schützen verfügbar oder Gruppen gesperrt.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        function filterShooters() {
+            var input, filter, ul, li, div, i, txtValue;
+            input = document.getElementById('searchInput');
+            filter = input.value.toUpperCase();
+            ul = document.getElementById("shooterList");
+            li = ul.getElementsByTagName('li');
+
+            for (i = 0; i < li.length; i++) {
+                div = li[i].getElementsByClassName("shooter-info")[0];
+                txtValue = div.textContent || div.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    li[i].style.display = "";
+                } else {
+                    li[i].style.display = "none";
+                }
+            }
+        }
+
+        function selectShooter(id) {
+            window.location.href = "/login/" + id;
+        }
+    </script>
+</body>
+</html>

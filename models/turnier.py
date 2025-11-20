@@ -97,11 +97,34 @@ class TurnierModel:
     
     def add_ergebnis(self, schuetze_id, passen, anzahl_10er, anzahl_9er):
         """Fügt ein Ergebnis hinzu oder aktualisiert es"""
-        self.ergebnisse[schuetze_id] = {
+        current = self.ergebnisse.get(schuetze_id, {})
+        current.update({
             'passen': passen,
             'anzahl_10er': anzahl_10er,
             'anzahl_9er': anzahl_9er
-        }
+        })
+        self.ergebnisse[schuetze_id] = current
+
+    def add_web_ergebnis(self, schuetze_id, passen_sums, anzahl_10er, anzahl_9er, web_raw_data):
+        """
+        Fügt Ergebnisse von der Weboberfläche hinzu.
+        Speichert zusätzlich die Rohdaten (Einzelschüsse).
+
+        :param schuetze_id: ID des Schützen
+        :param passen_sums: Liste der Passen-Summen (z.B. [45, 50, ...])
+        :param anzahl_10er: Anzahl der 10er
+        :param anzahl_9er: Anzahl der 9er
+        :param web_raw_data: Dictionary mit Einzelschüssen pro Passe
+                             z.B. {0: [10, 9, 9, 8, 7, 6], 1: [...]}
+        """
+        current = self.ergebnisse.get(schuetze_id, {})
+        current.update({
+            'passen': passen_sums,
+            'anzahl_10er': anzahl_10er,
+            'anzahl_9er': anzahl_9er,
+            'web_raw_data': web_raw_data
+        })
+        self.ergebnisse[schuetze_id] = current
     
     def get_ergebnis(self, schuetze_id):
         """Gibt ein Ergebnis zurück"""
