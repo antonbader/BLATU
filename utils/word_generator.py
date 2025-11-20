@@ -4,9 +4,15 @@ Dienstprogramm zur Erstellung von Word-Dokumenten aus Vorlagen
 """
 
 import os
+import warnings
 from docx import Document
-from docxcompose.composer import Composer
 import re
+
+# Warnung von docxcompose unterdrücken
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=UserWarning, module='docxcompose.properties')
+    from docxcompose.composer import Composer
+
 
 class WordGenerator:
     """Erstellt Word-Dokumente aus einer Vorlage."""
