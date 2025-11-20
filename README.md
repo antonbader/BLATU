@@ -48,10 +48,10 @@ blatu/
 - python-docx (für Word-Urkunden)
 - docxcompose (für das Zusammenfügen von Schießzetteln)
 
-Die Abhängigkeiten können über die `requirements.txt` installiert werden:
+Die Abhängigkeiten können wie folgt installiert werden:
 
 ```bash
-pip install -r requirements.txt
+pip install reportlab python-docx docxcompose
 ```
 
 ## Start der Anwendung
