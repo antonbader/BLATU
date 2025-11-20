@@ -4,6 +4,21 @@ GUI Helper Utilities
 """
 import tkinter as tk
 import os
+import ctypes
+
+def set_taskbar_icon():
+    """
+    Setzt die AppUserModelID für Windows, damit das Icon in der Taskleiste korrekt angezeigt wird.
+    Dies muss vor dem Erstellen des Hauptfensters aufgerufen werden.
+    """
+    if os.name == 'nt':
+        try:
+            # Eindeutige ID für die Anwendung
+            # Format: Company.Product.SubProduct.Version
+            myappid = 'blatu.turnierverwaltung.main.1.5.1'
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        except Exception as e:
+            print(f"Warnung: Konnte AppUserModelID nicht setzen: {e}")
 
 def set_window_icon(window):
     """
