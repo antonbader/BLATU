@@ -19,8 +19,18 @@ def run_app():
     set_taskbar_icon()
 
     root = tk.Tk()
+
+    # Icon initial setzen
     set_window_icon(root)
+
     MainWindow(root)
+
+    # TRICK: Das Icon nochmals verzögert setzen.
+    # Manche Windows-Konfigurationen oder Tkinter-Versionen "vergessen" das Taskleisten-Icon
+    # während des initialen Fenstersaufbaus. Durch das erneute Setzen im Event-Loop
+    # wird es erzwungen, sobald das Fenster wirklich da ist.
+    root.after(200, lambda: set_window_icon(root))
+
     root.mainloop()
 
 
