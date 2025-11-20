@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Blasrohr Turnier Verwaltung (Blatu)
-Version 1.4.0
+Version 1.5.0
 
 Haupteinstiegspunkt der Anwendung
 """

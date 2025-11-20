@@ -15,6 +15,7 @@ from .klassen_tab import KlassenTab
 from .schuetzen_tab import SchuetzenTab
 from .gruppen_tab import GruppenTab
 from .ergebnisse_tab import ErgebnisseTab
+from .online_eingabe_tab import OnlineEingabeTab
 from .urkunden_tab import UrkundenTab
 from .schiesszettel_tab import SchiesszettelTab
 from .startgeld_tab import StartgeldTab
@@ -35,8 +36,26 @@ class MainWindow:
         self.data_manager = DataManager(self.turnier_model, self.schuetze_model)
         self.pdf_generator = PDFGenerator(self.turnier_model)
         
+        # Tracking für Live-Updates
+        self.last_update_check = 0
+
         self.create_widgets()
+        self.start_update_loop()
     
+    def start_update_loop(self):
+        """Startet die Schleife zur Prüfung auf Updates"""
+        self.check_for_updates()
+        self.root.after(1000, self.start_update_loop)
+
+    def check_for_updates(self):
+        """Prüft ob Updates vorliegen und aktualisiert die UI"""
+        if self.turnier_model.last_update_time > self.last_update_check:
+            self.last_update_check = self.turnier_model.last_update_time
+            # Refresh Tabs die Ergebnisse anzeigen
+            if hasattr(self, 'ergebnisse_tab'):
+                self.ergebnisse_tab.refresh_silent_update()
+            # Weitere Tabs könnten hier folgen, aber Ergebnisse ist am wichtigsten
+
     def create_widgets(self):
         """Erstellt alle Widgets"""
         # Haupt-Button-Frame unten
@@ -68,6 +87,7 @@ class MainWindow:
             self.on_assignment_changed
         )
         self.ergebnisse_tab = ErgebnisseTab(self.notebook, self.turnier_model, self.schuetze_model)
+        self.online_eingabe_tab = OnlineEingabeTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.urkunden_tab = UrkundenTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.schiesszettel_tab = SchiesszettelTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.startgeld_tab = StartgeldTab(self.notebook, self.turnier_model, self.schuetze_model)
@@ -83,6 +103,7 @@ class MainWindow:
         self.notebook.add(self.schuetzen_tab.frame, text="Schützenverwaltung")
         self.notebook.add(self.gruppen_tab.frame, text="Gruppenverwaltung")
         self.notebook.add(self.ergebnisse_tab.frame, text="Ergebniseingabe")
+        self.notebook.add(self.online_eingabe_tab.frame, text="Online-Eingabe")
         self.notebook.add(self.urkunden_tab.frame, text="Urkunden")
         self.notebook.add(self.schiesszettel_tab.frame, text="Schießzettel")
         self.notebook.add(self.startgeld_tab.frame, text="Startgeld")

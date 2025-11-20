@@ -19,6 +19,11 @@ class ErgebnisseTab:
         self.selected_schuetze_index = None
         self.sort_column = None
         self.sort_reverse = False
+
+        # Referenzen auf externe Fenster
+        self.ergebnis_window = None
+        self.bildschirm_window = None
+
         self.frame = ttk.Frame(parent, padding="10")
         self.create_widgets()
     
@@ -42,6 +47,12 @@ class ErgebnisseTab:
         self.search_entry.pack(fill=tk.X, padx=5, pady=5)
         self.search_entry.bind("<KeyRelease>", self.filter_schuetzen)
         
+        ttk.Button(
+            search_frame,
+            text="Liste aktualisieren",
+            command=self.refresh_silent_update
+        ).pack(fill=tk.X, padx=5, pady=5)
+
         ttk.Label(
             search_frame, 
             text="Filter nach Name, Vorname oder Klasse", 
@@ -427,7 +438,9 @@ class ErgebnisseTab:
             return
         
         from .ergebnisse_window import ErgebnisWindow
-        ErgebnisWindow(self.frame, self.turnier_model, self.schuetze_model)
+        # Wenn bereits offen, Fokus geben? Hier wird einfach ein neues erstellt (wie bisher)
+        # Aber wir merken uns die Referenz.
+        self.ergebnis_window = ErgebnisWindow(self.frame, self.turnier_model, self.schuetze_model)
     
     def show_bildschirmanzeige(self):
         """Zeigt die Bildschirmanzeige für externe Monitore"""
@@ -436,7 +449,7 @@ class ErgebnisseTab:
             return
         
         from .bildschirm_anzeige_window import BildschirmAnzeigeWindow
-        BildschirmAnzeigeWindow(self.frame, self.turnier_model, self.schuetze_model)
+        self.bildschirm_window = BildschirmAnzeigeWindow(self.frame, self.turnier_model, self.schuetze_model)
     
     def refresh(self):
         """Aktualisiert die Anzeige"""
@@ -444,3 +457,19 @@ class ErgebnisseTab:
         self.update_schuetzen_tree()
         self.selected_schuetze_index = None
         self.info_label.config(text="Bitte wählen Sie einen Schützen aus")
+
+    def refresh_silent_update(self):
+        """Aktualisiert nur die Liste und ggf. geladene Ergebnisse, ohne Selection-Reset"""
+        current_filter = self.search_entry.get()
+        self.update_schuetzen_tree(current_filter)
+
+        # Wenn ein Schütze geladen ist, dessen Felder aktualisieren
+        if self.selected_schuetze_index is not None:
+             self.load_ergebnisse()
+
+        # Externe Fenster aktualisieren
+        if self.ergebnis_window and self.ergebnis_window.window.winfo_exists():
+            self.ergebnis_window.refresh()
+
+        if self.bildschirm_window and self.bildschirm_window.window.winfo_exists():
+            self.bildschirm_window.refresh_display()
