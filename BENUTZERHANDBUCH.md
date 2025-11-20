@@ -1,4 +1,4 @@
-# Benutzerhandbuch für BLATU 1.4.0
+# Benutzerhandbuch für BLATU 1.5.0
 
 ## 1. Einleitung
 
@@ -61,6 +61,7 @@ Sie können Klassen jederzeit löschen, indem Sie eine Klasse auswählen und auf
 Wechseln Sie in den Reiter **"Schützen"**, um Teilnehmer zu verwalten.
 
 *   **Schütze hinzufügen:** Füllen Sie die Felder "Name", "Vorname", "Verein" aus und wählen Sie die passende "Klasse" aus der Dropdown-Liste aus. Klicken Sie anschließend auf **"Schütze hinzufügen"**. Der neue Teilnehmer erscheint in der Schützenliste.
+*   **PIN:** Jedem Schützen wird automatisch eine 4-stellige PIN zugewiesen. Diese PIN wird für die **Online-Eingabe** benötigt. Sie können die PIN einsehen und ändern, indem Sie einen Schützen auswählen.
 *   **Schütze bearbeiten:** Um die Daten eines Schützen zu ändern, doppelklicken Sie auf seinen Eintrag in der Liste oder wählen Sie ihn aus und klicken auf **"Bearbeiten"**. Die Daten werden in die Eingabefelder geladen. Nach der Änderung klicken Sie auf **"Schütze aktualisieren"**.
 *   **Schütze löschen:** Wählen Sie einen oder mehrere Schützen aus und klicken Sie auf **"Ausgewählten löschen"**. Mit **"Alle Schützen löschen"** leeren Sie die komplette Liste.
 
@@ -112,32 +113,59 @@ Wechseln Sie zum Reiter **"Ergebnisse"**, um die Wettkampfergebnisse zu erfassen
 3.  **Ergebnisse eingeben:** Tragen Sie die Ergebnisse für jede Passe in die entsprechenden Felder ein. **Bitte beachten Sie, dass nur ganze Zahlen (ohne Kommastellen) als Ergebnisse akzeptiert werden.** Das Gesamtergebnis wird automatisch berechnet und unten angezeigt.
 4.  **Zusatzwertung:** Geben Sie die **Anzahl der 10er und 9er** ein. Diese Werte werden zur Ermittlung der Platzierung bei Ergebnisgleichheit herangezogen.
 5.  **Speichern:** Klicken Sie auf **"Ergebnisse speichern"**. Das Gesamtergebnis des Schützen wird nun in der Liste links angezeigt.
+6.  **Aktualisieren:** Mit dem Button **"Liste aktualisieren"** können Sie die angezeigten Daten neu laden, falls parallel Ergebnisse über die Online-Eingabe erfasst wurden.
 
 ### 5.1. Gesamtergebnisse anzeigen
 
-Klicken Sie auf den Button **"Ergebnisanzeige"**. Ein neues Fenster öffnet sich, das die vollständigen Ranglisten anzeigt, sortiert nach Klassen und Platzierungen.
+Klicken Sie auf den Button **"Ergebnisanzeige"**. Ein neues Fenster öffnet sich, das die vollständigen Ranglisten anzeigt, sortiert nach Klassen und Platzierungen. Auch hier gibt es einen **"Aktualisieren"**-Button für Live-Updates.
 
 ---
 
-## 6. Startgeldverwaltung
+## 6. Online-Eingabe (Webinterface)
+
+Der Reiter **"Online-Eingabe"** ermöglicht es Ihnen, einen lokalen Webserver zu starten, über den Schützen ihre Ergebnisse selbstständig mit einem Smartphone oder Tablet eingeben können.
+
+### 6.1. Server starten
+
+1.  Wählen Sie einen **Port** (Standard: 8080).
+2.  Klicken Sie auf **"Server starten"**.
+3.  Die Statusanzeige wechselt auf grün ("Aktiv") und die IP-Adresse, unter der die Webseite erreichbar ist, wird angezeigt (z. B. `192.168.1.100:8080`).
+
+### 6.2. Gruppen freigeben
+
+Um Missbrauch zu verhindern, können Sie festlegen, welche Gruppen aktuell Ergebnisse eingeben dürfen.
+*   Wählen Sie im rechten Bereich die gewünschten Gruppen aus.
+*   Nur Schützen, die diesen Gruppen zugewiesen sind, können sich anmelden.
+
+### 6.3. Verwendung durch den Schützen
+
+1.  Der Schütze öffnet die IP-Adresse in seinem Browser.
+2.  Auf der Startseite wählt er seinen Namen aus der Liste (oder zwei Namen, um Ergebnisse für zwei Personen gleichzeitig einzugeben). Zur Orientierung werden Gruppe und Scheibe angezeigt.
+3.  **Login:** Der Schütze muss seine persönliche **PIN** eingeben (diese finden Sie in der "Schützenverwaltung").
+4.  **Eingabe:** Für jede Passe stehen 6 Eingabefelder zur Verfügung. Die Summen und 10er/9er werden automatisch berechnet.
+5.  Nach Abschluss klickt der Schütze auf **"Speichern"**. Die Daten werden sofort an die Hauptanwendung übertragen und in der Live-Anzeige aktualisiert.
+
+---
+
+## 7. Startgeldverwaltung
 
 Der Reiter **"Startgeld"** ist die zentrale Anlaufstelle, um den Überblick über die bezahlten Startgelder zu behalten.
 
-### 6.1. Die Oberfläche
+### 7.1. Die Oberfläche
 
 Der Reiter ist in zwei Hauptbereiche unterteilt:
 
 1.  **Alle Schützen (obere Liste):** Hier sehen Sie jeden einzelnen Teilnehmer mit seinem Namen, Verein, dem fälligen Startgeld (basierend auf seiner Klasse) und dem Bezahlstatus.
 2.  **Vereine (untere Liste):** Diese Liste fasst die Informationen pro Verein zusammen. Sie sehen das gesamte fällige Startgeld pro Verein und den Gesamt-Bezahlstatus.
 
-### 6.2. Bezahlstatus ändern
+### 7.2. Bezahlstatus ändern
 
 Sie können den Status ganz einfach per Mausklick ändern:
 
 *   **Einzelner Schütze:** Klicken Sie auf die Checkbox in der ersten Spalte der Schützenliste, um den Status eines Teilnehmers zwischen "bezahlt" (grün) und "unbezahlt" (rot) zu wechseln.
 *   **Ganzer Verein:** Klicken Sie auf die Checkbox in der ersten Spalte der Vereinsliste, um den Status für **alle** Schützen dieses Vereins gleichzeitig zu ändern. Wenn noch nicht alle Mitglieder bezahlt haben, werden alle auf "bezahlt" gesetzt. Sind bereits alle als bezahlt markiert, werden alle auf "unbezahlt" zurückgesetzt.
 
-### 6.3. Farbcodierung und Status
+### 7.3. Farbcodierung und Status
 
 Die Software nutzt Farben, um den Status schnell erfassbar zu machen:
 
@@ -147,14 +175,14 @@ Die Software nutzt Farben, um den Status schnell erfassbar zu machen:
     *   **Beim Verein:** Einige, aber nicht alle Mitglieder des Vereins haben bezahlt.
     *   **Beim Schützen (Status "Überprüfen"):** Dieser Status wird automatisch gesetzt, wenn sich etwas an den Rahmenbedingungen ändert (z. B. der Schütze wird einer neuen Klasse zugewiesen oder das Startgeld der Klasse wird geändert). Dies dient als Hinweis, dass der ursprünglich erfasste Bezahlstatus eventuell nicht mehr korrekt ist und manuell bestätigt werden muss.
 
-### 6.4. Schützen filtern und sortieren
+### 7.4. Schützen filtern und sortieren
 
 *   **Filtern:** Nutzen Sie das Suchfeld oben, um die Schützenliste in Echtzeit zu filtern. Geben Sie einfach einen Teil des Namens oder Vereins ein.
 *   **Sortieren:** Klicken Sie auf eine Spaltenüberschrift in einer der beiden Listen, um die Daten nach dieser Spalte zu sortieren. Ein erneuter Klick kehrt die Sortierreihenfolge um.
 
 ---
 
-## 7. PDF-Export
+## 8. PDF-Export
 
 Die Software kann professionelle PDF-Dokumente für die Veröffentlichung erstellen.
 
@@ -164,7 +192,7 @@ Die Software kann professionelle PDF-Dokumente für die Veröffentlichung erstel
 
 ---
 
-## 8. Live-Anzeige für Bildschirme
+## 9. Live-Anzeige für Bildschirme
 
 Für die Zuschauer oder zur Anzeige auf einem Beamer können Sie eine Live-Ansicht der Ergebnisse starten.
 
@@ -176,22 +204,22 @@ Ein neues, für große Bildschirme optimiertes Fenster öffnet sich.
 ### Highlights der Live-Anzeige:
 
 *   **Nahtloses Scrollen:** Die Ergebnisliste läuft in einer Endlosschleife von unten nach oben durch, sodass alle Teilnehmer ohne Unterbrechung sichtbar sind.
-*   **Automatische Aktualisierung:** Die Anzeige aktualisiert sich alle paar Sekunden automatisch. Sobald Sie neue Ergebnisse speichern, erscheinen diese ohne weiteres Zutun in der Live-Anzeige.
+*   **Automatische Aktualisierung:** Die Anzeige aktualisiert sich automatisch, sobald neue Ergebnisse (ob manuell oder per Web eingegeben) gespeichert werden.
 *   **Visuelle Hervorhebung:** Die ersten drei Plätze jeder Klasse werden mit Medaillen-Emojis (🥇, 🥈, 🥉) und farblicher Hinterlegung deutlich hervorgehoben.
 *   **Dynamisches Layout:** Die Anzeige passt sich intelligent an die Turnierkonfiguration an. Bei wenigen Passen werden die Einzelergebnisse angezeigt, bei vielen Passen wird auf eine kompakte Gesamtansicht umgeschaltet.
 *   **Einfache Steuerung:** Am unteren Rand des Fensters finden Sie Steuerelemente, um das Scrollen zu pausieren, die Ansicht manuell zu aktualisieren oder in den Vollbildmodus zu wechseln (und ihn mit der `ESC`-Taste wieder zu verlassen).
 
 ---
 
-## 9. Urkunden erstellen
+## 10. Urkunden erstellen
 
 Die Software bietet eine leistungsstarke Funktion, um individuelle Urkunden für Ihre Teilnehmer zu erstellen. Wechseln Sie dazu in den Reiter **"Urkunden"**.
 
-### 8.1. Funktionsweise
+### 10.1. Funktionsweise
 
 Die Urkundenerstellung basiert auf einer von Ihnen bereitgestellten Word-Vorlage (`.docx`). In dieser Vorlage definieren Sie mit Platzhaltern, wo die Daten der Schützen (Name, Platz, Ergebnis etc.) eingefügt werden sollen. Die Software ersetzt diese Platzhalter automatisch und erstellt für jeden ausgewählten Schützen eine separate Word-Datei.
 
-### 8.2. Konfiguration
+### 10.2. Konfiguration
 
 Im oberen Bereich des Reiters finden Sie alle notwendigen Einstellungen:
 
@@ -206,7 +234,7 @@ Im oberen Bereich des Reiters finden Sie alle notwendigen Einstellungen:
     *   **Speicherort:** Wählen Sie den Ordner, in dem die erstellten Urkunden-Dateien gespeichert werden sollen.
     *   **Unterordner für jede Klasse erstellen:** Wenn diese Option aktiviert ist, erstellt die Software im Ziel-Speicherort für jede Wettkampfklasse einen eigenen Unterordner (z. B. "Herren_I", "Jugend"), in den die jeweiligen Urkunden sortiert werden.
 
-### 8.3. Verfügbare Platzhalter
+### 10.3. Verfügbare Platzhalter
 
 Ihre Word-Vorlage kann die folgenden Platzhalter enthalten. Achten Sie darauf, die eckigen Klammern exakt wie angegeben zu verwenden.
 
@@ -219,7 +247,7 @@ Ihre Word-Vorlage kann die folgenden Platzhalter enthalten. Achten Sie darauf, d
 *   `[Ergebnis]` - Das Gesamtergebnis des Schützen.
 *   `[Platz]` - Die Platzierung des Schützen innerhalb seiner Klasse.
 
-### 9.4. Erstellungsprozess
+### 10.4. Erstellungsprozess
 
 Wenn Sie alle Einstellungen vorgenommen haben, klicken Sie auf den Button **"🚀 Urkunden erstellen"**. Die Software führt nun folgende Schritte aus:
 
@@ -232,6 +260,6 @@ Nach Abschluss des Vorgangs erhalten Sie eine Erfolgsmeldung.
 
 ---
 
-## 10. Über die Software
+## 11. Über die Software
 
 Im Reiter **"Info"** finden Sie die aktuelle Versionsnummer der Software sowie Kontaktinformationen.
