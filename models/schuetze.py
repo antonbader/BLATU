@@ -5,14 +5,24 @@ Verwaltet Schützendaten
 """
 
 
+import random
+
+
 class SchuetzeModel:
     """Verwaltet alle Schützendaten"""
     
     def __init__(self):
         self.schuetzen = []
+
+    def _generate_pin(self):
+        """Erzeugt eine zufällige 4-stellige PIN"""
+        return f"{random.randint(0, 9999):04d}"
     
-    def add_schuetze(self, name, vorname, klasse, verein="", gruppe=None, scheibe=None):
+    def add_schuetze(self, name, vorname, klasse, verein="", gruppe=None, scheibe=None, pin=None):
         """Fügt einen neuen Schützen hinzu"""
+        if pin is None:
+            pin = self._generate_pin()
+
         schuetze = {
             "name": name,
             "vorname": vorname,
@@ -20,16 +30,20 @@ class SchuetzeModel:
             "verein": verein,
             "gruppe": gruppe,
             "scheibe": scheibe,
-            "startgeld_status": "unbezahlt"  # Standardwert
+            "startgeld_status": "unbezahlt",  # Standardwert
+            "pin": pin
         }
         self.schuetzen.append(schuetze)
         return len(self.schuetzen) - 1
     
-    def update_schuetze(self, index, name, vorname, klasse, verein="", gruppe=None, scheibe=None):
+    def update_schuetze(self, index, name, vorname, klasse, verein="", gruppe=None, scheibe=None, pin=None):
         """Aktualisiert einen bestehenden Schützen"""
         if 0 <= index < len(self.schuetzen):
             # Bewahre den Status, wenn der Schütze aktualisiert wird
             status = self.schuetzen[index].get("startgeld_status", "unbezahlt")
+            # Bewahre die PIN, wenn keine neue übergeben wurde
+            current_pin = self.schuetzen[index].get("pin", self._generate_pin())
+            new_pin = pin if pin is not None else current_pin
 
             # Wenn sich die Klasse ändert, setze den Status auf "überprüfen"
             if self.schuetzen[index]['klasse'] != klasse:
@@ -42,7 +56,8 @@ class SchuetzeModel:
                 "verein": verein,
                 "gruppe": gruppe,
                 "scheibe": scheibe,
-                "startgeld_status": status
+                "startgeld_status": status,
+                "pin": new_pin
             }
             return True
         return False
@@ -65,11 +80,18 @@ class SchuetzeModel:
     def get_schuetze(self, index):
         """Gibt einen Schützen zurück"""
         if 0 <= index < len(self.schuetzen):
+            # PIN sicherstellen
+            if "pin" not in self.schuetzen[index]:
+                self.schuetzen[index]["pin"] = self._generate_pin()
             return self.schuetzen[index].copy()
         return None
     
     def get_all_schuetzen(self):
         """Gibt alle Schützen zurück"""
+        # Sicherstellen, dass alle Schützen eine PIN haben (für Legacy-Daten)
+        for s in self.schuetzen:
+            if "pin" not in s:
+                s["pin"] = self._generate_pin()
         return [s.copy() for s in self.schuetzen]
     
     def clear_schuetzen(self):

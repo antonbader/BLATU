@@ -51,13 +51,29 @@ class SchuetzenTab:
         self.verein_entry = ttk.Entry(input_frame, width=30)
         self.verein_entry.grid(row=1, column=3, sticky=(tk.W, tk.E), pady=5, padx=5)
 
+        # PIN Bearbeitung
+        ttk.Label(input_frame, text="PIN:").grid(row=2, column=0, sticky=tk.W, pady=5)
+        pin_frame = ttk.Frame(input_frame)
+        pin_frame.grid(row=2, column=1, sticky=(tk.W, tk.E), pady=5, padx=5)
+
+        self.pin_entry = ttk.Entry(pin_frame, width=10)
+        self.pin_entry.pack(side=tk.LEFT)
+
+        self.gen_pin_button = ttk.Button(
+            pin_frame,
+            text="Generieren",
+            command=self.generate_random_pin,
+            width=10
+        )
+        self.gen_pin_button.pack(side=tk.LEFT, padx=5)
+
         # Button
         self.add_button = ttk.Button(
             input_frame,
             text="Schütze hinzufügen",
             command=self.add_or_update_schuetze
         )
-        self.add_button.grid(row=2, column=0, columnspan=4, pady=10)
+        self.add_button.grid(row=3, column=0, columnspan=4, pady=10)
 
         # Grid-Konfiguration für Input-Frame
         input_frame.columnconfigure(1, weight=1)
@@ -106,7 +122,7 @@ class SchuetzenTab:
         
         self.tree = ttk.Treeview(
             list_frame, 
-            columns=("Name", "Vorname", "Klasse", "Verein", "Gruppe", "Scheibe"),
+            columns=("Name", "Vorname", "Klasse", "Verein", "Gruppe", "Scheibe", "PIN"),
             show="headings", 
             yscrollcommand=scrollbar.set, 
             height=15
@@ -117,12 +133,14 @@ class SchuetzenTab:
         self.tree.heading("Verein", text="Verein", command=lambda: self.sort_by_column("Verein"))
         self.tree.heading("Gruppe", text="Gruppe", command=lambda: self.sort_by_column("Gruppe"))
         self.tree.heading("Scheibe", text="Scheibe", command=lambda: self.sort_by_column("Scheibe"))
+        self.tree.heading("PIN", text="PIN", command=lambda: self.sort_by_column("PIN"))
         self.tree.column("Name", width=150)
         self.tree.column("Vorname", width=150)
         self.tree.column("Klasse", width=120)
         self.tree.column("Verein", width=150)
         self.tree.column("Gruppe", width=70, anchor="center")
         self.tree.column("Scheibe", width=70, anchor="center")
+        self.tree.column("PIN", width=70, anchor="center")
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.config(command=self.tree.yview)
         self.tree.bind("<Double-1>", lambda e: self.edit_selected())
@@ -192,6 +210,11 @@ class SchuetzenTab:
         vorname = self.vorname_entry.get().strip()
         klasse = self.klasse_combo.get().strip()
         verein = self.verein_entry.get().strip()
+        pin = self.pin_entry.get().strip()
+
+        # Wenn PIN leer ist, None übergeben (dann wird sie im Model generiert/behalten)
+        if not pin:
+            pin = None
         
         if not name or not vorname or not klasse:
             messagebox.showwarning(
@@ -205,14 +228,15 @@ class SchuetzenTab:
             schuetze = self.schuetze_model.get_schuetze(self.editing_index)
             self.schuetze_model.update_schuetze(
                 self.editing_index, name, vorname, klasse, verein,
-                gruppe=schuetze.get('gruppe'), scheibe=schuetze.get('scheibe')
+                gruppe=schuetze.get('gruppe'), scheibe=schuetze.get('scheibe'),
+                pin=pin
             )
             messagebox.showinfo("Erfolg", f"{vorname} {name} wurde aktualisiert!")
             self.editing_index = None
             self.add_button.config(text="Schütze hinzufügen")
         else:
             # Neu hinzufügen
-            self.schuetze_model.add_schuetze(name, vorname, klasse, verein)
+            self.schuetze_model.add_schuetze(name, vorname, klasse, verein, pin=pin)
             messagebox.showinfo("Erfolg", f"{vorname} {name} wurde hinzugefügt!")
         
         self.clear_entries()
@@ -234,12 +258,14 @@ class SchuetzenTab:
         
         # Index finden
         schuetzen = self.schuetze_model.get_all_schuetzen()
+        current_schuetze = None
         for i, schuetze in enumerate(schuetzen):
             if (schuetze['name'] == values[0] and 
                 schuetze['vorname'] == values[1] and 
                 schuetze['klasse'] == values[2] and 
                 schuetze['verein'] == values[3]):
                 self.editing_index = i
+                current_schuetze = schuetze
 
                 # Manuelle Zuweisungsfelder füllen
                 self.manual_gruppe_var.set(schuetze.get('gruppe', ''))
@@ -254,6 +280,11 @@ class SchuetzenTab:
         self.klasse_combo.set(values[2])
         self.verein_entry.delete(0, tk.END)
         self.verein_entry.insert(0, values[3])
+
+        self.pin_entry.delete(0, tk.END)
+        if current_schuetze and 'pin' in current_schuetze:
+            self.pin_entry.insert(0, current_schuetze['pin'])
+
         self.add_button.config(text="Schütze aktualisieren")
     
     def delete_selected(self):
@@ -311,12 +342,19 @@ class SchuetzenTab:
         self.name_entry.delete(0, tk.END)
         self.vorname_entry.delete(0, tk.END)
         self.verein_entry.delete(0, tk.END)
+        self.pin_entry.delete(0, tk.END)
         klassen = self.turnier_model.get_klassen_names()
         if klassen:
             self.klasse_combo.current(0)
         self.editing_index = None
         self.add_button.config(text="Schütze hinzufügen")
     
+    def generate_random_pin(self):
+        """Generiert eine zufällige PIN und trägt sie in das Feld ein"""
+        pin = f"{random.randint(0, 9999):04d}"
+        self.pin_entry.delete(0, tk.END)
+        self.pin_entry.insert(0, pin)
+
     def refresh(self):
         """Aktualisiert die Anzeige"""
         # Klassen-Combobox aktualisieren
@@ -340,7 +378,8 @@ class SchuetzenTab:
                 "Klasse": "klasse",
                 "Verein": "verein",
                 "Gruppe": "gruppe",
-                "Scheibe": "scheibe"
+                "Scheibe": "scheibe",
+                "PIN": "pin"
             }
             sort_key = column_map.get(self.sort_column, "name")
 
@@ -361,7 +400,8 @@ class SchuetzenTab:
                 schuetze.get('klasse', ''),
                 schuetze.get('verein', ''),
                 schuetze.get('gruppe', ''),
-                schuetze.get('scheibe', '')
+                schuetze.get('scheibe', ''),
+                schuetze.get('pin', '')
             ))
     
     def refresh_silent(self):

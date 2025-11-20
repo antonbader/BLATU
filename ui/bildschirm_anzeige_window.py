@@ -43,7 +43,7 @@ class BildschirmAnzeigeWindow:
         self.last_data_hash = None
         
         self.create_widgets()
-        self.start_auto_update()
+        # self.start_auto_update() # Deaktiviert, da Updates nun zentral gesteuert werden
         self.start_auto_scroll()
     
     def _on_canvas_configure(self, event):

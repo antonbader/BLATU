@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ergebniseingabe</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .search-box { width: 100%; padding: 10px; font-size: 16px; box-sizing: border-box; margin-bottom: 20px; }
+        .shooter-list { list-style: none; padding: 0; }
+        .shooter-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; }
+        .shooter-item:hover { background-color: #f9f9f9; }
+        .shooter-item:last-child { border-bottom: none; }
+        .shooter-check { margin-right: 15px; transform: scale(1.5); cursor: pointer; }
+        .shooter-content { flex-grow: 1; }
+        .shooter-info { font-weight: bold; }
+        .shooter-details { color: #666; font-size: 0.9em; }
+        .btn { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; margin-top: 10px; }
+        .btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        .error { color: red; margin-top: 10px; text-align: center; }
+        .bottom-bar { position: sticky; bottom: 0; background: white; padding: 10px 0; border-top: 1px solid #ddd; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Ergebniseingabe</h1>
+        <p>Bitte wählen Sie einen oder zwei Schützen aus.</p>
+    </div>
+
+    <input type="text" id="searchInput" class="search-box" placeholder="Namen suchen..." onkeyup="filterShooters()">
+
+    <form action="/login_multi" method="GET" id="selectForm">
+        <div class="card">
+            <ul class="shooter-list" id="shooterList">
+                {% for s in schuetzen %}
+                <li class="shooter-item" onclick="toggleCheck(this)">
+                    <input type="checkbox" name="ids" value="{{ s.id }}" class="shooter-check" onclick="event.stopPropagation(); updateCount();">
+                    <div class="shooter-content">
+                        <div class="shooter-info">{{ s.vorname }} {{ s.name }}</div>
+                        <div class="shooter-details">{{ s.klasse }} • {{ s.verein }} <br> Gr: {{ s.gruppe }} • Sch: {{ s.scheibe }}</div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% if not schuetzen %}
+            <p style="text-align: center; color: #666;">Keine Schützen verfügbar oder Gruppen gesperrt.</p>
+            {% endif %}
+        </div>
+
+        <div class="bottom-bar">
+            <button type="submit" id="submitBtn" class="btn" disabled>Ausgewählte eingeben (0)</button>
+        </div>
+    </form>
+
+    <script>
+        function filterShooters() {
+            var input, filter, ul, li, div, i, txtValue;
+            input = document.getElementById('searchInput');
+            filter = input.value.toUpperCase();
+            ul = document.getElementById("shooterList");
+            li = ul.getElementsByTagName('li');
+
+            for (i = 0; i < li.length; i++) {
+                div = li[i].getElementsByClassName("shooter-info")[0];
+                txtValue = div.textContent || div.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    li[i].style.display = "";
+                } else {
+                    li[i].style.display = "none";
+                }
+            }
+        }
+
+        function toggleCheck(li) {
+            var checkbox = li.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            updateCount();
+        }
+
+        function updateCount() {
+            var checkboxes = document.querySelectorAll('.shooter-check:checked');
+            var btn = document.getElementById('submitBtn');
+            btn.innerText = "Ausgewählte eingeben (" + checkboxes.length + ")";
+
+            if (checkboxes.length > 0 && checkboxes.length <= 2) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+                if (checkboxes.length > 2) {
+                    btn.innerText = "Maximal 2 Schützen auswählen";
+                }
+            }
+        }
+    </script>
+</body>
+</html>

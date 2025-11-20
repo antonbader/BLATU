@@ -1,6 +1,6 @@
 # Blatu - Blasrohr Turnierverwaltung
 
-Version 1.4.0
+Version 1.5.0
 
 ## Beschreibung
 
@@ -12,6 +12,7 @@ Blatu ist eine Desktop-Anwendung zur Verwaltung von Blasrohr-Turnieren. Sie erm�
 blatu/
 ├── main.py                 # Haupteinstiegspunkt
 ├── config.py              # Konfiguration und Konstanten
+├── web_server.py          # Webserver für Online-Eingabe
 ├── models/                # Datenmodelle
 │   ├── __init__.py
 │   ├── turnier.py        # Turnier-Datenmodell
@@ -25,6 +26,7 @@ blatu/
 │   ├── startgeld_tab.py  # Startgeldverwaltung Tab
 │   ├── gruppen_tab.py    # Gruppenverwaltung Tab
 │   ├── ergebnisse_tab.py # Ergebniseingabe Tab
+│   ├── online_eingabe_tab.py # Tab für Webserver-Steuerung
 │   ├── urkunden_tab.py   # Urkundenerstellung Tab
 │   ├── ergebnisse_window.py # Ergebnisanzeige Fenster
 │   ├── bildschirm_anzeige_window.py # Live-Ergebnisanzeige (für Beamer)
@@ -45,7 +47,11 @@ blatu/
 - tkinter (meist in Python enthalten)
 - reportlab (für PDF-Erstellung)
 - python-docx (für Word-Urkunden)
+- flask (für Online-Eingabe)
 
+```bash
+pip install reportlab python-docx flask
+```
 
 ## Start der Anwendung
 
@@ -57,10 +63,11 @@ python main.py
 
 - **Turnierverwaltung**: Erfassung von Turniername, Datum und Anzahl der Passen
 - **Klassenverwaltung**: Anlegen und Verwalten von Wettkampfklassen
-- **Schützenverwaltung**: Erfassung von Schützendaten (Name, Vorname, Klasse, Verein)
+- **Schützenverwaltung**: Erfassung von Schützendaten (Name, Vorname, Klasse, Verein, PIN)
 - **Gruppenverwaltung**: Zuweisung von Schützen zu Gruppen und Scheiben, inkl. Uhrzeit-Management
 - **Startgeldverwaltung**: Übersicht und Verwaltung des Bezahlstatus pro Schütze und Verein
 - **Ergebniseingabe**: Eingabe von Ergebnissen mit Zusatzwertungen (10er, 9er)
+- **Online-Eingabe**: Mobile Weboberfläche für die dezentrale Ergebniseingabe durch Schützen (Mehrbenutzerfähig, Live-Updates)
 - **Urkundenerstellung**: Generierung von individualisierten Urkunden als Word-Dateien (.docx) basierend auf einer Vorlage.
 - **Automatische Ranglistenerstellung**: Nach Punkten und Zusatzwertung
 - **PDF-Export**:
@@ -74,9 +81,9 @@ python main.py
 
 1. **Turnier einrichten**: Geben Sie Turniername, Datum und Anzahl Passen ein
 2. **Klassen anlegen**: Definieren Sie die Wettkampfklassen (z.B. Jugend, Erwachsene, Senioren)
-3. **Schützen erfassen**: Tragen Sie alle Teilnehmer mit ihren Daten ein
+3. **Schützen erfassen**: Tragen Sie alle Teilnehmer mit ihren Daten ein. PINs werden automatisch generiert.
 4. **Gruppen zuteilen (optional)**: Weisen Sie den Schützen Gruppen und Scheiben zu
-5. **Ergebnisse eingeben**: Erfassen Sie die Schießergebnisse für jeden Schützen
+5. **Online-Eingabe aktivieren (optional)**: Starten Sie den Webserver im Tab "Online-Eingabe" und lassen Sie Schützen ihre Ergebnisse selbst per Smartphone eintragen.
 6. **Ergebnisse anzeigen**: Lassen Sie sich die Rangliste anzeigen
 7. **PDF erstellen**: Exportieren Sie die Ergebnisse als professionelles PDF
 

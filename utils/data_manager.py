@@ -138,7 +138,8 @@ class DataManager:
                     schuetze.get('klasse'),
                     schuetze.get('verein', ''),
                     schuetze.get('gruppe'),
-                    schuetze.get('scheibe')
+                    schuetze.get('scheibe'),
+                    pin=schuetze.get('pin')
                 )
                 # Kompatibilität für alte und neue Schlüssel
                 status = schuetze.get('startgeld_bezahlt', schuetze.get('startgeld_status'))

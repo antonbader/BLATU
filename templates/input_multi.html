@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ergebniseingabe</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 10px; background-color: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+
+        /* Tabs / Cards Layout */
+        .shooter-card { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; padding: 15px; }
+        .shooter-title { font-size: 1.2em; font-weight: bold; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; color: #0056b3; }
+
+        .passe-row { display: flex; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+        .passe-label { width: 70px; font-weight: bold; font-size: 0.9em; }
+        .shots-container { display: flex; gap: 5px; flex-grow: 1; }
+        .shot-input { width: 35px; height: 35px; text-align: center; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
+        .shot-input:focus { border-color: #007bff; outline: none; background: #eaf4ff; }
+        .passe-sum { width: 40px; text-align: right; font-weight: bold; margin-left: 5px; }
+
+        .total-row { font-weight: bold; text-align: right; margin-top: 10px; border-top: 1px solid #eee; padding-top: 5px; }
+
+        .btn { background-color: #28a745; color: white; padding: 12px 30px; border: none; border-radius: 4px; cursor: pointer; font-size: 18px; width: 100%; }
+        .btn-back { background-color: #6c757d; width: auto; padding: 8px 15px; font-size: 14px; }
+
+        @media (max-width: 600px) {
+            .shot-input { width: 13%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-bar">
+            <h2>Ergebniseingabe</h2>
+            <button onclick="window.location.href='/'" class="btn btn-back">Abmelden</button>
+        </div>
+
+        <form id="multiScoreForm" onsubmit="saveAll(event)">
+            {% for s in schuetzen %}
+            <div class="shooter-card" id="card-{{ s.id }}">
+                <div class="shooter-title">
+                    {{ s.vorname }} {{ s.name }} ({{ s.klasse }})
+                    <div style="font-size: 0.7em; font-weight: normal; color: #555; margin-top: 5px;">Gruppe: {{ s.gruppe }} • Scheibe: {{ s.scheibe }}</div>
+                </div>
+
+                {% for i in range(anzahl_passen) %}
+                <div class="passe-row">
+                    <div class="passe-label">Passe {{ i + 1 }}</div>
+                    <div class="shots-container" id="p-{{ s.id }}-{{ i }}">
+                        {% for j in range(6) %}
+                            {% set pass_data = s.raw_data.get(i|string, []) %}
+                            {% set shot_val = '' %}
+                            {% if pass_data and j < pass_data|length and pass_data[j] is not none %}
+                                {% set shot_val = pass_data[j] %}
+                            {% endif %}
+                        <input type="number" class="shot-input" name="{{ s.id }}_p{{ i }}_s{{ j }}"
+                               min="0" max="10"
+                               value="{{ shot_val }}"
+                               oninput="calculateRow('{{ s.id }}', {{ i }})">
+                        {% endfor %}
+                    </div>
+                    <div class="passe-sum" id="sum-{{ s.id }}-{{ i }}">0</div>
+                </div>
+                {% endfor %}
+
+                <div class="total-row">
+                    Gesamt: <span id="total-{{ s.id }}">0</span>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div style="position: sticky; bottom: 0; background: #f5f5f5; padding: 10px 0;">
+                <button type="submit" class="btn">Alle Speichern</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const initialSums = {{ initial_sums_map|tojson }}; // Map: shooter_id -> {pass_idx: sum}
+
+        function calculateRow(shooterId, rowIndex) {
+            let inputs = document.querySelectorAll(`#p-${shooterId}-${rowIndex} input`);
+            let sum = 0;
+            let hasInput = false;
+
+            inputs.forEach(input => {
+                let val = parseInt(input.value);
+                if (!isNaN(val)) {
+                    sum += val;
+                    hasInput = true;
+                }
+            });
+
+            // Logic for legacy sums
+            let displaySum = sum;
+            let sumsForShooter = initialSums[shooterId] || {};
+
+            if (!hasInput && sumsForShooter[rowIndex] !== undefined) {
+                displaySum = sumsForShooter[rowIndex];
+                document.getElementById(`sum-${shooterId}-${rowIndex}`).style.color = "#888";
+            } else {
+                document.getElementById(`sum-${shooterId}-${rowIndex}`).style.color = "black";
+            }
+
+            document.getElementById(`sum-${shooterId}-${rowIndex}`).innerText = displaySum;
+            calculateTotal(shooterId);
+        }
+
+        function calculateTotal(shooterId) {
+            let total = 0;
+            let sumsForShooter = initialSums[shooterId] || {};
+            let hasAnyInput = false;
+
+            // Check inputs
+            let allInputs = document.querySelectorAll(`#card-${shooterId} .shot-input`);
+            allInputs.forEach(inp => {
+                 if(inp.value !== "") hasAnyInput = true;
+            });
+
+            if (hasAnyInput) {
+                // Sum of displayed row sums (which dynamically switch between input-sum and legacy-sum) is NOT quite right
+                // because we want total to be consistent.
+                // Actually, simply summing the displayed sums is the most consistent WYSIWYG approach.
+                // Let's do that.
+                let anzahlPassen = {{ anzahl_passen }};
+                for(let i=0; i<anzahlPassen; i++) {
+                    let sumEl = document.getElementById(`sum-${shooterId}-${i}`);
+                    total += parseInt(sumEl.innerText || 0);
+                }
+            } else {
+                // Purely legacy sums
+                for (let key in sumsForShooter) {
+                    total += sumsForShooter[key];
+                }
+            }
+            document.getElementById(`total-${shooterId}`).innerText = total;
+        }
+
+        function saveAll(event) {
+            event.preventDefault();
+            let payload = [];
+
+            {% for s in schuetzen %}
+            {
+                let shooterId = '{{ s.id }}';
+                let shooterData = {};
+                let inputs = document.querySelectorAll(`#card-${shooterId} .shot-input`);
+
+                inputs.forEach(input => {
+                    // name format: id_p0_s0
+                    let parts = input.name.split('_p'); // [id, 0_s0]
+                    let subParts = parts[1].split('_s'); // [0, 0]
+                    let passeIdx = parseInt(subParts[0]);
+                    let shotIdx = parseInt(subParts[1]);
+
+                    if (!shooterData[passeIdx]) shooterData[passeIdx] = [];
+                    let val = input.value === "" ? null : parseInt(input.value);
+                    shooterData[passeIdx][shotIdx] = val;
+                });
+
+                payload.push({
+                    schuetze_id: shooterId,
+                    data: shooterData
+                });
+            }
+            {% endfor %}
+
+            fetch('/api/save_multi', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ shooters: payload })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Alle Ergebnisse gespeichert!');
+                } else {
+                    alert('Fehler: ' + data.error);
+                }
+            })
+            .catch(e => alert('Netzwerkfehler: ' + e));
+        }
+
+        window.onload = function() {
+            {% for s in schuetzen %}
+                {% for i in range(anzahl_passen) %}
+                calculateRow('{{ s.id }}', {{ i }});
+                {% endfor %}
+            {% endfor %}
+        };
+    </script>
+</body>
+</html>
