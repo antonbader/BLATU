@@ -444,3 +444,12 @@ class ErgebnisseTab:
         self.update_schuetzen_tree()
         self.selected_schuetze_index = None
         self.info_label.config(text="Bitte wählen Sie einen Schützen aus")
+
+    def refresh_silent_update(self):
+        """Aktualisiert nur die Liste und ggf. geladene Ergebnisse, ohne Selection-Reset"""
+        current_filter = self.search_entry.get()
+        self.update_schuetzen_tree(current_filter)
+
+        # Wenn ein Schütze geladen ist, dessen Felder aktualisieren
+        if self.selected_schuetze_index is not None:
+             self.load_ergebnisse()

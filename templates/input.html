@@ -66,16 +66,35 @@
     </div>
 
     <script>
+        // Store initial sums from server
+        const initialSums = {{ initial_sums|tojson }};
+
         function calculateRow(rowIndex) {
             let inputs = document.querySelectorAll(`#passe-${rowIndex} input`);
             let sum = 0;
+            let hasInput = false;
+
             inputs.forEach(input => {
                 let val = parseInt(input.value);
                 if (!isNaN(val)) {
                     sum += val;
+                    hasInput = true;
                 }
             });
-            document.getElementById(`sum-${rowIndex}`).innerText = sum;
+
+            // If no input, but we have an initial sum, display that
+            let displaySum = sum;
+            if (!hasInput && initialSums[rowIndex] !== undefined) {
+                displaySum = initialSums[rowIndex];
+                // Optional: Highlight that this is a legacy sum
+                document.getElementById(`sum-${rowIndex}`).style.color = "#888";
+                document.getElementById(`sum-${rowIndex}`).title = "Wert aus Desktop-Eingabe";
+            } else {
+                document.getElementById(`sum-${rowIndex}`).style.color = "black";
+                document.getElementById(`sum-${rowIndex}`).title = "";
+            }
+
+            document.getElementById(`sum-${rowIndex}`).innerText = displaySum;
             calculateTotal();
         }
 
@@ -83,16 +102,32 @@
             let total = 0;
             let count10 = 0;
             let count9 = 0;
+            let useInitialSums = true;
 
+            // Check if any input has been made
             let inputs = document.querySelectorAll('.shot-input');
+            let hasAnyInput = false;
             inputs.forEach(input => {
-                let val = parseInt(input.value);
-                if (!isNaN(val)) {
-                    total += val;
-                    if (val === 10) count10++;
-                    if (val === 9) count9++;
-                }
+                if (input.value !== "") hasAnyInput = true;
             });
+
+            if (hasAnyInput) {
+                // Calculate from inputs
+                inputs.forEach(input => {
+                    let val = parseInt(input.value);
+                    if (!isNaN(val)) {
+                        total += val;
+                        if (val === 10) count10++;
+                        if (val === 9) count9++;
+                    }
+                });
+            } else {
+                // Fallback to summing initial sums if no input at all
+                for (let key in initialSums) {
+                    total += initialSums[key];
+                }
+                // Note: We can't calculate 10s/9s accurately from sums only, so we leave them as 0 or ???
+            }
 
             document.getElementById('total-score').innerText = total;
             document.getElementById('total-10').innerText = count10;

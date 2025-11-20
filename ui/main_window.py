@@ -35,8 +35,26 @@ class MainWindow:
         self.data_manager = DataManager(self.turnier_model, self.schuetze_model)
         self.pdf_generator = PDFGenerator(self.turnier_model)
         
+        # Tracking für Live-Updates
+        self.last_update_check = 0
+
         self.create_widgets()
+        self.start_update_loop()
     
+    def start_update_loop(self):
+        """Startet die Schleife zur Prüfung auf Updates"""
+        self.check_for_updates()
+        self.root.after(1000, self.start_update_loop)
+
+    def check_for_updates(self):
+        """Prüft ob Updates vorliegen und aktualisiert die UI"""
+        if self.turnier_model.last_update_time > self.last_update_check:
+            self.last_update_check = self.turnier_model.last_update_time
+            # Refresh Tabs die Ergebnisse anzeigen
+            if hasattr(self, 'ergebnisse_tab'):
+                self.ergebnisse_tab.refresh_silent_update()
+            # Weitere Tabs könnten hier folgen, aber Ergebnisse ist am wichtigsten
+
     def create_widgets(self):
         """Erstellt alle Widgets"""
         # Haupt-Button-Frame unten

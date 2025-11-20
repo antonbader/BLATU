@@ -15,6 +15,7 @@ class TurnierModel:
         self.klassen = []
         self.ergebnisse = {}
         self.group_times = {}
+        self.last_update_time = 0
     
     def set_turnier_data(self, name, datum, anzahl_passen, *, show_halves=False, max_scheiben=3,
                          startgeld_erheben=False, iban="", bic="", bankname="", kontoinhaber="", zahldatum=""):
@@ -104,6 +105,8 @@ class TurnierModel:
             'anzahl_9er': anzahl_9er
         })
         self.ergebnisse[schuetze_id] = current
+        self._touch()
+        self._touch()
 
     def add_web_ergebnis(self, schuetze_id, passen_sums, anzahl_10er, anzahl_9er, web_raw_data):
         """
@@ -160,3 +163,9 @@ class TurnierModel:
         self.klassen = []
         self.ergebnisse = {}
         self.group_times = {}
+        self._touch()
+
+    def _touch(self):
+        """Aktualisiert den Zeitstempel der letzten Änderung"""
+        import time
+        self.last_update_time = time.time()
