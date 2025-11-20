@@ -10,6 +10,7 @@ import time
 
 from models.schuetze import SchuetzeModel
 from config import MAX_PASSEN_FOR_DISPLAY
+from utils.gui_helper import set_window_icon
 
 
 class BildschirmAnzeigeWindow:
@@ -20,6 +21,7 @@ class BildschirmAnzeigeWindow:
         self.schuetze_model = schuetze_model
         self.window = tk.Toplevel(parent)
         self.window.title("Bildschirmanzeige - Live-Ergebnisse")
+        set_window_icon(self.window)
         self.window.geometry("1200x800")
         
         # Scroll-Parameter (time-based for smoother movement)

@@ -8,6 +8,7 @@ from tkinter import ttk
 
 from models.schuetze import SchuetzeModel
 from utils.pdf_generator import PDFGenerator
+from utils.gui_helper import set_window_icon
 
 
 class ErgebnisWindow:
@@ -18,6 +19,7 @@ class ErgebnisWindow:
         self.schuetze_model = schuetze_model
         self.window = tk.Toplevel(parent)
         self.window.title("Ergebnisanzeige")
+        set_window_icon(self.window)
         self.window.geometry("1000x700")
         self.create_widgets()
     
