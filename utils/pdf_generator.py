@@ -525,6 +525,8 @@ class PDFGenerator:
                     elements.append(Spacer(1, 1*cm))
 
                     iban = turnier.get('iban', '')
+                    bic = turnier.get('bic', '')
+                    bankname = turnier.get('bankname', '')
                     kontoinhaber = turnier.get('kontoinhaber', '')
                     zahldatum = turnier.get('zahldatum', '')
                     turniername = turnier.get('name', '')
@@ -532,7 +534,7 @@ class PDFGenerator:
                     text = (
                         f"Bitte überweisen Sie das Startgeld bis zum {zahldatum} "
                         f"unter Angabe des Buchungszwecks \"{turniername} - {verein}\" "
-                        f"auf folgendes Konto: {iban} Kontoinhaber: {kontoinhaber}"
+                        f"auf folgendes Konto: {iban} Bank: {bankname} BIC: {bic} Kontoinhaber: {kontoinhaber}"
                     )
 
                     p_style = ParagraphStyle('PaymentInfo', parent=styles['Normal'], fontSize=10, alignment=TA_LEFT)
