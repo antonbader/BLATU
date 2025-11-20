@@ -49,12 +49,14 @@ def set_window_icon(window):
 
     if os.path.exists(icon_path):
         try:
+            # WICHTIG: Das Icon muss explizit für das Fenster gesetzt werden (ohne default),
+            # damit es in der Taskleiste unter Windows sofort sichtbar ist.
+            window.iconbitmap(icon_path)
+
+            # Zusätzlich für das Root-Fenster als Default für alle folgenden Popups setzen
             if isinstance(window, tk.Tk):
-                # Bei Root-Fenster als Standard für die ganze App setzen
                 window.iconbitmap(default=icon_path)
-            else:
-                # Bei normalen Fenstern direkt setzen
-                window.iconbitmap(icon_path)
+
         except tk.TclError:
             # Kann passieren, wenn das .ico-Format beschädigt ist oder vom OS nicht unterstützt wird
             print(f"Warnung: Icon '{icon_path}' konnte nicht geladen werden.")
