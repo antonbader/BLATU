@@ -39,7 +39,7 @@
                     <input type="checkbox" name="ids" value="{{ s.id }}" class="shooter-check" onclick="event.stopPropagation(); updateCount();">
                     <div class="shooter-content">
                         <div class="shooter-info">{{ s.vorname }} {{ s.name }}</div>
-                        <div class="shooter-details">{{ s.klasse }} • {{ s.verein }}</div>
+                        <div class="shooter-details">{{ s.klasse }} • {{ s.verein }} <br> Gr: {{ s.gruppe }} • Sch: {{ s.scheibe }}</div>
                     </div>
                 </li>
                 {% endfor %}
