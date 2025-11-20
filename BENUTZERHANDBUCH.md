@@ -260,6 +260,41 @@ Nach Abschluss des Vorgangs erhalten Sie eine Erfolgsmeldung.
 
 ---
 
-## 11. Über die Software
+## 11. Schießzettel erstellen
+
+Der Reiter **"Schießzettel"** ermöglicht die automatische Erstellung von Schießzetteln (Scorecards) für die Schützen, basierend auf der aktuellen Gruppeneinteilung.
+
+### 11.1. Vorbereitung
+
+Sie benötigen eine Word-Vorlage (`.docx`), die das Layout Ihres Schießzettels definiert. Die Software füllt diese Vorlage mit den Daten der Schützen.
+
+### 11.2. Konfiguration
+
+1.  **Word-Vorlage:** Wählen Sie über "Auswählen" Ihre `.docx`-Vorlage aus.
+2.  **Speicherort:** Bestimmen Sie den Ordner, in dem die generierten Dateien gespeichert werden sollen.
+
+### 11.3. Platzhalter für die Vorlage
+
+Die Software unterstützt Vorlagen, die bis zu 4 Schützen pro Seite/Zettel aufnehmen können. Verwenden Sie folgende Platzhalter in Ihrem Word-Dokument:
+
+*   Allgemeine Daten:
+    *   `[Turniername]`
+    *   `[Turnierdatum]`
+
+*   Daten für die Schützen (1 bis 4):
+    *   `[Name_1]`, `[Vorname_1]`, `[Gruppe_1]`, `[Scheibe_1]`
+    *   `[Name_2]`, `[Vorname_2]`, `[Gruppe_2]`, `[Scheibe_2]`
+    *   `[Name_3]`, `[Vorname_3]`, `[Gruppe_3]`, `[Scheibe_3]`
+    *   `[Name_4]`, `[Vorname_4]`, `[Gruppe_4]`, `[Scheibe_4]`
+
+### 11.4. Generierung
+
+1.  Wählen Sie im rechten Bereich **"Gruppenauswahl"** die Gruppen aus, für die Sie Schießzettel erstellen möchten. Nutzen Sie die Buttons "Alle auswählen" oder "Keine auswählen" für eine schnelle Selektion.
+2.  Klicken Sie auf **"Schießzettel generieren"**.
+3.  Die Software erstellt nun für jede ausgewählte Gruppe eine Word-Datei im angegebenen Speicherort (Dateiname: `SZ_[Turniername]_[Gruppe]_[Datum].docx`). Wenn eine Gruppe mehr als 4 Schützen hat, werden automatisch weitere Seiten angefügt.
+
+---
+
+## 12. Über die Software
 
 Im Reiter **"Info"** finden Sie die aktuelle Versionsnummer der Software sowie Kontaktinformationen.

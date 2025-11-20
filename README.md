@@ -53,11 +53,7 @@ blatu/
 Die Abhängigkeiten können wie folgt installiert werden:
 
 ```bash
-pip install reportlab python-docx docxcompose
-- flask (für Online-Eingabe)
-
-```bash
-pip install reportlab python-docx flask
+pip install reportlab python-docx docxcompose flask
 ```
 
 ## Start der Anwendung
