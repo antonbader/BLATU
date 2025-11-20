@@ -201,8 +201,9 @@ class ErgebnisseTab:
         eingabe_canvas.bind("<Enter>", _bind_mousewheel)
         eingabe_canvas.bind("<Leave>", _unbind_mousewheel)
 
-        eingabe_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        # Scrollbar zuerst packen, damit sie Platz reserviert
         eingabe_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        eingabe_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         self.passen_entries = []
         self.create_passen_fields()
