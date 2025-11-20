@@ -47,9 +47,14 @@
                     <div class="passe-label">Passe {{ i + 1 }}</div>
                     <div class="shots-container" id="p-{{ s.id }}-{{ i }}">
                         {% for j in range(6) %}
+                            {% set pass_data = s.raw_data.get(i|string, []) %}
+                            {% set shot_val = '' %}
+                            {% if pass_data and j < pass_data|length and pass_data[j] is not none %}
+                                {% set shot_val = pass_data[j] %}
+                            {% endif %}
                         <input type="number" class="shot-input" name="{{ s.id }}_p{{ i }}_s{{ j }}"
                                min="0" max="10"
-                               value="{{ s.raw_data.get(i|string, {}).get(j|string, '') }}"
+                               value="{{ shot_val }}"
                                oninput="calculateRow('{{ s.id }}', {{ i }})">
                         {% endfor %}
                     </div>
