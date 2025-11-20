@@ -59,13 +59,24 @@ class UrkundenTab:
             foreground="gray"
         ).pack(pady=(0, 5))
 
-        self.klassen_tree = ttk.Treeview(klassen_frame, columns=("Klasse", "Anzahl"), show="headings", height=10)
+        klassen_scrollbar = ttk.Scrollbar(klassen_frame)
+        klassen_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.klassen_tree = ttk.Treeview(
+            klassen_frame,
+            columns=("Klasse", "Anzahl"),
+            show="headings",
+            height=10,
+            yscrollcommand=klassen_scrollbar.set
+        )
         self.klassen_tree.heading("Klasse", text="Klasse")
         self.klassen_tree.heading("Anzahl", text="Anzahl Platzierungen")
         self.klassen_tree.column("Klasse", width=150)
         self.klassen_tree.column("Anzahl", width=120, anchor="center")
         self.klassen_tree.pack(fill=tk.BOTH, expand=True)
         self.klassen_tree.bind("<Double-1>", self.edit_cell)
+
+        klassen_scrollbar.config(command=self.klassen_tree.yview)
 
         # --- Rechte Spalte: Einstellungen ---
         settings_frame = ttk.LabelFrame(top_frame, text="Einstellungen", padding="10")
@@ -85,11 +96,14 @@ class UrkundenTab:
 
         self.unterordner_var.set(True)
         unterordner_check = ttk.Checkbutton(settings_frame, text="Unterordner für jede Klasse erstellen", variable=self.unterordner_var)
-        unterordner_check.grid(row=4, column=0, columnspan=2, sticky="w", pady=10)
+        unterordner_check.grid(row=4, column=0, columnspan=2, sticky="w", pady=(10, 5))
+
+        generate_button = ttk.Button(settings_frame, text="🚀 Urkunden erstellen", command=self.generate_urkunden, style="Accent.TButton")
+        generate_button.grid(row=5, column=0, columnspan=2, pady=(10, 0), sticky="ew")
 
         # --- Unterer Bereich: Platzhalter ---
         placeholder_frame = ttk.LabelFrame(main_frame, text="Verfügbare Platzhalter", padding="10")
-        placeholder_frame.pack(fill=tk.X, expand=False, pady=10)
+        placeholder_frame.pack(fill=tk.X, expand=False, pady=(5, 10))
 
         placeholders = [
             "[Turniername]", "[Datum]", "[Klasse]", "[Vorname]",
@@ -104,13 +118,6 @@ class UrkundenTab:
             wraplength=700,
             justify="center"
         ).pack(pady=5)
-
-        # --- Unterster Bereich: Aktion ---
-        action_frame = ttk.Frame(main_frame)
-        action_frame.pack(pady=20)
-
-        generate_button = ttk.Button(action_frame, text="🚀 Urkunden erstellen", command=self.generate_urkunden, style="Accent.TButton")
-        generate_button.pack()
 
         top_frame.columnconfigure(0, weight=1)
         top_frame.columnconfigure(1, weight=1)

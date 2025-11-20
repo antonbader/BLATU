@@ -92,42 +92,48 @@ class ErgebnisseTab:
         right_frame = ttk.Frame(self.frame)
         right_frame.grid(row=1, column=1, sticky=(tk.N, tk.S, tk.E, tk.W), padx=(5, 0))
         
-        self.info_label = ttk.Label(
-            right_frame, 
-            text="Bitte wählen Sie einen Schützen aus", 
-            font=("Arial", 11, "bold")
+        # 1. Buttons (Bottom Priority)
+        button_frame = ttk.Frame(right_frame)
+        button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
+        
+        ttk.Button(
+            button_frame,
+            text="Ergebnisse speichern",
+            command=self.save_ergebnisse
+        ).pack(side=tk.LEFT, padx=5, ipadx=10, ipady=5)
+        
+        ttk.Button(
+            button_frame,
+            text="Ergebnisanzeige",
+            command=self.show_ergebnisanzeige
+        ).pack(side=tk.LEFT, padx=5, ipadx=10, ipady=5)
+        
+        ttk.Button(
+            button_frame,
+            text="🖥 Bildschirmanzeige",
+            command=self.show_bildschirmanzeige
+        ).pack(side=tk.LEFT, padx=5, ipadx=10, ipady=5)
+        
+        # 2. Gesamtergebnis (Bottom Priority)
+        ergebnis_frame = ttk.Frame(right_frame)
+        ergebnis_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
+        
+        ttk.Label(
+            ergebnis_frame,
+            text="Gesamtergebnis:",
+            font=("Arial", 12, "bold")
+        ).pack(side=tk.LEFT, padx=5)
+        
+        self.gesamt_label = ttk.Label(
+            ergebnis_frame,
+            text="0",
+            font=("Arial", 12, "bold")
         )
-        self.info_label.pack(pady=10)
+        self.gesamt_label.pack(side=tk.LEFT, padx=5)
         
-        # Scrollbarer Bereich für Passen
-        eingabe_container = ttk.LabelFrame(right_frame, text="Ergebnisse", padding="10")
-        eingabe_container.pack(fill=tk.BOTH, expand=True, pady=10)
-        
-        eingabe_canvas = tk.Canvas(eingabe_container, height=200)
-        eingabe_scrollbar = ttk.Scrollbar(
-            eingabe_container, 
-            orient="vertical", 
-            command=eingabe_canvas.yview
-        )
-        self.eingabe_frame = ttk.Frame(eingabe_canvas)
-        
-        self.eingabe_frame.bind(
-            "<Configure>", 
-            lambda e: eingabe_canvas.configure(scrollregion=eingabe_canvas.bbox("all"))
-        )
-        
-        eingabe_canvas.create_window((0, 0), window=self.eingabe_frame, anchor="nw")
-        eingabe_canvas.configure(yscrollcommand=eingabe_scrollbar.set)
-        
-        eingabe_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        eingabe_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        self.passen_entries = []
-        self.create_passen_fields()
-        
-        # Zusatzwertung
+        # 3. Zusatzwertung (Bottom Priority)
         zusatz_frame = ttk.LabelFrame(right_frame, text="Zusatzwertung", padding="10")
-        zusatz_frame.pack(fill=tk.X, pady=10)
+        zusatz_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
         
         ttk.Label(zusatz_frame, text="Anzahl 10er:").grid(
             row=0, column=0, sticky=tk.W, pady=5, padx=5
@@ -142,45 +148,40 @@ class ErgebnisseTab:
         self.anzahl_9er_entry = ttk.Entry(zusatz_frame, width=15)
         self.anzahl_9er_entry.grid(row=1, column=1, sticky=tk.W, pady=5, padx=5)
         self.anzahl_9er_entry.insert(0, "0")
-        
-        # Gesamtergebnis
-        ergebnis_frame = ttk.Frame(right_frame)
-        ergebnis_frame.pack(pady=10)
-        
-        ttk.Label(
-            ergebnis_frame, 
-            text="Gesamtergebnis:", 
-            font=("Arial", 12, "bold")
-        ).pack(side=tk.LEFT, padx=5)
-        
-        self.gesamt_label = ttk.Label(
-            ergebnis_frame, 
-            text="0", 
-            font=("Arial", 12, "bold")
+
+        # 4. Info Label (Top Priority)
+        self.info_label = ttk.Label(
+            right_frame,
+            text="Bitte wählen Sie einen Schützen aus",
+            font=("Arial", 11, "bold")
         )
-        self.gesamt_label.pack(side=tk.LEFT, padx=5)
+        self.info_label.pack(side=tk.TOP, pady=10)
         
-        # Buttons
-        button_frame = ttk.Frame(right_frame)
-        button_frame.pack(pady=10)
+        # 5. Scrollbarer Bereich für Passen (Remaining space)
+        eingabe_container = ttk.LabelFrame(right_frame, text="Ergebnisse", padding="10")
+        eingabe_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True, pady=10)
         
-        ttk.Button(
-            button_frame, 
-            text="Ergebnisse speichern", 
-            command=self.save_ergebnisse
-        ).pack(side=tk.LEFT, padx=5, ipadx=10, ipady=5)
+        eingabe_canvas = tk.Canvas(eingabe_container, height=200)
+        eingabe_scrollbar = ttk.Scrollbar(
+            eingabe_container,
+            orient="vertical",
+            command=eingabe_canvas.yview
+        )
+        self.eingabe_frame = ttk.Frame(eingabe_canvas)
         
-        ttk.Button(
-            button_frame, 
-            text="Ergebnisanzeige", 
-            command=self.show_ergebnisanzeige
-        ).pack(side=tk.LEFT, padx=5, ipadx=10, ipady=5)
+        self.eingabe_frame.bind(
+            "<Configure>",
+            lambda e: eingabe_canvas.configure(scrollregion=eingabe_canvas.bbox("all"))
+        )
         
-        ttk.Button(
-            button_frame, 
-            text="🖥 Bildschirmanzeige", 
-            command=self.show_bildschirmanzeige
-        ).pack(side=tk.LEFT, padx=5, ipadx=10, ipady=5)
+        eingabe_canvas.create_window((0, 0), window=self.eingabe_frame, anchor="nw")
+        eingabe_canvas.configure(yscrollcommand=eingabe_scrollbar.set)
+        
+        eingabe_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        eingabe_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        self.passen_entries = []
+        self.create_passen_fields()
         
         # Grid-Konfiguration
         self.frame.columnconfigure(0, weight=1)
