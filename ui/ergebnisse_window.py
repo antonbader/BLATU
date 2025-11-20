@@ -34,6 +34,12 @@ class ErgebnisWindow:
         ).pack(side=tk.LEFT, padx=10)
         
         ttk.Button(
+            button_frame,
+            text="Aktualisieren",
+            command=self.refresh
+        ).pack(side=tk.LEFT, padx=10)
+
+        ttk.Button(
             button_frame, 
             text="Schließen", 
             command=self.window.destroy

@@ -106,7 +106,6 @@ class TurnierModel:
         })
         self.ergebnisse[schuetze_id] = current
         self._touch()
-        self._touch()
 
     def add_web_ergebnis(self, schuetze_id, passen_sums, anzahl_10er, anzahl_9er, web_raw_data):
         """
@@ -128,6 +127,7 @@ class TurnierModel:
             'web_raw_data': web_raw_data
         })
         self.ergebnisse[schuetze_id] = current
+        self._touch()
     
     def get_ergebnis(self, schuetze_id):
         """Gibt ein Ergebnis zurück"""

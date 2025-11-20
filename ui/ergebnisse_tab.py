@@ -47,6 +47,12 @@ class ErgebnisseTab:
         self.search_entry.pack(fill=tk.X, padx=5, pady=5)
         self.search_entry.bind("<KeyRelease>", self.filter_schuetzen)
         
+        ttk.Button(
+            search_frame,
+            text="Liste aktualisieren",
+            command=self.refresh_silent_update
+        ).pack(fill=tk.X, padx=5, pady=5)
+
         ttk.Label(
             search_frame, 
             text="Filter nach Name, Vorname oder Klasse", 
