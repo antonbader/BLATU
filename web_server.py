@@ -43,33 +43,6 @@ class WebServer:
 
             return render_template('index.html', schuetzen=filtered_schuetzen)
 
-        @self.app.route('/login/<schuetze_id>', methods=['GET', 'POST'])
-        def login(schuetze_id):
-            # Find shooter and check group permission
-            all_schuetzen = self.schuetze_model.get_all_schuetzen()
-            schuetze = None
-            for s in all_schuetzen:
-                if self.schuetze_model.get_schuetze_id(s) == schuetze_id:
-                    schuetze = s
-                    break
-
-            if not schuetze:
-                return "Schütze nicht gefunden", 404
-
-            # Verify group permission
-            if str(schuetze.get('gruppe', '')) not in self.active_groups:
-                return "Eingabe für diese Gruppe derzeit nicht möglich", 403
-
-            if request.method == 'POST':
-                pin_input = request.form.get('pin')
-                if pin_input == schuetze.get('pin'):
-                    session['user_id'] = schuetze_id
-                    return redirect(url_for('input_scores', schuetze_id=schuetze_id))
-                else:
-                    return render_template('login.html', name=f"{schuetze['vorname']} {schuetze['name']}", error="Falsche PIN")
-
-            return render_template('login.html', name=f"{schuetze['vorname']} {schuetze['name']}")
-
         @self.app.route('/login_multi', methods=['GET', 'POST'])
         def login_multi():
             ids = request.args.getlist('ids')
@@ -203,53 +176,6 @@ class WebServer:
         @self.app.route('/login/<schuetze_id>')
         def login_single(schuetze_id):
             return redirect(url_for('login_multi', ids=schuetze_id))
-
-        # Helper for saving logic
-        def _process_save_single(self, schuetze_id, raw_data_in, anzahl_passen):
-            passen_sums = []
-            total_10 = 0
-            total_9 = 0
-            web_raw_data = {}
-
-            current_ergebnis = self.turnier_model.get_ergebnis(schuetze_id)
-            current_passen = current_ergebnis.get('passen', []) if current_ergebnis else []
-
-            for i in range(anzahl_passen):
-                shots = raw_data_in.get(str(i)) or raw_data_in.get(i)
-                passe_sum = 0
-                shots_list = []
-                has_input = False
-
-                if shots:
-                    for shot in shots:
-                        if shot is not None:
-                            val = int(shot)
-                            passe_sum += val
-                            shots_list.append(val)
-                            has_input = True
-                            if val == 10: total_10 += 1
-                            elif val == 9: total_9 += 1
-                        else:
-                            shots_list.append(None)
-
-                if has_input:
-                    passen_sums.append(passe_sum)
-                    web_raw_data[i] = shots_list
-                else:
-                    if i < len(current_passen):
-                        passen_sums.append(current_passen[i])
-                    else:
-                        passen_sums.append(0)
-                    if current_ergebnis and 'web_raw_data' in current_ergebnis and i in current_ergebnis['web_raw_data']:
-                         web_raw_data[i] = current_ergebnis['web_raw_data'][i]
-
-            self.turnier_model.add_web_ergebnis(
-                schuetze_id,
-                passen_sums,
-                total_10,
-                total_9,
-                web_raw_data
-            )
 
     def _process_save_single(self, schuetze_id, raw_data_in, anzahl_passen):
             passen_sums = []

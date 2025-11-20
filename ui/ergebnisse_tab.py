@@ -19,6 +19,11 @@ class ErgebnisseTab:
         self.selected_schuetze_index = None
         self.sort_column = None
         self.sort_reverse = False
+
+        # Referenzen auf externe Fenster
+        self.ergebnis_window = None
+        self.bildschirm_window = None
+
         self.frame = ttk.Frame(parent, padding="10")
         self.create_widgets()
     
@@ -427,7 +432,9 @@ class ErgebnisseTab:
             return
         
         from .ergebnisse_window import ErgebnisWindow
-        ErgebnisWindow(self.frame, self.turnier_model, self.schuetze_model)
+        # Wenn bereits offen, Fokus geben? Hier wird einfach ein neues erstellt (wie bisher)
+        # Aber wir merken uns die Referenz.
+        self.ergebnis_window = ErgebnisWindow(self.frame, self.turnier_model, self.schuetze_model)
     
     def show_bildschirmanzeige(self):
         """Zeigt die Bildschirmanzeige für externe Monitore"""
@@ -436,7 +443,7 @@ class ErgebnisseTab:
             return
         
         from .bildschirm_anzeige_window import BildschirmAnzeigeWindow
-        BildschirmAnzeigeWindow(self.frame, self.turnier_model, self.schuetze_model)
+        self.bildschirm_window = BildschirmAnzeigeWindow(self.frame, self.turnier_model, self.schuetze_model)
     
     def refresh(self):
         """Aktualisiert die Anzeige"""
@@ -453,3 +460,10 @@ class ErgebnisseTab:
         # Wenn ein Schütze geladen ist, dessen Felder aktualisieren
         if self.selected_schuetze_index is not None:
              self.load_ergebnisse()
+
+        # Externe Fenster aktualisieren
+        if self.ergebnis_window and self.ergebnis_window.window.winfo_exists():
+            self.ergebnis_window.refresh()
+
+        if self.bildschirm_window and self.bildschirm_window.window.winfo_exists():
+            self.bildschirm_window.refresh_display()

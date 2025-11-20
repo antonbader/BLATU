@@ -283,3 +283,18 @@ class ErgebnisWindow:
         klassen_ergebnisse = self.prepare_ergebnisse()
         pdf_generator = PDFGenerator(self.turnier_model)
         pdf_generator.create_pdf(klassen_ergebnisse)
+
+    def refresh(self):
+        """Aktualisiert die Anzeige"""
+        # Canvas-Inhalt löschen
+        for widget in self.window.winfo_children():
+             if isinstance(widget, ttk.Frame) and widget.winfo_manager() == "pack":
+                 # Dies ist der main_frame oder button_frame.
+                 # Wir wollen nur den main_frame neu bauen, oder alles?
+                 # Einfacher: Alles neu bauen.
+                 widget.destroy()
+
+        # Create widgets again (skip window creation)
+        # Da create_widgets button_frame und main_frame erstellt, müssen wir diese vorher löschen.
+        # Aber self.window bleibt.
+        self.create_widgets()
