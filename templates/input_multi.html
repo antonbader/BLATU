@@ -40,7 +40,10 @@
         <form id="multiScoreForm" onsubmit="saveAll(event)">
             {% for s in schuetzen %}
             <div class="shooter-card" id="card-{{ s.id }}">
-                <div class="shooter-title">{{ s.vorname }} {{ s.name }} ({{ s.klasse }})</div>
+                <div class="shooter-title">
+                    {{ s.vorname }} {{ s.name }} ({{ s.klasse }})
+                    <div style="font-size: 0.7em; font-weight: normal; color: #555; margin-top: 5px;">Gruppe: {{ s.gruppe }} • Scheibe: {{ s.scheibe }}</div>
+                </div>
 
                 {% for i in range(anzahl_passen) %}
                 <div class="passe-row">

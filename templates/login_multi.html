@@ -25,6 +25,7 @@
         {% for s in schuetzen %}
         <div class="card">
             <div class="shooter-header">{{ s.vorname }} {{ s.name }}</div>
+            <div style="color: #666; font-size: 0.9em; margin-bottom: 10px;">Gruppe: {{ s.gruppe }} • Scheibe: {{ s.scheibe }}</div>
             <div>PIN eingeben:</div>
             <input type="password" name="pin_{{ s.id }}" pattern="[0-9]*" inputmode="numeric" required placeholder="****">
         </div>
