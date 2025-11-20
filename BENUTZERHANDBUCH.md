@@ -1,4 +1,4 @@
-# Benutzerhandbuch für BLATU 1.5.0
+# Benutzerhandbuch für BLATU 1.5.1
 
 ## 1. Einleitung
 
