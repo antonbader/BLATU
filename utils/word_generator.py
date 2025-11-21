@@ -8,9 +8,24 @@ import warnings
 from docx import Document
 import re
 
-# Warnung von docxcompose unterdrücken
+# Monkey-patch docxcompose to handle missing templates in frozen environments
+# This must be done BEFORE importing Composer or instantiating it,
+# but since docxcompose imports properties at the top level, we need to patch the class method.
+
+# XML content from docxcompose/templates/custom.xml
+CUSTOM_XML_CONTENT = b"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"></Properties>"""
+
+def patched_part_template(self):
+    """Patched method to return hardcoded custom.xml content."""
+    return CUSTOM_XML_CONTENT
+
+# Warnung von docxcompose unterdrücken und Patch anwenden
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=UserWarning, module='docxcompose.properties')
+    from docxcompose import properties
+    # Apply patch
+    properties.CustomProperties._part_template = patched_part_template
     from docxcompose.composer import Composer
 
 
