@@ -127,13 +127,38 @@ class WordGenerator:
                             self._replace_placeholder_in_paragraph(p, key, str(value))
 
     def _replace_placeholder_in_paragraph(self, paragraph, placeholder, value):
-        """Replaces a placeholder in a paragraph, handling split runs."""
-        # This is a common and difficult problem in python-docx.
-        # A robust solution combines the text of runs, performs replacement,
-        # and then writes it back, trying to preserve formatting.
+        """
+        Replaces a placeholder in a paragraph, handling split runs.
+        Optimized to preserve formatting.
+        """
+        # Case A: Check if placeholder exists in a single run.
+        # This is the optimal case as it preserves specific run formatting perfectly.
+        for run in paragraph.runs:
+            if placeholder in run.text:
+                run.text = run.text.replace(placeholder, value)
+                return
 
+        # Case B: Placeholder is split across multiple runs.
+        # We need to rebuild the paragraph text, but we try to preserve the style
+        # of the FIRST run in the paragraph, as requested.
         full_text = ''.join(run.text for run in paragraph.runs)
+
         if placeholder in full_text:
+            # Capture style from the first run before clearing
+            first_run_style = {}
+            if paragraph.runs:
+                first_run = paragraph.runs[0]
+                first_run_style = {
+                    'bold': first_run.bold,
+                    'italic': first_run.italic,
+                    'underline': first_run.underline,
+                    'strike': first_run.font.strike,
+                    'size': first_run.font.size,
+                    'name': first_run.font.name,
+                    'color_rgb': first_run.font.color.rgb,
+                    # We can add more if needed
+                }
+
             # Clear existing paragraph content
             for run in paragraph.runs:
                 run.text = ''
@@ -141,6 +166,23 @@ class WordGenerator:
             # Replace and add new content
             new_text = full_text.replace(placeholder, value)
 
-            # Add a new run. This might lose some formatting nuances if the original
-            # paragraph had mixed formatting. For simple placeholders, this is fine.
-            paragraph.add_run(new_text)
+            # Add a new run with the new text
+            new_run = paragraph.add_run(new_text)
+
+            # Apply captured style to the new run
+            if first_run_style:
+                new_run.bold = first_run_style.get('bold')
+                new_run.italic = first_run_style.get('italic')
+                new_run.underline = first_run_style.get('underline')
+
+                if first_run_style.get('strike') is not None:
+                    new_run.font.strike = first_run_style.get('strike')
+
+                if first_run_style.get('size') is not None:
+                    new_run.font.size = first_run_style.get('size')
+
+                if first_run_style.get('name') is not None:
+                    new_run.font.name = first_run_style.get('name')
+
+                if first_run_style.get('color_rgb') is not None:
+                    new_run.font.color.rgb = first_run_style.get('color_rgb')
