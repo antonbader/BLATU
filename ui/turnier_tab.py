@@ -296,12 +296,14 @@ class TurnierTab:
         
         self.startgeld_erheben_var.set(turnier.get("startgeld_erheben", False))
 
-        # FIX: Widgets müssen den korrekten Status haben (aktiviert/deaktiviert),
-        # bevor ihnen Inhalt zugewiesen wird.
-        self.frame.update_idletasks()
-        self.toggle_bank_fields()
+        # Zuerst Widgets aktivieren um sie befüllen zu können
+        self.iban_entry.config(state=tk.NORMAL)
+        self.bic_entry.config(state=tk.NORMAL)
+        self.bankname_entry.config(state=tk.NORMAL)
+        self.kontoinhaber_entry.config(state=tk.NORMAL)
+        self.zahldatum_entry.config(state=tk.NORMAL)
 
-        # Jetzt die Bankdatenfelder befüllen
+        # Dann befüllen
         self.iban_entry.delete(0, tk.END)
         self.iban_entry.insert(0, turnier.get("iban", ""))
         self.bic_entry.delete(0, tk.END)
@@ -312,6 +314,9 @@ class TurnierTab:
         self.kontoinhaber_entry.insert(0, turnier.get("kontoinhaber", ""))
         self.zahldatum_entry.delete(0, tk.END)
         self.zahldatum_entry.insert(0, turnier.get("zahldatum", ""))
+
+        # Schließlich korrekten Status setzen (aktiv/inaktiv)
+        self.toggle_bank_fields()
 
         self.update_info()
     
