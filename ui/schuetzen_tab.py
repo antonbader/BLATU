@@ -7,6 +7,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import random
 
+from models.schuetze import SchuetzeModel
+
 
 class SchuetzenTab:
     """Tab für Schützenverwaltung"""
@@ -226,11 +228,15 @@ class SchuetzenTab:
         if self.editing_index is not None:
             # Aktualisieren
             schuetze = self.schuetze_model.get_schuetze(self.editing_index)
+            old_id = SchuetzeModel.get_schuetze_id(schuetze)
             self.schuetze_model.update_schuetze(
                 self.editing_index, name, vorname, klasse, verein,
                 gruppe=schuetze.get('gruppe'), scheibe=schuetze.get('scheibe'),
                 pin=pin
             )
+            updated_schuetze = self.schuetze_model.get_schuetze(self.editing_index)
+            new_id = SchuetzeModel.get_schuetze_id(updated_schuetze)
+            self.turnier_model.update_schuetze_id_in_mannschaften(old_id, new_id)
             messagebox.showinfo("Erfolg", f"{vorname} {name} wurde aktualisiert!")
             self.editing_index = None
             self.add_button.config(text="Schütze hinzufügen")
@@ -308,7 +314,9 @@ class SchuetzenTab:
                     schuetze['vorname'] == values[1] and 
                     schuetze['klasse'] == values[2] and 
                     schuetze['verein'] == values[3]):
+                    schuetze_id = SchuetzeModel.get_schuetze_id(schuetze)
                     self.schuetze_model.remove_schuetze(i)
+                    self.turnier_model.remove_schuetze_from_mannschaften(schuetze_id)
                     break
             
             self.clear_entries()
@@ -329,6 +337,8 @@ class SchuetzenTab:
             "Bestätigung", 
             "Möchten Sie wirklich ALLE Schützen löschen?"
         ):
+            for s in self.schuetze_model.get_all_schuetzen():
+                self.turnier_model.remove_schuetze_from_mannschaften(SchuetzeModel.get_schuetze_id(s))
             self.schuetze_model.clear_schuetzen()
             self.refresh()
             messagebox.showinfo("Erfolg", "Alle Schützen wurden gelöscht!")

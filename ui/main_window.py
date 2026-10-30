@@ -15,6 +15,7 @@ from .klassen_tab import KlassenTab
 from .schuetzen_tab import SchuetzenTab
 from .gruppen_tab import GruppenTab
 from .ergebnisse_tab import ErgebnisseTab
+from .mannschaften_tab import MannschaftenTab
 from .online_eingabe_tab import OnlineEingabeTab
 from .urkunden_tab import UrkundenTab
 from .schiesszettel_tab import SchiesszettelTab
@@ -55,7 +56,8 @@ class MainWindow:
             # Refresh Tabs die Ergebnisse anzeigen
             if hasattr(self, 'ergebnisse_tab'):
                 self.ergebnisse_tab.refresh_silent_update()
-            # Weitere Tabs könnten hier folgen, aber Ergebnisse ist am wichtigsten
+            if hasattr(self, 'mannschaften_tab'):
+                self.mannschaften_tab.refresh_silent_update()
 
     def create_widgets(self):
         """Erstellt alle Widgets"""
@@ -88,6 +90,7 @@ class MainWindow:
             self.on_assignment_changed
         )
         self.ergebnisse_tab = ErgebnisseTab(self.notebook, self.turnier_model, self.schuetze_model)
+        self.mannschaften_tab = MannschaftenTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.online_eingabe_tab = OnlineEingabeTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.urkunden_tab = UrkundenTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.schiesszettel_tab = SchiesszettelTab(self.notebook, self.turnier_model, self.schuetze_model)
@@ -105,6 +108,7 @@ class MainWindow:
         self.notebook.add(self.schuetzen_tab.frame, text="Schützenverwaltung")
         self.notebook.add(self.gruppen_tab.frame, text="Gruppenverwaltung")
         self.notebook.add(self.ergebnisse_tab.frame, text="Ergebniseingabe")
+        self.notebook.add(self.mannschaften_tab.frame, text="Mannschaften")
         self.notebook.add(self.online_eingabe_tab.frame, text="Online-Eingabe")
         self.notebook.add(self.urkunden_tab.frame, text="Urkunden")
         self.notebook.add(self.schiesszettel_tab.frame, text="Schießzettel")
@@ -112,7 +116,7 @@ class MainWindow:
         self.notebook.add(self.pdf_settings_tab.frame, text="PDF Settings")
         self.notebook.add(self.info_tab.frame, text="Info")
     
-        # Tab Change Listener für Schießzettel (um Gruppen zu aktualisieren)
+        # Tab Change Listener
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
 
     def create_main_buttons(self):
@@ -162,6 +166,7 @@ class MainWindow:
         self.schuetzen_tab.refresh()
         self.gruppen_tab.refresh()
         self.ergebnisse_tab.refresh()
+        self.mannschaften_tab.refresh()
         self.startgeld_tab.refresh()
         self.pdf_settings_tab.refresh()
         self.schiesszettel_tab.refresh()
@@ -175,6 +180,8 @@ class MainWindow:
         # Ergebnisse-Tab muss Passen-Felder neu erstellen
         if hasattr(self, 'ergebnisse_tab'):
             self.ergebnisse_tab.refresh()
+        if hasattr(self, 'mannschaften_tab'):
+            self.mannschaften_tab.refresh_silent_update()
     
     def on_klassen_changed(self):
         """Wird aufgerufen wenn sich Klassen ändern"""
@@ -187,6 +194,8 @@ class MainWindow:
         """Wird aufgerufen wenn sich Schützenliste ändert"""
         if hasattr(self, 'ergebnisse_tab'):
             self.ergebnisse_tab.refresh()
+        if hasattr(self, 'mannschaften_tab'):
+            self.mannschaften_tab.refresh_silent_update()
         if hasattr(self, 'gruppen_tab'):
             self.gruppen_tab.refresh()
         if hasattr(self, 'startgeld_tab'):
@@ -212,8 +221,10 @@ class MainWindow:
         tab_text = event.widget.tab(selected_tab, "text")
 
         if tab_text == "Schießzettel":
-             self.schiesszettel_tab.refresh()
+            self.schiesszettel_tab.refresh()
         elif tab_text == "Gruppenverwaltung":
             self.gruppen_tab.refresh()
         elif tab_text == "Startgeld":
             self.startgeld_tab.refresh()
+        elif tab_text == "Mannschaften":
+            self.mannschaften_tab.refresh_silent_update()

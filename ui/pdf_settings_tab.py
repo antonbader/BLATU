@@ -15,11 +15,12 @@ class PDFSettingsTab:
 
     def __init__(self, parent, turnier_model):
         self.turnier_model = turnier_model
-        self.frame = ttk.Frame(parent, padding="20")
+        self.frame = ttk.Frame(parent, padding="15")
         self.spinboxes = {
             "ergebnisliste": {},
             "gruppen": {},
-            "vereine": {}
+            "vereine": {},
+            "mannschaften": {}
         }
         self.create_widgets()
 
@@ -36,14 +37,15 @@ class PDFSettingsTab:
             text="Passen Sie hier die Schriftgrößen (in Punkt / pt) getrennt für jedes PDF-Dokument an.",
             font=("Arial", 10),
             foreground="gray"
-        ).pack(pady=(0, 15))
+        ).pack(pady=(0, 10))
 
-        # Container für die drei PDF-Typen nebeneinander
+        # Container für die vier PDF-Typen im 2x2-Raster
         cards_frame = ttk.Frame(self.frame)
         cards_frame.pack(fill=tk.BOTH, expand=True, pady=5)
         cards_frame.columnconfigure(0, weight=1)
         cards_frame.columnconfigure(1, weight=1)
-        cards_frame.columnconfigure(2, weight=1)
+        cards_frame.rowconfigure(0, weight=1)
+        cards_frame.rowconfigure(1, weight=1)
 
         # 1. Ergebnisliste PDF
         ergebnis_fields = [
@@ -55,6 +57,7 @@ class PDFSettingsTab:
         ]
         self._create_doc_section(
             cards_frame,
+            row=0,
             col=0,
             doc_key="ergebnisliste",
             title="Ergebnisliste (PDF)",
@@ -71,6 +74,7 @@ class PDFSettingsTab:
         ]
         self._create_doc_section(
             cards_frame,
+            row=0,
             col=1,
             doc_key="gruppen",
             title="Gruppen-PDF",
@@ -88,15 +92,33 @@ class PDFSettingsTab:
         ]
         self._create_doc_section(
             cards_frame,
-            col=2,
+            row=1,
+            col=0,
             doc_key="vereine",
             title="Startliste Vereine (PDF)",
             fields=vereine_fields
         )
 
+        # 4. Mannschaftswertung PDF
+        mannschaften_fields = [
+            ("title", "Turniertitel:", DEFAULT_PDF_FONT_SIZES["mannschaften"]["title"]),
+            ("subtitle", "Datum / Untertitel:", DEFAULT_PDF_FONT_SIZES["mannschaften"]["subtitle"]),
+            ("heading", "Klassen-/Wertungsüberschrift:", DEFAULT_PDF_FONT_SIZES["mannschaften"]["heading"]),
+            ("table_header", "Tabellenkopf:", DEFAULT_PDF_FONT_SIZES["mannschaften"]["table_header"]),
+            ("table_body", "Tabelleninhalt:", DEFAULT_PDF_FONT_SIZES["mannschaften"]["table_body"]),
+        ]
+        self._create_doc_section(
+            cards_frame,
+            row=1,
+            col=1,
+            doc_key="mannschaften",
+            title="Mannschaftswertung (PDF)",
+            fields=mannschaften_fields
+        )
+
         # Buttons unten
         button_frame = ttk.Frame(self.frame)
-        button_frame.pack(pady=20)
+        button_frame.pack(pady=10)
 
         ttk.Button(
             button_frame,
@@ -112,15 +134,15 @@ class PDFSettingsTab:
 
         self.refresh()
 
-    def _create_doc_section(self, parent, col, doc_key, title, fields):
+    def _create_doc_section(self, parent, row, col, doc_key, title, fields):
         """Erstellt ein LabelFrame für einen PDF-Dokumenttyp"""
-        padx = (0, 8) if col == 0 else ((8, 8) if col == 1 else (8, 0))
-        section = ttk.LabelFrame(parent, text=title, padding="15")
-        section.grid(row=0, column=col, sticky="nsew", padx=padx, pady=5)
+        padx = (0, 8) if col == 0 else (8, 0)
+        section = ttk.LabelFrame(parent, text=title, padding="12")
+        section.grid(row=row, column=col, sticky="nsew", padx=padx, pady=5)
 
         for row_idx, (field_key, label_text, default_val) in enumerate(fields):
             ttk.Label(section, text=label_text, font=("Arial", 10)).grid(
-                row=row_idx, column=0, sticky=tk.W, pady=8, padx=(0, 10)
+                row=row_idx, column=0, sticky=tk.W, pady=4, padx=(0, 10)
             )
 
             spinbox = ttk.Spinbox(
@@ -131,7 +153,7 @@ class PDFSettingsTab:
                 font=("Arial", 10),
                 command=self._apply_silent
             )
-            spinbox.grid(row=row_idx, column=1, sticky=tk.E, pady=8)
+            spinbox.grid(row=row_idx, column=1, sticky=tk.E, pady=4)
             spinbox.set(default_val)
             spinbox.bind("<FocusOut>", lambda e: self._apply_silent())
             spinbox.bind("<Return>", lambda e: self._apply_silent())
@@ -141,7 +163,7 @@ class PDFSettingsTab:
                 text=f"pt (Std: {default_val})",
                 font=("Arial", 8),
                 foreground="gray"
-            ).grid(row=row_idx, column=2, sticky=tk.W, padx=(6, 0), pady=8)
+            ).grid(row=row_idx, column=2, sticky=tk.W, padx=(6, 0), pady=4)
 
             self.spinboxes[doc_key][field_key] = spinbox
 
