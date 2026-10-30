@@ -7,8 +7,8 @@ Enthält Konstanten und Einstellungen
 # Anwendungsinformationen
 APP_NAME = "Blasrohr Turnier Verwaltung"
 APP_SHORT_NAME = "Blatu"
-VERSION = "1.5.4"
-VERSION_DATE = "30.11.2026"
+VERSION = "1.6.0"
+VERSION_DATE = "31.10.2026"
 EMAIL = "info@anton-bader.de"
 WEBSITE = "https://www.anton-bader.de"
 
