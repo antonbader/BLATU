@@ -238,7 +238,8 @@ class UrkundenTab:
 
         placeholders = [
             "[Turniername]", "[Datum]", "[Klasse]", "[Vorname]",
-            "[Name]", "[Verein]", "[Ergebnis]", "[Platz]", "[Mannschaftsmitglieder]"
+            "[Name]", "[Verein]", "[Ergebnis]", "[Platz]",
+            "[Mannschaftsname]", "[Mannschaftsmitglieder]"
         ]
 
         placeholder_text = ", ".join(placeholders)
@@ -455,6 +456,7 @@ class UrkundenTab:
                     "[Verein]": schuetze.get('verein', ''),
                     "[Ergebnis]": str(schuetze.get('Gesamt', 0)),
                     "[Platz]": str(platz),
+                    "[Mannschaftsname]": "",
                     "[Mannschaftsmitglieder]": ""
                 }
 
@@ -588,6 +590,7 @@ class UrkundenTab:
                     "[Verein]": verein_str,
                     "[Ergebnis]": str(int(team.get('gesamt', 0))),
                     "[Platz]": str(platz),
+                    "[Mannschaftsname]": team.get('name', ''),
                     "[Mannschaftsmitglieder]": mitglieder_text
                 }
 

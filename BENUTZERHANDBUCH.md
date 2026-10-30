@@ -245,7 +245,9 @@ Ihre Word-Vorlage kann die folgenden Platzhalter enthalten. Achten Sie darauf, d
 *   `[Name]` - Der Nachname des Schützen.
 *   `[Verein]` - Der Verein des Schützen.
 *   `[Ergebnis]` - Das Gesamtergebnis des Schützen.
-*   `[Platz]` - Die Platzierung des Schützen innerhalb seiner Klasse.
+*   `[Platz]` - Die Platzierung des Schützen bzw. der Mannschaft innerhalb der jeweiligen Klasse.
+*   `[Mannschaftsname]` - Der Name der Mannschaft (bei Mannschafts-Urkunden).
+*   `[Mannschaftsmitglieder]` - Die Mitglieder der Mannschaft, zeilenweise aufgelistet (optional mit Einzelergebnis).
 
 ### 10.4. Erstellungsprozess
 
