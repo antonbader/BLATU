@@ -285,7 +285,7 @@ class BildschirmAnzeigeWindow:
             table_frame,
             columns=columns,
             show="headings",
-            height=len(ergebnisse)
+            height=len(ergebnisse), style="Bildschirm.Treeview"
         )
         
         # Spalten konfigurieren
@@ -295,8 +295,8 @@ class BildschirmAnzeigeWindow:
         
         # Style für bessere Lesbarkeit
         style = ttk.Style()
-        style.configure("Treeview", rowheight=35, font=("Arial", 12))
-        style.configure("Treeview.Heading", font=("Arial", 13, "bold"))
+        style.configure("Bildschirm.Treeview", rowheight=35, font=("Arial", 12))
+        style.configure("Bildschirm.Treeview.Heading", font=("Arial", 13, "bold"))
         
         # Daten einfügen
         platz = 1
