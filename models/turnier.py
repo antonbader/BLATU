@@ -22,7 +22,7 @@ class TurnierModel:
         self.pdf_font_sizes = copy.deepcopy(DEFAULT_PDF_FONT_SIZES)
         self.last_update_time = 0
     
-    def set_turnier_data(self, name, datum, anzahl_passen, *, show_halves=False, max_scheiben=3,
+    def set_turnier_data(self, name, datum, anzahl_passen, *, show_halves=False, max_scheiben=None,
                          mannschaft_groesse=None, startgeld_erheben=False, iban="", bic="",
                          bankname="", kontoinhaber="", zahldatum=""):
         """Setzt die Turnierdaten und stellt eine flache Struktur sicher."""
@@ -31,6 +31,8 @@ class TurnierModel:
                 self.mannschaft_groesse = max(1, int(mannschaft_groesse))
             except (ValueError, TypeError):
                 pass
+        if max_scheiben is None:
+            max_scheiben = self.turnier.get('max_scheiben', 3)
         self.turnier = {
             'name': name,
             'datum': datum,
@@ -230,7 +232,7 @@ class TurnierModel:
         self._touch()
 
     def update_schuetze_id_in_mannschaften(self, old_id, new_id):
-        """Aktualisiert die Schützen-ID in allen Mannschaften, wenn ein Schütze umbenannt wurde"""
+        """Aktualisiert die Schützen-ID in allen Mannschaften und Ergebnissen, wenn ein Schütze bearbeitet wurde"""
         if old_id == new_id:
             return
         changed = False
@@ -239,8 +241,21 @@ class TurnierModel:
             if old_id in mitglieder:
                 m['mitglieder'] = [new_id if mid == old_id else mid for mid in mitglieder]
                 changed = True
+        if old_id in self.ergebnisse:
+            old_erg = self.ergebnisse.pop(old_id)
+            if new_id not in self.ergebnisse:
+                self.ergebnisse[new_id] = old_erg
+            changed = True
         if changed:
             self._touch()
+
+    def remove_ergebnis(self, schuetze_id):
+        """Entfernt das Ergebnis eines gelöschten Schützen"""
+        if schuetze_id in self.ergebnisse:
+            del self.ergebnisse[schuetze_id]
+            self._touch()
+            return True
+        return False
 
     def remove_schuetze_from_mannschaften(self, schuetze_id):
         """Entfernt einen gelöschten Schützen aus allen Mannschaften"""
@@ -350,7 +365,7 @@ class TurnierModel:
 
         return grouped
     
-    def add_ergebnis(self, schuetze_id, passen, anzahl_10er, anzahl_9er, stechen=...):
+    def add_ergebnis(self, schuetze_id, passen, anzahl_10er, anzahl_9er, stechen=..., web_raw_data=...):
         """Fügt ein Ergebnis hinzu oder aktualisiert es"""
         current = self.ergebnisse.get(schuetze_id, {})
         old_key = (
@@ -365,6 +380,8 @@ class TurnierModel:
             'anzahl_10er': anzahl_10er,
             'anzahl_9er': anzahl_9er
         })
+        if web_raw_data is not ... and web_raw_data is not None:
+            current['web_raw_data'] = web_raw_data
         if stechen is not ...:
             current['stechen'] = stechen
         elif old_key is not None and old_key != new_key:
@@ -419,6 +436,7 @@ class TurnierModel:
     def clear_ergebnisse(self):
         """Löscht alle Ergebnisse"""
         self.ergebnisse = {}
+        self._touch()
     
     def set_group_time(self, group, time):
         """Setzt die Uhrzeit für eine Gruppe"""

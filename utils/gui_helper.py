@@ -7,6 +7,8 @@ import os
 import sys
 import ctypes
 
+from config import VERSION
+
 def resource_path(relative_path):
     """
     Get absolute path to resource, works for dev and for PyInstaller
@@ -28,7 +30,7 @@ def set_taskbar_icon():
         try:
             # Eindeutige ID für die Anwendung
             # Format: Company.Product.SubProduct.Version
-            myappid = 'blatu.turnierverwaltung.main.1.5.1'
+            myappid = f'blatu.turnierverwaltung.main.{VERSION}'
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
         except Exception as e:
             print(f"Warnung: Konnte AppUserModelID nicht setzen: {e}")

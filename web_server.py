@@ -212,8 +212,11 @@ class WebServer:
                         passen_sums.append(current_passen[i])
                     else:
                         passen_sums.append(0)
-                    if current_ergebnis and 'web_raw_data' in current_ergebnis and i in current_ergebnis['web_raw_data']:
-                         web_raw_data[i] = current_ergebnis['web_raw_data'][i]
+                    if current_ergebnis and 'web_raw_data' in current_ergebnis:
+                        if i in current_ergebnis['web_raw_data']:
+                            web_raw_data[i] = current_ergebnis['web_raw_data'][i]
+                        elif str(i) in current_ergebnis['web_raw_data']:
+                            web_raw_data[i] = current_ergebnis['web_raw_data'][str(i)]
 
             self.turnier_model.add_web_ergebnis(
                 schuetze_id,

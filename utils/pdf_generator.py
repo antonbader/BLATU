@@ -177,6 +177,7 @@ class PDFGenerator:
                 # Datenzeilen
                 platz = 1
                 prev_ergebnis = None
+                row_place_indices = []
                 
                 for idx, ergebnis in enumerate(ergebnisse_sortiert):
                     # Platzierung
@@ -216,6 +217,7 @@ class PDFGenerator:
                     row.append(str(ergebnis['anzahl_9er']))
                     stechen_val = ergebnis.get('stechen')
                     row.append(f"nach Stechen ({stechen_val})" if stechen_val is not None else "")
+                    row_place_indices.append((len(table_data), current_platz))
                     
                     table_data.append(row)
                     prev_ergebnis = ergebnis
@@ -242,13 +244,20 @@ class PDFGenerator:
                 ])
                 
                 # Platz-Farben
-                if len(ergebnisse_sortiert) >= 1:
+                for row_idx, platz_val in row_place_indices:
+                    if platz_val == 1:
+                        table_style.add('BACKGROUND', (0, row_idx), (0, row_idx), colors.HexColor(PDF_COLOR_GOLD))
+                    elif platz_val == 2:
+                        table_style.add('BACKGROUND', (0, row_idx), (0, row_idx), colors.HexColor(PDF_COLOR_SILVER))
+                    elif platz_val == 3:
+                        table_style.add('BACKGROUND', (0, row_idx), (0, row_idx), colors.HexColor(PDF_COLOR_BRONZE))
+                if False:
                     table_style.add('BACKGROUND', (0, 1), (0, 1), 
                                    colors.HexColor(PDF_COLOR_GOLD))
-                if len(ergebnisse_sortiert) >= 2:
+                if False:
                     table_style.add('BACKGROUND', (0, 2), (0, 2), 
                                    colors.HexColor(PDF_COLOR_SILVER))
-                if len(ergebnisse_sortiert) >= 3:
+                if False:
                     table_style.add('BACKGROUND', (0, 3), (0, 3), 
                                    colors.HexColor(PDF_COLOR_BRONZE))
                 

@@ -98,6 +98,7 @@ class ErgebnisseTab:
         list_scrollbar.config(command=self.schuetzen_tree.yview)
         self.schuetzen_tree.bind("<<TreeviewSelect>>", self.on_schuetze_selected)
         self.schuetzen_tree.bind("<Double-1>", lambda e: self.load_ergebnisse())
+        self.schuetzen_tree.bind("<Return>", lambda e: self.load_ergebnisse())
         
         # Rechter Bereich - Eingabe
         right_frame = ttk.Frame(self.frame)
@@ -350,6 +351,7 @@ class ErgebnisseTab:
                 self.info_label.config(
                     text=f"Ausgewählt: {schuetze['vorname']} {schuetze['name']} ({schuetze['klasse']})"
                 )
+                self.load_ergebnisse()
                 break
     
     def load_ergebnisse(self):

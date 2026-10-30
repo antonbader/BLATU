@@ -196,7 +196,8 @@ class DataManager:
                         ergebnis.get('passen', []),
                         ergebnis.get('anzahl_10er', 0),
                         ergebnis.get('anzahl_9er', 0),
-                        stechen=ergebnis.get('stechen', None)
+                        stechen=ergebnis.get('stechen', None),
+                        web_raw_data=ergebnis.get('web_raw_data', None)
                     )
         else:
             # Alte Format-Kompatibilität

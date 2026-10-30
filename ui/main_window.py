@@ -146,7 +146,7 @@ class MainWindow:
         success, message = self.data_manager.save_to_file()
         if success:
             messagebox.showinfo("Erfolg", message)
-        else:
+        elif message:
             messagebox.showerror("Fehler", message)
     
     def load_all_data(self):
@@ -170,10 +170,11 @@ class MainWindow:
         self.startgeld_tab.refresh()
         self.pdf_settings_tab.refresh()
         self.schiesszettel_tab.refresh()
+        self.online_eingabe_tab.refresh_groups()
         # Wichtig: Urkunden-Tab nach allen anderen aktualisieren,
         # da er von den berechneten Ergebnissen abhängt.
         self.urkunden_tab.refresh()
-        # messagebox.showinfo("Erfolg", success_message) # Temporarily disabled for verification
+        messagebox.showinfo("Erfolg", success_message)
     
     def on_turnier_changed(self):
         """Wird aufgerufen wenn sich Turnierdaten ändern"""
@@ -202,6 +203,8 @@ class MainWindow:
             self.startgeld_tab.refresh()
         if hasattr(self, 'schiesszettel_tab'):
             self.schiesszettel_tab.refresh()
+        if hasattr(self, 'online_eingabe_tab'):
+            self.online_eingabe_tab.refresh_groups()
 
     def on_assignment_changed(self):
         """Wird aufgerufen, wenn sich eine Zuweisung in der Gruppenverwaltung ändert"""
@@ -209,6 +212,8 @@ class MainWindow:
             self.schuetzen_tab.refresh()
         if hasattr(self, 'schiesszettel_tab'):
             self.schiesszettel_tab.refresh()
+        if hasattr(self, 'online_eingabe_tab'):
+            self.online_eingabe_tab.refresh_groups()
 
     def on_klassen_changed_for_urkunden(self):
         """Callback specifically for updating the Urkunden tab."""
@@ -230,3 +235,5 @@ class MainWindow:
             self.mannschaften_tab.refresh_silent_update()
         elif tab_text == "Urkunden":
             self.urkunden_tab.refresh()
+        elif tab_text == "Online-Eingabe":
+            self.online_eingabe_tab.refresh_groups()

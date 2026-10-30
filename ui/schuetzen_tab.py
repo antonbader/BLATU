@@ -317,6 +317,7 @@ class SchuetzenTab:
                     schuetze_id = SchuetzeModel.get_schuetze_id(schuetze)
                     self.schuetze_model.remove_schuetze(i)
                     self.turnier_model.remove_schuetze_from_mannschaften(schuetze_id)
+                    self.turnier_model.remove_ergebnis(schuetze_id)
                     break
             
             self.clear_entries()
@@ -340,6 +341,7 @@ class SchuetzenTab:
             for s in self.schuetze_model.get_all_schuetzen():
                 self.turnier_model.remove_schuetze_from_mannschaften(SchuetzeModel.get_schuetze_id(s))
             self.schuetze_model.clear_schuetzen()
+            self.turnier_model.clear_ergebnisse()
             self.refresh()
             messagebox.showinfo("Erfolg", "Alle Schützen wurden gelöscht!")
             
@@ -368,6 +370,7 @@ class SchuetzenTab:
     def refresh(self):
         """Aktualisiert die Anzeige"""
         # Klassen-Combobox aktualisieren
+        self.max_scheiben_var.set(self.turnier_model.get_turnier_data().get("max_scheiben", 3))
         klassen = self.turnier_model.get_klassen_names()
         self.klasse_combo['values'] = klassen
         if klassen and not self.klasse_combo.get():
@@ -432,6 +435,7 @@ class SchuetzenTab:
                 return
 
             # Zuweisungsstrategie anwenden
+            self.turnier_model.turnier['max_scheiben'] = max_scheiben
             strategy = self.assign_strategy_var.get()
             if strategy == "Zufällig":
                 random.shuffle(schuetzen)
