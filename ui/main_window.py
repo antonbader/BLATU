@@ -228,3 +228,5 @@ class MainWindow:
             self.startgeld_tab.refresh()
         elif tab_text == "Mannschaften":
             self.mannschaften_tab.refresh_silent_update()
+        elif tab_text == "Urkunden":
+            self.urkunden_tab.refresh()
