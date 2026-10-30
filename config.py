@@ -55,3 +55,29 @@ PDF_COLOR_ROW_ALT = "#F2F2F2"
 MAX_PASSEN = 100
 MIN_PASSEN = 1
 MAX_PASSEN_FOR_DISPLAY = 12  # Maximale Anzahl Passen die in PDF angezeigt werden
+
+# Standard-Schriftgrößen für PDFs
+DEFAULT_PDF_FONT_SIZES = {
+    "ergebnisliste": {
+        "title": 18,
+        "subtitle": 12,
+        "heading": 14,
+        "table_header": 10,
+        "table_body": 9
+    },
+    "gruppen": {
+        "title": 18,
+        "subtitle": 12,
+        "heading": 14,
+        "table_header": 10,
+        "table_body": 10
+    },
+    "vereine": {
+        "title": 16,
+        "subtitle": 12,
+        "heading": 14,
+        "table_header": 10,
+        "table_body": 10,
+        "footer_text": 10
+    }
+}

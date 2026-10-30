@@ -123,16 +123,19 @@ class SchuetzeModel:
                 gesamt = sum(ergebnis_data.get('passen', [0]))
                 anzahl_10er = ergebnis_data.get('anzahl_10er', 0)
                 anzahl_9er = ergebnis_data.get('anzahl_9er', 0)
+                stechen = ergebnis_data.get('stechen', None)
             else:
                 gesamt = 0
                 anzahl_10er = 0
                 anzahl_9er = 0
+                stechen = None
 
             # Erstelle eine Kopie, um das Original nicht zu verändern
             schuetze_with_result = schuetze.copy()
             schuetze_with_result['Gesamt'] = gesamt
             schuetze_with_result['Anzahl10er'] = anzahl_10er
             schuetze_with_result['Anzahl9er'] = anzahl_9er
+            schuetze_with_result['Stechen'] = stechen
 
             klasse = schuetze['klasse']
             if klasse not in results_by_class:
@@ -140,10 +143,16 @@ class SchuetzeModel:
 
             results_by_class[klasse].append(schuetze_with_result)
 
-        # Sortiere die Schützen in jeder Klasse nach dem Gesamtergebnis (und 10ern/9ern)
+        # Sortiere die Schützen in jeder Klasse nach dem Gesamtergebnis (und 10ern/9ern sowie Stechen)
         for klasse in results_by_class:
             results_by_class[klasse].sort(
-                key=lambda s: (s.get('Gesamt', 0), s.get('Anzahl10er', 0), s.get('Anzahl9er', 0)),
+                key=lambda s: (
+                    s.get('Gesamt', 0),
+                    s.get('Anzahl10er', 0),
+                    s.get('Anzahl9er', 0),
+                    1 if s.get('Stechen') is not None else 0,
+                    s.get('Stechen') if s.get('Stechen') is not None else -1
+                ),
                 reverse=True
             )
             # Platzierung hinzufügen (mit korrekter Behandlung von Gleichständen)
@@ -151,10 +160,11 @@ class SchuetzeModel:
             for i, schuetze in enumerate(results_by_class[klasse]):
                 if i > 0:
                     prev_schuetze = results_by_class[klasse][i - 1]
-                    # Prüfen ob punktgleich
+                    # Prüfen ob punktgleich (inkl. Stechen)
                     if not (schuetze['Gesamt'] == prev_schuetze['Gesamt'] and
                             schuetze['Anzahl10er'] == prev_schuetze['Anzahl10er'] and
-                            schuetze['Anzahl9er'] == prev_schuetze['Anzahl9er']):
+                            schuetze['Anzahl9er'] == prev_schuetze['Anzahl9er'] and
+                            schuetze.get('Stechen') == prev_schuetze.get('Stechen')):
                         platz = i + 1
                 schuetze['Platz'] = platz
 

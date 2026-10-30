@@ -42,6 +42,12 @@ class ErgebnisWindow:
         ).pack(side=tk.LEFT, padx=10)
 
         ttk.Button(
+            button_frame,
+            text="🎯 Stechschießen",
+            command=self.open_stechschiessen
+        ).pack(side=tk.LEFT, padx=10)
+
+        ttk.Button(
             button_frame, 
             text="Schließen", 
             command=self.window.destroy
@@ -144,6 +150,7 @@ class ErgebnisWindow:
                 passen = ergebnis.get('passen', [])
                 anzahl_10er = ergebnis.get('anzahl_10er', 0)
                 anzahl_9er = ergebnis.get('anzahl_9er', 0)
+                stechen = ergebnis.get('stechen', None)
                 gesamt = sum(passen)
                 
                 klassen_ergebnisse[klasse].append({
@@ -153,13 +160,20 @@ class ErgebnisWindow:
                     'ergebnisse': passen,
                     'gesamt': gesamt,
                     'anzahl_10er': anzahl_10er,
-                    'anzahl_9er': anzahl_9er
+                    'anzahl_9er': anzahl_9er,
+                    'stechen': stechen
                 })
         
-        # Sortieren nach Gesamt, 10er, 9er
+        # Sortieren nach Gesamt, 10er, 9er und ggf. Stechschießen
         for klasse in klassen_ergebnisse:
             klassen_ergebnisse[klasse].sort(
-                key=lambda x: (x['gesamt'], x['anzahl_10er'], x['anzahl_9er']), 
+                key=lambda x: (
+                    x['gesamt'],
+                    x['anzahl_10er'],
+                    x['anzahl_9er'],
+                    1 if x.get('stechen') is not None else 0,
+                    x.get('stechen') if x.get('stechen') is not None else -1
+                ), 
                 reverse=True
             )
         
@@ -188,7 +202,7 @@ class ErgebnisWindow:
             columns += ["1. Hälfte", "2. Hälfte"]
         else:
             columns += [f"P{i+1}" for i in range(anzahl_passen)]
-        columns += ["Gesamt", "10er", "9er"]
+        columns += ["Gesamt", "10er", "9er", "Stechen"]
         
         # Treeview erstellen - KEINE horizontale Scrollbar hier!
         tree = ttk.Treeview(
@@ -232,6 +246,9 @@ class ErgebnisWindow:
         
         tree.heading("9er", text="9er")
         tree.column("9er", width=50, anchor=tk.CENTER)
+
+        tree.heading("Stechen", text="Stechen")
+        tree.column("Stechen", width=130, anchor=tk.CENTER)
         
         # Scrollbar konfigurieren
         tree_yscroll.config(command=tree.yview)
@@ -245,11 +262,12 @@ class ErgebnisWindow:
         prev_ergebnis = None
         
         for idx, ergebnis in enumerate(ergebnisse):
-            # Platzierung mit Punktgleichstand
+            # Platzierung mit Punktgleichstand (inkl. Stechschießen)
             if prev_ergebnis and (
                 ergebnis['gesamt'] == prev_ergebnis['gesamt'] and 
                 ergebnis['anzahl_10er'] == prev_ergebnis['anzahl_10er'] and 
-                ergebnis['anzahl_9er'] == prev_ergebnis['anzahl_9er']
+                ergebnis['anzahl_9er'] == prev_ergebnis['anzahl_9er'] and
+                ergebnis.get('stechen') == prev_ergebnis.get('stechen')
             ):
                 current_platz = platz
             else:
@@ -282,6 +300,8 @@ class ErgebnisWindow:
             werte.append(str(int(ergebnis['gesamt'])))
             werte.append(str(ergebnis['anzahl_10er']))
             werte.append(str(ergebnis['anzahl_9er']))
+            stechen_val = ergebnis.get('stechen')
+            werte.append(f"nach Stechen ({stechen_val})" if stechen_val is not None else "")
             
             tree.insert("", tk.END, values=werte)
             prev_ergebnis = ergebnis
@@ -291,6 +311,16 @@ class ErgebnisWindow:
         klassen_ergebnisse = self.prepare_ergebnisse()
         pdf_generator = PDFGenerator(self.turnier_model)
         pdf_generator.create_pdf(klassen_ergebnisse)
+
+    def open_stechschiessen(self):
+        """Öffnet den Stechschießen-Dialog aus dem Ergebnisfenster heraus"""
+        from .stechschiessen_window import StechschiessenWindow
+        StechschiessenWindow.open_if_ties(
+            self.window,
+            self.turnier_model,
+            self.schuetze_model,
+            on_save_callback=self.refresh
+        )
 
     def refresh(self):
         """Aktualisiert die Anzeige"""

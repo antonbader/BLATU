@@ -40,7 +40,8 @@ class DataManager:
                 "schuetzen": schuetzen,
                 "klassen": klassen,
                 "ergebnisse": self.turnier_model.get_all_ergebnisse(),
-                "group_times": self.turnier_model.get_all_group_times()
+                "group_times": self.turnier_model.get_all_group_times(),
+                "pdf_font_sizes": self.turnier_model.get_pdf_font_sizes()
             }
             
             with open(file_path, 'w', encoding='utf-8') as f:
@@ -102,9 +103,12 @@ class DataManager:
         self.turnier_model.clear_klassen()
         self.turnier_model.clear_ergebnisse()
         self.turnier_model.clear_group_times()
+        self.turnier_model.reset_pdf_font_sizes()
 
         turnier_data_from_file = None
         if isinstance(data, dict):
+            if 'pdf_font_sizes' in data:
+                self.turnier_model.set_pdf_font_sizes(data.get('pdf_font_sizes'))
             # Turnierdaten
             turnier = data.get('turnier', {})
             self.turnier_model.set_turnier_data(
@@ -159,7 +163,8 @@ class DataManager:
                         schuetze_id,
                         ergebnis.get('passen', []),
                         ergebnis.get('anzahl_10er', 0),
-                        ergebnis.get('anzahl_9er', 0)
+                        ergebnis.get('anzahl_9er', 0),
+                        stechen=ergebnis.get('stechen', None)
                     )
         else:
             # Alte Format-Kompatibilität

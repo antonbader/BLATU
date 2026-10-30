@@ -19,6 +19,7 @@ from .online_eingabe_tab import OnlineEingabeTab
 from .urkunden_tab import UrkundenTab
 from .schiesszettel_tab import SchiesszettelTab
 from .startgeld_tab import StartgeldTab
+from .pdf_settings_tab import PDFSettingsTab
 from .info_tab import InfoTab
 
 
@@ -91,6 +92,7 @@ class MainWindow:
         self.urkunden_tab = UrkundenTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.schiesszettel_tab = SchiesszettelTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.startgeld_tab = StartgeldTab(self.notebook, self.turnier_model, self.schuetze_model)
+        self.pdf_settings_tab = PDFSettingsTab(self.notebook, self.turnier_model)
         self.info_tab = InfoTab(self.notebook)
 
         # Connect callbacks
@@ -107,6 +109,7 @@ class MainWindow:
         self.notebook.add(self.urkunden_tab.frame, text="Urkunden")
         self.notebook.add(self.schiesszettel_tab.frame, text="Schießzettel")
         self.notebook.add(self.startgeld_tab.frame, text="Startgeld")
+        self.notebook.add(self.pdf_settings_tab.frame, text="PDF Settings")
         self.notebook.add(self.info_tab.frame, text="Info")
     
         # Tab Change Listener für Schießzettel (um Gruppen zu aktualisieren)
@@ -160,6 +163,7 @@ class MainWindow:
         self.gruppen_tab.refresh()
         self.ergebnisse_tab.refresh()
         self.startgeld_tab.refresh()
+        self.pdf_settings_tab.refresh()
         self.schiesszettel_tab.refresh()
         # Wichtig: Urkunden-Tab nach allen anderen aktualisieren,
         # da er von den berechneten Ergebnissen abhängt.
@@ -211,3 +215,5 @@ class MainWindow:
              self.schiesszettel_tab.refresh()
         elif tab_text == "Gruppenverwaltung":
             self.gruppen_tab.refresh()
+        elif tab_text == "Startgeld":
+            self.startgeld_tab.refresh()
