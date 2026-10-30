@@ -266,19 +266,19 @@ class BildschirmAnzeigeWindow:
         
         # Spalten definieren
         if show_halves:
-            columns = ["Platz", "Name", "Vorname", "Verein", "1. Hälfte", "2. Hälfte", "Gesamt", "10er", "9er"]
-            col_widths = [60, 150, 150, 150, 100, 100, 100, 60, 60]
+            columns = ["Platz", "Name", "Vorname", "Verein", "1. Hälfte", "2. Hälfte", "Gesamt", "10er", "9er", "Stechen"]
+            col_widths = [60, 150, 150, 150, 100, 100, 100, 60, 60, 160]
         elif show_passen_details:
             columns = ["Platz", "Name", "Vorname", "Verein"]
             col_widths = [60, 150, 150, 150]
             for i in range(anzahl_passen):
                 columns.append(f"P{i+1}")
                 col_widths.append(70)
-            columns.extend(["Gesamt", "10er", "9er"])
-            col_widths.extend([100, 60, 60])
+            columns.extend(["Gesamt", "10er", "9er", "Stechen"])
+            col_widths.extend([100, 60, 60, 160])
         else:
-            columns = ["Platz", "Name", "Vorname", "Verein", "Gesamt", "10er", "9er"]
-            col_widths = [60, 200, 200, 200, 100, 60, 60]
+            columns = ["Platz", "Name", "Vorname", "Verein", "Gesamt", "10er", "9er", "Stechen"]
+            col_widths = [60, 200, 200, 200, 100, 60, 60, 160]
         
         # Treeview erstellen
         tree = ttk.Treeview(
@@ -303,11 +303,12 @@ class BildschirmAnzeigeWindow:
         prev_ergebnis = None
         
         for idx, ergebnis in enumerate(ergebnisse):
-            # Platzierung mit Punktgleichstand
+            # Platzierung mit Punktgleichstand (inkl. Stechschießen)
             if prev_ergebnis and (
                 ergebnis['gesamt'] == prev_ergebnis['gesamt'] and
                 ergebnis['anzahl_10er'] == prev_ergebnis['anzahl_10er'] and
-                ergebnis['anzahl_9er'] == prev_ergebnis['anzahl_9er']
+                ergebnis['anzahl_9er'] == prev_ergebnis['anzahl_9er'] and
+                ergebnis.get('stechen') == prev_ergebnis.get('stechen')
             ):
                 current_platz = platz
             else:
@@ -347,6 +348,8 @@ class BildschirmAnzeigeWindow:
             werte.append(str(int(ergebnis['gesamt'])))
             werte.append(str(ergebnis['anzahl_10er']))
             werte.append(str(ergebnis['anzahl_9er']))
+            stechen_val = ergebnis.get('stechen')
+            werte.append(f"nach Stechen ({stechen_val})" if stechen_val is not None else "")
             
             # Zeile einfügen mit Tag für Farbe
             tag = f"place_{current_platz}" if current_platz <= 3 else ""
@@ -377,6 +380,7 @@ class BildschirmAnzeigeWindow:
                 passen = ergebnis.get('passen', [])
                 anzahl_10er = ergebnis.get('anzahl_10er', 0)
                 anzahl_9er = ergebnis.get('anzahl_9er', 0)
+                stechen = ergebnis.get('stechen', None)
                 gesamt = sum(passen)
                 
                 klassen_ergebnisse[klasse].append({
@@ -386,13 +390,20 @@ class BildschirmAnzeigeWindow:
                     'ergebnisse': passen,
                     'gesamt': gesamt,
                     'anzahl_10er': anzahl_10er,
-                    'anzahl_9er': anzahl_9er
+                    'anzahl_9er': anzahl_9er,
+                    'stechen': stechen
                 })
         
-        # Sortieren nach Gesamt, 10er, 9er
+        # Sortieren nach Gesamt, 10er, 9er und ggf. Stechschießen
         for klasse in klassen_ergebnisse:
             klassen_ergebnisse[klasse].sort(
-                key=lambda x: (x['gesamt'], x['anzahl_10er'], x['anzahl_9er']),
+                key=lambda x: (
+                    x['gesamt'],
+                    x['anzahl_10er'],
+                    x['anzahl_9er'],
+                    1 if x.get('stechen') is not None else 0,
+                    x.get('stechen') if x.get('stechen') is not None else -1
+                ),
                 reverse=True
             )
         

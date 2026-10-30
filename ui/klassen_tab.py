@@ -103,7 +103,11 @@ class KlassenTab:
 
     def save_startgeld(self, entry, item):
         """Speichert das geänderte Startgeld."""
+        if not entry.winfo_exists():
+            return
         new_value_str = entry.get().replace(",", ".").strip()
+        entry.unbind("<FocusOut>")
+        entry.unbind("<Return>")
         entry.destroy()
 
         try:

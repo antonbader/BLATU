@@ -62,12 +62,21 @@ class PDFGenerator:
             
             elements = []
             
+            # Schriftgrößen aus den PDF Settings holen
+            font_cfg = self.turnier_model.get_pdf_font_sizes().get('ergebnisliste', {})
+            title_size = font_cfg.get('title', 18)
+            subtitle_size = font_cfg.get('subtitle', 12)
+            heading_size = font_cfg.get('heading', 14)
+            table_header_size = font_cfg.get('table_header', 10)
+            table_body_size = font_cfg.get('table_body', 9)
+
             # Styles
             styles = getSampleStyleSheet()
             title_style = ParagraphStyle(
                 'CustomTitle',
                 parent=styles['Heading1'],
-                fontSize=18,
+                fontSize=title_size,
+                leading=max(title_size + 4, int(title_size * 1.25)),
                 textColor=colors.HexColor('#1a1a1a'),
                 spaceAfter=12,
                 alignment=TA_CENTER,
@@ -76,7 +85,8 @@ class PDFGenerator:
             subtitle_style = ParagraphStyle(
                 'CustomSubtitle',
                 parent=styles['Normal'],
-                fontSize=12,
+                fontSize=subtitle_size,
+                leading=max(subtitle_size + 4, int(subtitle_size * 1.25)),
                 textColor=colors.HexColor('#666666'),
                 spaceAfter=20,
                 alignment=TA_CENTER,
@@ -85,7 +95,8 @@ class PDFGenerator:
             class_style = ParagraphStyle(
                 'ClassTitle',
                 parent=styles['Heading2'],
-                fontSize=14,
+                fontSize=heading_size,
+                leading=max(heading_size + 4, int(heading_size * 1.25)),
                 textColor=colors.HexColor('#1a1a1a'),
                 spaceAfter=10,
                 fontName='Helvetica-Bold'
@@ -134,7 +145,13 @@ class PDFGenerator:
                 # Ergebnisse sortieren
                 ergebnisse_sortiert = sorted(
                     klassen_ergebnisse[klasse],
-                    key=lambda x: (x['gesamt'], x['anzahl_10er'], x['anzahl_9er']),
+                    key=lambda x: (
+                        x['gesamt'],
+                        x['anzahl_10er'],
+                        x['anzahl_9er'],
+                        1 if x.get('stechen') is not None else 0,
+                        x.get('stechen') if x.get('stechen') is not None else -1
+                    ),
                     reverse=True
                 )
                 
@@ -144,16 +161,16 @@ class PDFGenerator:
                 # Header
                 if show_halves:
                     # Hälfte-Ansicht
-                    header = ['Platz', 'Name', 'Vorname', 'Verein', '1. Hälfte', '2. Hälfte', 'Gesamt', '10er', '9er']
+                    header = ['Platz', 'Name', 'Vorname', 'Verein', '1. Hälfte', '2. Hälfte', 'Gesamt', '10er', '9er', 'Stechen']
                 elif show_passen_details:
                     # Einzelne Passen
                     header = ['Platz', 'Name', 'Vorname', 'Verein']
                     for i in range(turnier['anzahl_passen']):
                         header.append(f'P{i+1}')
-                    header.extend(['Gesamt', '10er', '9er'])
+                    header.extend(['Gesamt', '10er', '9er', 'Stechen'])
                 else:
                     # Nur Gesamt
-                    header = ['Platz', 'Name', 'Vorname', 'Verein', 'Gesamt', '10er', '9er']
+                    header = ['Platz', 'Name', 'Vorname', 'Verein', 'Gesamt', '10er', '9er', 'Stechen']
                 
                 table_data.append(header)
                 
@@ -166,7 +183,8 @@ class PDFGenerator:
                     if prev_ergebnis and (
                         ergebnis['gesamt'] == prev_ergebnis['gesamt'] and
                         ergebnis['anzahl_10er'] == prev_ergebnis['anzahl_10er'] and
-                        ergebnis['anzahl_9er'] == prev_ergebnis['anzahl_9er']
+                        ergebnis['anzahl_9er'] == prev_ergebnis['anzahl_9er'] and
+                        ergebnis.get('stechen') == prev_ergebnis.get('stechen')
                     ):
                         current_platz = platz
                     else:
@@ -196,6 +214,8 @@ class PDFGenerator:
                     row.append(str(int(ergebnis['gesamt'])))
                     row.append(str(ergebnis['anzahl_10er']))
                     row.append(str(ergebnis['anzahl_9er']))
+                    stechen_val = ergebnis.get('stechen')
+                    row.append(f"nach Stechen ({stechen_val})" if stechen_val is not None else "")
                     
                     table_data.append(row)
                     prev_ergebnis = ergebnis
@@ -209,11 +229,11 @@ class PDFGenerator:
                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                    ('FONTSIZE', (0, 0), (-1, 0), 10),
+                    ('FONTSIZE', (0, 0), (-1, 0), table_header_size),
                     ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
                     ('TOPPADDING', (0, 0), (-1, 0), 8),
                     ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-                    ('FONTSIZE', (0, 1), (-1, -1), 9),
+                    ('FONTSIZE', (0, 1), (-1, -1), table_body_size),
                     ('ROWBACKGROUNDS', (0, 1), (-1, -1), 
                      [colors.white, colors.HexColor(PDF_COLOR_ROW_ALT)]),
                     ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
@@ -320,11 +340,20 @@ class PDFGenerator:
 
             elements = []
 
+            # Schriftgrößen aus den PDF Settings holen
+            font_cfg = self.turnier_model.get_pdf_font_sizes().get('gruppen', {})
+            title_size = font_cfg.get('title', 18)
+            subtitle_size = font_cfg.get('subtitle', 12)
+            heading_size = font_cfg.get('heading', 14)
+            table_header_size = font_cfg.get('table_header', 10)
+            table_body_size = font_cfg.get('table_body', 10)
+
             styles = getSampleStyleSheet()
             title_style = ParagraphStyle(
                 'CustomTitle',
                 parent=styles['Heading1'],
-                fontSize=18,
+                fontSize=title_size,
+                leading=max(title_size + 4, int(title_size * 1.25)),
                 textColor=colors.HexColor('#1a1a1a'),
                 spaceAfter=12,
                 alignment=TA_CENTER,
@@ -333,7 +362,8 @@ class PDFGenerator:
             subtitle_style = ParagraphStyle(
                 'CustomSubtitle',
                 parent=styles['Normal'],
-                fontSize=12,
+                fontSize=subtitle_size,
+                leading=max(subtitle_size + 4, int(subtitle_size * 1.25)),
                 textColor=colors.HexColor('#666666'),
                 spaceAfter=20,
                 alignment=TA_CENTER,
@@ -342,7 +372,8 @@ class PDFGenerator:
             group_style = ParagraphStyle(
                 'GroupTitle',
                 parent=styles['Heading2'],
-                fontSize=14,
+                fontSize=heading_size,
+                leading=max(heading_size + 4, int(heading_size * 1.25)),
                 textColor=colors.HexColor('#1a1a1a'),
                 spaceAfter=10,
                 fontName='Helvetica-Bold'
@@ -389,8 +420,11 @@ class PDFGenerator:
                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                     ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, 0), table_header_size),
                     ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
                     ('TOPPADDING', (0, 0), (-1, 0), 8),
+                    ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                    ('FONTSIZE', (0, 1), (-1, -1), table_body_size),
                     ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor(PDF_COLOR_ROW_ALT)]),
                     ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
                 ])
@@ -464,9 +498,39 @@ class PDFGenerator:
                 elements = []
                 styles = getSampleStyleSheet()
 
-                title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=16, alignment=TA_CENTER, spaceAfter=6)
-                subtitle_style = ParagraphStyle('CustomSubtitle', parent=styles['Normal'], fontSize=12, alignment=TA_CENTER, spaceAfter=12)
-                verein_style = ParagraphStyle('VereinTitle', parent=styles['Heading2'], fontSize=14, alignment=TA_LEFT, spaceAfter=10)
+                # Schriftgrößen aus den PDF Settings holen
+                font_cfg = self.turnier_model.get_pdf_font_sizes().get('vereine', {})
+                title_size = font_cfg.get('title', 16)
+                subtitle_size = font_cfg.get('subtitle', 12)
+                heading_size = font_cfg.get('heading', 14)
+                table_header_size = font_cfg.get('table_header', 10)
+                table_body_size = font_cfg.get('table_body', 10)
+                footer_text_size = font_cfg.get('footer_text', 10)
+
+                title_style = ParagraphStyle(
+                    'CustomTitle',
+                    parent=styles['Heading1'],
+                    fontSize=title_size,
+                    leading=max(title_size + 4, int(title_size * 1.25)),
+                    alignment=TA_CENTER,
+                    spaceAfter=6
+                )
+                subtitle_style = ParagraphStyle(
+                    'CustomSubtitle',
+                    parent=styles['Normal'],
+                    fontSize=subtitle_size,
+                    leading=max(subtitle_size + 4, int(subtitle_size * 1.25)),
+                    alignment=TA_CENTER,
+                    spaceAfter=12
+                )
+                verein_style = ParagraphStyle(
+                    'VereinTitle',
+                    parent=styles['Heading2'],
+                    fontSize=heading_size,
+                    leading=max(heading_size + 4, int(heading_size * 1.25)),
+                    alignment=TA_LEFT,
+                    spaceAfter=10
+                )
 
                 # Titel und Datum
                 elements.append(Paragraph(turnier.get('name', 'Turnier'), title_style))
@@ -506,8 +570,11 @@ class PDFGenerator:
                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                     ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, 0), table_header_size),
                     ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
                     ('TOPPADDING', (0, 0), (-1, 0), 8),
+                    ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                    ('FONTSIZE', (0, 1), (-1, -1), table_body_size),
                     ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor(PDF_COLOR_ROW_ALT)]),
                     ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
                 ])
@@ -518,7 +585,14 @@ class PDFGenerator:
                 elements.append(Spacer(1, 0.5*cm))
                 total_startgeld_euro = f"{total_startgeld_verein / 100.0:.2f} €"
                 total_text = f"<b>Gesamtstartgeld für den Verein: {total_startgeld_euro}</b>"
-                elements.append(Paragraph(total_text, styles['Normal']))
+                total_style = ParagraphStyle(
+                    'TotalStartgeld',
+                    parent=styles['Normal'],
+                    fontSize=footer_text_size,
+                    leading=max(footer_text_size + 4, int(footer_text_size * 1.25)),
+                    alignment=TA_LEFT
+                )
+                elements.append(Paragraph(total_text, total_style))
 
                 # Startgeld-Informationen hinzufügen, falls aktiviert und Summe > 0
                 if turnier.get('startgeld_erheben') and total_startgeld_verein > 0:
@@ -537,7 +611,13 @@ class PDFGenerator:
                         f"auf folgendes Konto: {iban} Bank: {bankname} BIC: {bic} Kontoinhaber: {kontoinhaber}"
                     )
 
-                    p_style = ParagraphStyle('PaymentInfo', parent=styles['Normal'], fontSize=10, alignment=TA_LEFT)
+                    p_style = ParagraphStyle(
+                        'PaymentInfo',
+                        parent=styles['Normal'],
+                        fontSize=footer_text_size,
+                        leading=max(footer_text_size + 4, int(footer_text_size * 1.25)),
+                        alignment=TA_LEFT
+                    )
                     elements.append(Paragraph(text, p_style))
 
                 doc.build(elements)

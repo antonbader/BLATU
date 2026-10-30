@@ -124,6 +124,12 @@ class ErgebnisseTab:
             text="🖥 Bildschirmanzeige",
             command=self.show_bildschirmanzeige
         ).pack(side=tk.LEFT, padx=5, ipadx=10, ipady=5)
+
+        ttk.Button(
+            button_frame,
+            text="🎯 Stechschießen",
+            command=self.show_stechschiessen
+        ).pack(side=tk.LEFT, padx=5, ipadx=10, ipady=5)
         
         # 2. Gesamtergebnis (Bottom Priority)
         ergebnis_frame = ttk.Frame(right_frame)
@@ -450,6 +456,20 @@ class ErgebnisseTab:
         
         from .bildschirm_anzeige_window import BildschirmAnzeigeWindow
         self.bildschirm_window = BildschirmAnzeigeWindow(self.frame, self.turnier_model, self.schuetze_model)
+
+    def show_stechschiessen(self):
+        """Öffnet den Dialog für das Stechschießen bei Punkt-Gleichstand"""
+        if not self.turnier_model.get_all_ergebnisse():
+            messagebox.showinfo("Keine Ergebnisse", "Es sind noch keine Ergebnisse vorhanden!")
+            return
+
+        from .stechschiessen_window import StechschiessenWindow
+        StechschiessenWindow.open_if_ties(
+            self.frame,
+            self.turnier_model,
+            self.schuetze_model,
+            on_save_callback=self.refresh_silent_update
+        )
     
     def refresh(self):
         """Aktualisiert die Anzeige"""
