@@ -21,8 +21,10 @@ class DataManager:
         turnier = self.turnier_model.get_turnier_data()
         schuetzen = self.schuetze_model.get_all_schuetzen()
         klassen = self.turnier_model.get_klassen()
+        mannschaftsklassen = self.turnier_model.get_mannschaftsklassen()
+        mannschaften = self.turnier_model.get_all_mannschaften()
         
-        if not schuetzen and not klassen and not turnier["name"]:
+        if not schuetzen and not klassen and not mannschaften and not turnier["name"]:
             return False, "Es sind keine Daten zum Speichern vorhanden!"
         
         file_path = filedialog.asksaveasfilename(
@@ -39,6 +41,9 @@ class DataManager:
                 "turnier": turnier,
                 "schuetzen": schuetzen,
                 "klassen": klassen,
+                "mannschaft_groesse": self.turnier_model.get_mannschaft_groesse(),
+                "mannschaftsklassen": mannschaftsklassen,
+                "mannschaften": mannschaften,
                 "ergebnisse": self.turnier_model.get_all_ergebnisse(),
                 "group_times": self.turnier_model.get_all_group_times(),
                 "pdf_font_sizes": self.turnier_model.get_pdf_font_sizes()
@@ -52,6 +57,7 @@ class DataManager:
                 f"Turnier: {turnier['name'] if turnier['name'] else 'Keine Angabe'}\n"
                 f"{len(schuetzen)} Schützen\n"
                 f"{len(klassen)} Klassen\n"
+                f"{len(mannschaften)} Mannschaften\n"
                 f"{len(self.turnier_model.get_all_ergebnisse())} Ergebnisse"
             )
             return True, message
@@ -83,11 +89,13 @@ class DataManager:
             turnier = self.turnier_model.get_turnier_data()
             schuetzen = self.schuetze_model.get_all_schuetzen()
             klassen = self.turnier_model.get_klassen()
+            mannschaften = self.turnier_model.get_all_mannschaften()
             ergebnisse = self.turnier_model.get_all_ergebnisse()
             
             message = (
                 f"Turnier: {turnier.get('name', 'Keine Angabe')}\n"
-                f"{len(schuetzen)} Schützen, {len(klassen)} Klassen und "
+                f"{len(schuetzen)} Schützen, {len(klassen)} Klassen, "
+                f"{len(mannschaften)} Mannschaften und "
                 f"{len(ergebnisse)} Ergebnisse wurden geladen!"
             )
             # Gib die direkt aus der Datei verarbeiteten Turnierdaten zurück.
@@ -101,6 +109,8 @@ class DataManager:
         # Daten zurücksetzen
         self.schuetze_model.clear_schuetzen()
         self.turnier_model.clear_klassen()
+        self.turnier_model.clear_mannschaftsklassen()
+        self.turnier_model.clear_mannschaften()
         self.turnier_model.clear_ergebnisse()
         self.turnier_model.clear_group_times()
         self.turnier_model.reset_pdf_font_sizes()
@@ -111,14 +121,18 @@ class DataManager:
                 self.turnier_model.set_pdf_font_sizes(data.get('pdf_font_sizes'))
             # Turnierdaten
             turnier = data.get('turnier', {})
+            mannschaft_groesse = data.get('mannschaft_groesse', turnier.get('mannschaft_groesse', 3))
             self.turnier_model.set_turnier_data(
                 turnier.get('name', ''),
                 turnier.get('datum', ''),
                 turnier.get('anzahl_passen', 1),
                 show_halves=turnier.get('show_halves', False),
                 max_scheiben=turnier.get('max_scheiben', 3),
+                mannschaft_groesse=mannschaft_groesse,
                 startgeld_erheben=turnier.get('startgeld_erheben', False),
                 iban=turnier.get('iban', ''),
+                bic=turnier.get('bic', ''),
+                bankname=turnier.get('bankname', ''),
                 kontoinhaber=turnier.get('kontoinhaber', ''),
                 zahldatum=turnier.get('zahldatum', '')
             )
@@ -133,6 +147,15 @@ class DataManager:
                         self.turnier_model.update_klasse_startgeld(klasse_name, startgeld)
                 else:
                     self.turnier_model.add_klasse(klasse_data)
+
+            # Mannschaftsklassen
+            for mk_data in data.get('mannschaftsklassen', []):
+                if isinstance(mk_data, dict):
+                    mk_name = mk_data.get('name')
+                    if mk_name:
+                        self.turnier_model.add_mannschaftsklasse(mk_name)
+                elif isinstance(mk_data, str):
+                    self.turnier_model.add_mannschaftsklasse(mk_data)
 
             # Schützen
             for schuetze in data.get('schuetzen', []):
@@ -149,6 +172,15 @@ class DataManager:
                 status = schuetze.get('startgeld_bezahlt', schuetze.get('startgeld_status'))
                 if status:
                     self.schuetze_model.update_schuetze_startgeld_status(schuetze_id, status)
+
+            # Mannschaften
+            for m_data in data.get('mannschaften', []):
+                if isinstance(m_data, dict):
+                    self.turnier_model.add_mannschaft(
+                        m_data.get('name', ''),
+                        m_data.get('klasse', ''),
+                        m_data.get('mitglieder', [])
+                    )
 
             # Gruppen-Uhrzeiten
             group_times = data.get('group_times', {})

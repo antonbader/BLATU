@@ -25,6 +25,7 @@ DEFAULT_TURNIER = {
     "anzahl_passen": 1,
     "show_halves": False,
     "max_scheiben": 3,
+    "mannschaft_groesse": 3,
     "startgeld_erheben": False,
     "iban": "",
     "bic": "",
@@ -79,5 +80,12 @@ DEFAULT_PDF_FONT_SIZES = {
         "table_header": 10,
         "table_body": 10,
         "footer_text": 10
+    },
+    "mannschaften": {
+        "title": 18,
+        "subtitle": 12,
+        "heading": 14,
+        "table_header": 10,
+        "table_body": 9
     }
 }
