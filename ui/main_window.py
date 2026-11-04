@@ -120,7 +120,7 @@ class MainWindow:
         self.notebook.add(self.urkunden_tab.frame, text="Urkunden")
         self.notebook.add(self.schiesszettel_tab.frame, text="Schießzettel")
         self.notebook.add(self.startgeld_tab.frame, text="Startgeld")
-        self.notebook.add(self.export_import_tab.frame, text="Export/Inport")
+        self.notebook.add(self.export_import_tab.frame, text="Export/Import")
         self.notebook.add(self.pdf_settings_tab.frame, text="PDF Settings")
         self.notebook.add(self.info_tab.frame, text="Info")
     
@@ -265,7 +265,7 @@ class MainWindow:
             self.gruppen_tab.refresh()
         elif tab_text == "Startgeld":
             self.startgeld_tab.refresh()
-        elif tab_text == "Export/Inport":
+        elif tab_text in ("Export/Import", "Export/Inport"):
             self.export_import_tab.refresh()
         elif tab_text == "Mannschaften":
             self.mannschaften_tab.refresh_silent_update()

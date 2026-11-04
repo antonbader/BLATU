@@ -36,6 +36,7 @@ DEFAULT_TURNIER = {
 # Dateifilter
 FILE_TYPES_JSON = [("JSON Dateien", "*.json"), ("Alle Dateien", "*.*")]
 FILE_TYPES_PDF = [("PDF Dateien", "*.pdf"), ("Alle Dateien", "*.*")]
+FILE_TYPES_CSV = [("CSV Dateien", "*.csv"), ("Alle Dateien", "*.*")]
 
 # UI-Farben
 COLOR_PRIMARY = "#2E5090"

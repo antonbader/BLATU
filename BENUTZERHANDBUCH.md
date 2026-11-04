@@ -321,9 +321,9 @@ Im Reiter **„Startgeld“** behalten Sie jederzeit den Überblick über bezahl
 
 ---
 
-## 11. Daten exportieren und importieren (Reiter „Export/Inport“)
+## 11. Daten exportieren und importieren (Reiter „Export/Import“)
 
-Im Reiter **„Export/Inport“** können Sie gezielt Turnier-, Klassen- und Schützendaten im JSON-Format exportieren und importieren:
+Im Reiter **„Export/Import“** können Sie gezielt Turnier-, Klassen- und Schützendaten im JSON-Format exportieren und importieren sowie Ergebnisse aus CSV-Dateien (z. B. bgScore) einlesen:
 
 * **JSON-Export:**
   * Exportiert eine strukturierte `.json`-Datei mit:
@@ -334,6 +334,12 @@ Im Reiter **„Export/Inport“** können Sie gezielt Turnier-, Klassen- und Sch
 * **JSON-Import:**
   * Ermöglicht das Einlesen von Turnierdaten, Klassen und Schützen aus einer entsprechenden `.json`-Datei.
   * Klicken Sie auf **„📥 JSON-Datei importieren“** und wählen Sie die Datei aus.
+* **Ergebnisse-Import (CSV):**
+  * Ermöglicht das Importieren der Einzelergebnisse aller Passen sowie der Anzahl der 10er und 9er für die Schützen aus einer `.csv`-Datei (z. B. exportiert aus der App **bgScore**).
+  * Die Zuordnung zu den Schützen erfolgt automatisch anhand von Name, Vorname und Klasse.
+  * Zeilen ohne Wertungen (z. B. Schützen, die noch nicht geschossen haben) werden automatisch übersprungen.
+  * Sollten Schützen mit Ergebnissen in BLATU noch nicht existieren, können diese auf Wunsch direkt automatisch mit Klasse, Gruppe und Scheibe angelegt werden.
+  * Klicken Sie auf **„🎯 Ergebnisse aus CSV importieren“** und wählen Sie die CSV-Datei aus.
 
 ---
 
