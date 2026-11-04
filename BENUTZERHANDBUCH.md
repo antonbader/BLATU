@@ -321,9 +321,25 @@ Im Reiter **„Startgeld“** behalten Sie jederzeit den Überblick über bezahl
 
 ---
 
-## 11. PDF-Export und PDF-Schriftgrößen (Reiter „PDF Settings“)
+## 11. Daten exportieren und importieren (Reiter „Export/Inport“)
 
-### 11.1. Übersicht aller PDF-Exporte
+Im Reiter **„Export/Inport“** können Sie gezielt Turnier-, Klassen- und Schützendaten im JSON-Format exportieren und importieren:
+
+* **JSON-Export:**
+  * Exportiert eine strukturierte `.json`-Datei mit:
+    * **Turniername** und **Datum**
+    * **Allen vorhandenen Klassen**
+    * **Allen Schützen** mit Name, Vorname, Klasse, Verein, Gruppe und Scheibe
+  * Klicken Sie auf **„📤 JSON-Datei exportieren“** und wählen Sie den gewünschten Speicherort.
+* **JSON-Import:**
+  * Ermöglicht das Einlesen von Turnierdaten, Klassen und Schützen aus einer entsprechenden `.json`-Datei.
+  * Klicken Sie auf **„📥 JSON-Datei importieren“** und wählen Sie die Datei aus.
+
+---
+
+## 12. PDF-Export und PDF-Schriftgrößen (Reiter „PDF Settings“)
+
+### 12.1. Übersicht aller PDF-Exporte
 
 BLATU erstellt vier verschiedene, druckfertige PDF-Dokumenttypen:
 
@@ -332,7 +348,7 @@ BLATU erstellt vier verschiedene, druckfertige PDF-Dokumenttypen:
 3. **Gruppen-PDF:** Über den Reiter *Gruppenverwaltung* -> *Gruppen-PDF erstellen* (Hochformat, alle Gruppen mit Startzeiten und Scheiben).
 4. **Startliste Vereine (PDF):** Über den Reiter *Gruppenverwaltung* -> *Startliste Vereine* (Hochformat, separate PDF-Datei pro Verein inkl. Gesamtstartgeld und Bankverbindung).
 
-### 11.2. Schriftgrößen individuell anpassen (Reiter „PDF Settings“)
+### 12.2. Schriftgrößen individuell anpassen (Reiter „PDF Settings“)
 
 Im Reiter **„PDF Settings“** können Sie die Schriftgrößen (in Punkt / `pt`, von `6` bis `48` pt) **getrennt für jedes der vier PDF-Dokumente** anpassen:
 
@@ -348,7 +364,7 @@ Im Reiter **„PDF Settings“** können Sie die Schriftgrößen (in Punkt / `pt
 
 ---
 
-## 12. Live-Anzeige für Bildschirme (Beamer-Modus)
+## 13. Live-Anzeige für Bildschirme (Beamer-Modus)
 
 Um Zuschauern im Vereinsheim oder in der Sporthalle die aktuellen Zwischen- und Endergebnisse auf einem großen Monitor oder Beamer zu präsentieren:
 
@@ -367,7 +383,7 @@ Um Zuschauern im Vereinsheim oder in der Sporthalle die aktuellen Zwischen- und 
 
 ---
 
-## 13. Alle Daten speichern und laden
+## 14. Alle Daten speichern und laden
 
 Am unteren Rand des Hauptfensters befinden sich in jedem Reiter sichtbar die beiden Hauptschaltflächen zur Datensicherung:
 
@@ -376,6 +392,6 @@ Am unteren Rand des Hauptfensters befinden sich in jedem Reiter sichtbar die bei
 
 ---
 
-## 14. Über die Software
+## 15. Über die Software
 
 Im Reiter **„Info“** finden Sie die aktuelle Versionsnummer, das Versionsdatum sowie die Kontakt- und Webseiten-Informationen des Entwicklers.

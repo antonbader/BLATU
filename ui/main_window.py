@@ -20,6 +20,7 @@ from .online_eingabe_tab import OnlineEingabeTab
 from .urkunden_tab import UrkundenTab
 from .schiesszettel_tab import SchiesszettelTab
 from .startgeld_tab import StartgeldTab
+from .export_import_tab import ExportImportTab
 from .pdf_settings_tab import PDFSettingsTab
 from .info_tab import InfoTab
 
@@ -95,6 +96,12 @@ class MainWindow:
         self.urkunden_tab = UrkundenTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.schiesszettel_tab = SchiesszettelTab(self.notebook, self.turnier_model, self.schuetze_model)
         self.startgeld_tab = StartgeldTab(self.notebook, self.turnier_model, self.schuetze_model)
+        self.export_import_tab = ExportImportTab(
+            self.notebook,
+            self.turnier_model,
+            self.schuetze_model,
+            self.on_data_imported
+        )
         self.pdf_settings_tab = PDFSettingsTab(self.notebook, self.turnier_model)
         self.info_tab = InfoTab(self.notebook)
 
@@ -113,6 +120,7 @@ class MainWindow:
         self.notebook.add(self.urkunden_tab.frame, text="Urkunden")
         self.notebook.add(self.schiesszettel_tab.frame, text="Schießzettel")
         self.notebook.add(self.startgeld_tab.frame, text="Startgeld")
+        self.notebook.add(self.export_import_tab.frame, text="Export/Inport")
         self.notebook.add(self.pdf_settings_tab.frame, text="PDF Settings")
         self.notebook.add(self.info_tab.frame, text="Info")
     
@@ -168,6 +176,8 @@ class MainWindow:
         self.ergebnisse_tab.refresh()
         self.mannschaften_tab.refresh()
         self.startgeld_tab.refresh()
+        if hasattr(self, 'export_import_tab'):
+            self.export_import_tab.refresh()
         self.pdf_settings_tab.refresh()
         self.schiesszettel_tab.refresh()
         self.online_eingabe_tab.refresh_groups()
@@ -175,6 +185,22 @@ class MainWindow:
         # da er von den berechneten Ergebnissen abhängt.
         self.urkunden_tab.refresh()
         messagebox.showinfo("Erfolg", success_message)
+
+    def on_data_imported(self):
+        """Wird aufgerufen wenn Daten über den Export/Inport-Tab importiert wurden"""
+        self.turnier_tab.refresh()
+        self.klassen_tab.refresh()
+        self.schuetzen_tab.refresh()
+        self.gruppen_tab.refresh()
+        self.ergebnisse_tab.refresh()
+        self.mannschaften_tab.refresh_silent_update()
+        self.startgeld_tab.refresh()
+        self.pdf_settings_tab.refresh()
+        self.schiesszettel_tab.refresh()
+        self.online_eingabe_tab.refresh_groups()
+        self.urkunden_tab.refresh()
+        if hasattr(self, 'export_import_tab'):
+            self.export_import_tab.refresh()
     
     def on_turnier_changed(self):
         """Wird aufgerufen wenn sich Turnierdaten ändern"""
@@ -183,6 +209,8 @@ class MainWindow:
             self.ergebnisse_tab.refresh()
         if hasattr(self, 'mannschaften_tab'):
             self.mannschaften_tab.refresh_silent_update()
+        if hasattr(self, 'export_import_tab'):
+            self.export_import_tab.refresh()
     
     def on_klassen_changed(self):
         """Wird aufgerufen wenn sich Klassen ändern"""
@@ -190,6 +218,8 @@ class MainWindow:
             self.schuetzen_tab.refresh()
         if hasattr(self, 'startgeld_tab'):
             self.startgeld_tab.refresh()
+        if hasattr(self, 'export_import_tab'):
+            self.export_import_tab.refresh()
     
     def on_schuetzen_changed(self):
         """Wird aufgerufen wenn sich Schützenliste ändert"""
@@ -205,6 +235,8 @@ class MainWindow:
             self.schiesszettel_tab.refresh()
         if hasattr(self, 'online_eingabe_tab'):
             self.online_eingabe_tab.refresh_groups()
+        if hasattr(self, 'export_import_tab'):
+            self.export_import_tab.refresh()
 
     def on_assignment_changed(self):
         """Wird aufgerufen, wenn sich eine Zuweisung in der Gruppenverwaltung ändert"""
@@ -214,6 +246,8 @@ class MainWindow:
             self.schiesszettel_tab.refresh()
         if hasattr(self, 'online_eingabe_tab'):
             self.online_eingabe_tab.refresh_groups()
+        if hasattr(self, 'export_import_tab'):
+            self.export_import_tab.refresh()
 
     def on_klassen_changed_for_urkunden(self):
         """Callback specifically for updating the Urkunden tab."""
@@ -231,6 +265,8 @@ class MainWindow:
             self.gruppen_tab.refresh()
         elif tab_text == "Startgeld":
             self.startgeld_tab.refresh()
+        elif tab_text == "Export/Inport":
+            self.export_import_tab.refresh()
         elif tab_text == "Mannschaften":
             self.mannschaften_tab.refresh_silent_update()
         elif tab_text == "Urkunden":
