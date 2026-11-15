@@ -1,4 +1,4 @@
-# Benutzerhandbuch für BLATU 1.6.0
+# Benutzerhandbuch für BLATU 1.7.0
 
 ## 1. Einleitung
 
@@ -121,9 +121,9 @@ Der Reiter **„Gruppenverwaltung“** bietet eine detaillierte Übersicht über
 
 Wechseln Sie in den Reiter **„Ergebniseingabe“**, um die geschossenen Ringe zu erfassen.
 
-1. **Schütze suchen & auswählen:** Nutzen Sie bei Bedarf das Suchfeld links oben (filtert nach Name, Vorname oder Klasse) oder sortieren Sie die Liste per Klick auf die Spaltenüberschriften. Sobald Sie einen Schützen in der Liste anklicken (oder doppelklicken / `Enter` drücken), werden seine bisherigen Ergebnisse auf der rechten Seite geladen.
+1. **Schütze suchen & auswählen:** Nutzen Sie bei Bedarf das Suchfeld links oben (filtert nach Name, Vorname oder Klasse) oder sortieren Sie die Liste (inkl. Anzeige von Tag, Gruppe, Scheibe und Gesamtergebnis) per Klick auf die Spaltenüberschriften. Sobald Sie einen Schützen in der Liste anklicken (oder doppelklicken / `Enter` drücken), werden seine bisherigen Ergebnisse auf der rechten Seite geladen.
 2. **Passen eingeben:** Tragen Sie für jede Passe die erreichte Ringzahl als **ganze Zahl** ein. Das **Gesamtergebnis** wird während der Eingabe sofort automatisch berechnet.
-3. **Zusatzwertung:** Geben Sie im Bereich **„Zusatzwertung“** die **Anzahl 10er** und **Anzahl 9er** ein. Diese entscheiden bei Ringgleichheit über die Platzierung.
+3. **Zusatzwertung:** Geben Sie im Bereich **„Zusatzwertung“** die **Anzahl 10er** und **Anzahl 9er** ein. Diese werden bei Ringgleichheit zur Ermittlung der Platzierung herangezogen (gemäß der in der Turnierverwaltung gewählten Auswerte-Art `Classic` oder `nach Passen`).
 4. **Speichern:** Klicken Sie auf **„Ergebnisse speichern“**.
 5. **Liste aktualisieren:** Falls parallel Ergebnisse über die Online-Eingabe eingehen, aktualisiert sich die Ansicht automatisch; zusätzlich können Sie jederzeit auf **„Liste aktualisieren“** klicken.
 
@@ -136,7 +136,7 @@ Mit einem Klick auf **„Ergebnisanzeige“** öffnet sich ein eigenes Fenster m
 
 ### 5.2. Stechschießen bei Punkt-Gleichstand (`🎯 Stechschießen`)
 
-Haben zwei oder mehr Schützen derselben Klasse exakt dasselbe reguläre Ergebnis (**gleiche Gesamtringzahl, gleiche Anzahl 10er und gleiche Anzahl 9er**), können Sie ein Stechschießen durchführen:
+Besteht zwischen zwei oder mehr Schützen derselben Klasse auch unter Berücksichtigung der gewählten Auswerte-Art noch ein exakter Punkt-Gleichstand (bei **`Classic`**: gleiche Gesamtringzahl, gleiche Anzahl 10er und 9er; bei **`nach Passen`**: zusätzlich identische Passen-Ergebnisse), können Sie ein Stechschießen durchführen:
 
 1. Klicken Sie im Reiter **„Ergebniseingabe“** oder im Fenster **„Ergebnisanzeige“** auf den Button **„🎯 Stechschießen“**.
 2. Das Programm sucht automatisch in allen Klassen nach Punkt-Gleichständen (mit Gesamtergebnis > 0). Liegt kein Gleichstand vor, erscheint ein entsprechender Hinweis.
@@ -337,7 +337,7 @@ Im Reiter **„Export/Import“** können Sie gezielt Turnier-, Klassen- und Sch
 
 * **JSON-Export:**
   * Exportiert eine strukturierte `.json`-Datei mit:
-    * **Turniername** und **Datum**
+    * **Turniername**, **Datum** (inkl. Start-/Enddatum bei mehrtägigen Turnieren) und **Auswerte-Art**
     * **Allen vorhandenen Klassen**
     * **Allen Schützen** mit Name, Vorname, Klasse, Verein, Gruppe und Scheibe
   * Klicken Sie auf **„📤 JSON-Datei exportieren“** und wählen Sie den gewünschten Speicherort.
@@ -349,6 +349,7 @@ Im Reiter **„Export/Import“** können Sie gezielt Turnier-, Klassen- und Sch
   * Die Zuordnung zu den Schützen erfolgt automatisch anhand von Name, Vorname und Klasse.
   * Zeilen ohne Wertungen (z. B. Schützen, die noch nicht geschossen haben) werden automatisch übersprungen.
   * Sollten Schützen mit Ergebnissen in BLATU noch nicht existieren, können diese auf Wunsch direkt automatisch mit Klasse, Gruppe und Scheibe angelegt werden.
+  * Übersteigt die Passenanzahl in der CSV-Datei die aktuelle Turniereinstellung, wird die Anzahl der Passen automatisch angepasst.
   * Klicken Sie auf **„🎯 Ergebnisse aus CSV importieren“** und wählen Sie die CSV-Datei aus.
 
 ---
@@ -361,8 +362,8 @@ BLATU erstellt vier verschiedene, druckfertige PDF-Dokumenttypen:
 
 1. **Ergebnisliste (PDF):** Über den Reiter *Ergebniseingabe* -> *Ergebnisanzeige* -> *PDF erstellen* (Querformat, klassenweise mit Gold-/Silber-/Bronze-Hervorhebung und Stechschießen-Vermerk).
 2. **Mannschaftswertung (PDF):** Über den Reiter *Mannschaften* -> *📄 PDF Mannschaftswertung erstellen* oder aus dem Fenster *Mannschaftswertung* (Querformat, gesamt oder nach Mannschaftsklassen, wahlweise mit oder ohne Einzelergebnisse der Mitglieder).
-3. **Gruppen-PDF:** Über den Reiter *Gruppenverwaltung* -> *Gruppen-PDF erstellen* (Hochformat, alle Gruppen mit Startzeiten und Scheiben).
-4. **Startliste Vereine (PDF):** Über den Reiter *Gruppenverwaltung* -> *Startliste Vereine* (Hochformat, separate PDF-Datei pro Verein inkl. Gesamtstartgeld und Bankverbindung).
+3. **Gruppen-PDF:** Über den Reiter *Gruppenverwaltung* -> *Gruppen-PDF erstellen* (Hochformat, alle Gruppen mit Startzeiten, Scheiben und optional freien Plätzen; bei mehrtägigen Turnieren automatisch ein eigenes PDF pro Turniertag).
+4. **Startliste Vereine (PDF):** Über den Reiter *Gruppenverwaltung* -> *Startliste Vereine* (Hochformat, separate PDF-Datei pro Verein inkl. Tag, Gesamtstartgeld und Bankverbindung).
 
 ### 12.2. Schriftgrößen individuell anpassen (Reiter „PDF Settings“)
 

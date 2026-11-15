@@ -1,6 +1,6 @@
 # Blatu - Blasrohr Turnierverwaltung
 
-Version 1.6.0
+Version 1.7.0
 
 ## Beschreibung
 
@@ -39,6 +39,7 @@ blatu/
 │   ├── urkunden_tab.py                  # Reiter: Urkunden (Einzel- und Mannschafts-Urkunden)
 │   ├── schiesszettel_tab.py             # Reiter: Schießzettel
 │   ├── startgeld_tab.py                 # Reiter: Startgeld
+│   ├── export_import_tab.py             # Reiter: Export/Import (JSON & CSV/bgScore)
 │   ├── pdf_settings_tab.py              # Reiter: PDF Settings (Schriftgrößen)
 │   └── info_tab.py                      # Reiter: Info
 ├── utils/                               # Hilfsfunktionen und Generatoren
@@ -77,13 +78,14 @@ python main.py
 
 ## Funktionen
 
-- **Turnierverwaltung**: Erfassung von Turniername, Datum, Anzahl der Passen, optionaler Darstellung als 1. und 2. Wettkampfhälfte sowie Bankverbindung und Zahlungsziel für die Startgeld-Abrechnung.
+- **Turnierverwaltung**: Erfassung von Turniername, Datum (inkl. Option für mehrtägige Turniere mit Start- und Enddatum), Anzahl der Passen, optionaler Darstellung als 1. und 2. Wettkampfhälfte, wählbarer Auswerte-Art bei Ergebnisgleichheit (`Classic` oder `nach Passen`) sowie Bankverbindung und Zahlungsziel für die Startgeld-Abrechnung.
 - **Klassenverwaltung**: Anlegen und Verwalten von Wettkampfklassen inklusive individuellem Startgeld pro Klasse (direkt per Doppelklick bearbeitbar).
-- **Schützenverwaltung**: Erfassung und Bearbeitung von Teilnehmern (Name, Vorname, Klasse, Verein, automatisch generierte oder manuell anpassbare 4-stellige PIN) sowie automatische oder manuelle Zuweisung zu Gruppen und Scheiben.
-- **Gruppenverwaltung**: Übersichtliche Verwaltung zugewiesener und noch nicht zugewiesener Schützen, Festlegung von Startzeiten pro Gruppe sowie Prüfung auf Doppelbelegungen.
+- **Schützenverwaltung**: Erfassung und Bearbeitung von Teilnehmern (Name, Vorname, Klasse, Verein, automatisch generierte oder manuell anpassbare 4-stellige PIN) sowie automatische oder manuelle Zuweisung zu Gruppen und Scheiben (inkl. Anzeige des zugeordneten Turniertags).
+- **Gruppenverwaltung**: Übersichtliche Verwaltung zugewiesener und noch nicht zugewiesener Schützen, Festlegung der vorgesehenen Gruppenanzahl pro Tag, Darstellung und optionale Ein-/Ausblendung freier Scheibenplätze (in Anzeige und PDF), Vergabe von Datum und Startzeit pro Gruppe, einfaches Aufheben von Zuweisungen sowie Prüfung auf Doppelbelegungen.
 - **Ergebniseingabe & Stechschießen**:
   - Schnelle Erfassung der Passen-Ergebnisse sowie der Zusatzwertungen (10er, 9er).
-  - **Stechschießen bei Punkt-Gleichstand**: Automatische Erkennung von Punktgleichständen (gleiche Gesamtringe, 10er und 9er innerhalb einer Klasse) und gezielte Erfassung der Stech-Ergebnisse zur eindeutigen Platzierung (`nach Stechen (...)`).
+  - **Zwei Auswerte-Arten bei Ergebnisgleichheit**: Wahlweise **`Classic`** (10er, dann 9er) oder **`nach Passen`** (höchstes Ergebnis ab der letzten Wertungspasse rückwärts vergleichend, danach 10er und 9er).
+  - **Stechschießen bei Punkt-Gleichstand**: Automatische Erkennung von Punktgleichständen innerhalb einer Klasse (gemäß der gewählten Auswerte-Art) und gezielte Erfassung der Stech-Ergebnisse zur eindeutigen Platzierung (`nach Stechen (...)`).
 - **Mannschaftsverwaltung & Mannschaftswertung**:
   - frei einstellbare Mannschaftsgröße (Teilnehmeranzahl pro Mannschaft) und eigene Mannschaftsklassen.
   - Komfortable Zuordnung von Schützen zu Mannschaften (inkl. Warnhinweis bei Unterbelegung).
@@ -94,23 +96,24 @@ python main.py
   - Unterstützt Platzhalter wie `[Turniername]`, `[Datum]`, `[Klasse]`, `[Vorname]`, `[Name]`, `[Verein]`, `[Ergebnis]`, `[Platz]`, `[Mannschaftsname]` und `[Mannschaftsmitglieder]` (optional mit Einzelergebnis hinter jedem Mitgliedsnamen).
 - **Schießzettelgenerierung**: Erstellung von gruppenweisen Schießzetteln als Word-Dateien (`.docx`) für bis zu 4 Schützen pro Seite inkl. automatischem Seitenumbruch bei größeren Gruppen.
 - **Startgeldverwaltung**: Übersicht und Pflege des Bezahlstatus (`bezahlt`, `unbezahlt`, `überprüfen`) für einzelne Schützen und komplette Vereine per Doppelklick, inklusive Farbcodierung, Suchfilter und Sortierung.
+- **Export / Import (JSON & CSV/bgScore)**: Gezielter Export und Import von Turnier-, Klassen- und Schützendaten im JSON-Format sowie automatischer Import von Passen- und 10er/9er-Ergebnissen aus CSV-Dateien (z. B. aus der App *bgScore*, auf Wunsch inkl. automatischer Neuanlage fehlender Schützen).
 - **PDF-Export & PDF Settings**:
   - Klassenspezifische **PDF-Ergebnislisten** (Einzelwertung)
   - **PDF-Mannschaftswertung** (gesamt oder nach Mannschaftsklassen, mit/ohne Einzelergebnisse)
-  - **PDF-Gruppenlisten** mit Startzeiten und Scheibeneinteilung
-  - Separate **PDF-Startlisten pro Verein** inkl. Startgeld-Aufstellung und Überweisungsinformationen
+  - **PDF-Gruppenlisten** mit Startzeiten, Scheibeneinteilung und optional freien Plätzen (bei mehrtägigen Turnieren automatisch ein PDF pro Turniertag)
+  - Separate **PDF-Startlisten pro Verein** inkl. Turniertag, Startgeld-Aufstellung und Überweisungsinformationen
   - **PDF Settings**: Individuelle Anpassung aller Schriftgrößen (in `pt`) getrennt für jeden der vier PDF-Dokumenttypen.
 - **Live-Bildschirmanzeige**: Für Beamer und große Monitore optimierte Live-Rangliste mit nahtlosem Endlos-Scrolling, Medaillen-Hervorhebung der Top 3, Vollbildmodus und automatischer Aktualisierung.
 - **Datenverwaltung**: Vollständiges Speichern und Laden aller Turnier-, Schützen-, Mannschafts-, Ergebnis- und PDF-Einstellungen im JSON-Format.
 
 ## Verwendung
 
-1. **Turnier einrichten**: Im Reiter *Turnierverwaltung* Turniername, Datum, Anzahl der Passen und optional Bankdaten eintragen.
+1. **Turnier einrichten**: Im Reiter *Turnierverwaltung* Turniername, Datum (bzw. Start-/Enddatum bei mehrtägigen Turnieren), Anzahl der Passen, Auswerte-Art bei Ergebnisgleichheit und optional Bankdaten eintragen.
 2. **Klassen anlegen**: Im Reiter *Klassenverwaltung* die Wettkampfklassen definieren und bei Bedarf das Startgeld pro Klasse festlegen.
 3. **Schützen erfassen**: Im Reiter *Schützenverwaltung* alle Teilnehmer anlegen (PINs werden automatisch vergeben) und automatisch oder manuell Gruppen/Scheiben zuweisen.
-4. **Gruppen & Startzeiten pflegen**: Im Reiter *Gruppenverwaltung* Startzeiten vergeben sowie Gruppen-PDFs, Vereins-Startlisten oder im Reiter *Schießzettel* die Schießzettel erstellen.
+4. **Gruppen & Startzeiten pflegen**: Im Reiter *Gruppenverwaltung* vorgesehene Gruppenanzahl, Datum und Startzeiten vergeben sowie Gruppen-PDFs, Vereins-Startlisten oder im Reiter *Schießzettel* die Schießzettel erstellen.
 5. **Mannschaften zusammenstellen (optional)**: Im Reiter *Mannschaften* die Mannschaftsgröße und ggf. Mannschaftsklassen festlegen, Mannschaften anlegen und Schützen zuordnen.
-6. **Ergebnisse erfassen**: Ergebnisse manuell im Reiter *Ergebniseingabe* oder mobil über den Reiter *Online-Eingabe* eintragen. Bei Punktgleichheit kann über *🎯 Stechschießen* das Stechergebnis hinterlegt werden.
+6. **Ergebnisse erfassen**: Ergebnisse manuell im Reiter *Ergebniseingabe*, mobil über den Reiter *Online-Eingabe* oder per CSV-Import im Reiter *Export/Import* eintragen. Bei Punktgleichheit kann über *🎯 Stechschießen* das Stechergebnis hinterlegt werden.
 7. **Auswerten & Exportieren**: Ranglisten in der *Ergebnisanzeige*, *Mannschaftswertung* oder *🖥 Bildschirmanzeige* präsentieren, als PDF exportieren und im Reiter *Urkunden* die Siegerurkunden generieren.
 
 ## Datenspeicherung
