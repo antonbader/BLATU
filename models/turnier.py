@@ -23,6 +23,7 @@ class TurnierModel:
         self.last_update_time = 0
     
     def set_turnier_data(self, name, datum, anzahl_passen, *, show_halves=False, max_scheiben=None,
+                         anzahl_gruppen=None, show_empty_slots_ui=None, show_empty_slots_pdf=None,
                          mannschaft_groesse=None, startgeld_erheben=False, iban="", bic="",
                          bankname="", kontoinhaber="", zahldatum=""):
         """Setzt die Turnierdaten und stellt eine flache Struktur sicher."""
@@ -33,12 +34,21 @@ class TurnierModel:
                 pass
         if max_scheiben is None:
             max_scheiben = self.turnier.get('max_scheiben', 3)
+        if anzahl_gruppen is None:
+            anzahl_gruppen = self.turnier.get('anzahl_gruppen', 0)
+        if show_empty_slots_ui is None:
+            show_empty_slots_ui = self.turnier.get('show_empty_slots_ui', True)
+        if show_empty_slots_pdf is None:
+            show_empty_slots_pdf = self.turnier.get('show_empty_slots_pdf', True)
         self.turnier = {
             'name': name,
             'datum': datum,
             'anzahl_passen': anzahl_passen,
             'show_halves': show_halves,
             'max_scheiben': max_scheiben,
+            'anzahl_gruppen': anzahl_gruppen,
+            'show_empty_slots_ui': show_empty_slots_ui,
+            'show_empty_slots_pdf': show_empty_slots_pdf,
             'mannschaft_groesse': self.mannschaft_groesse,
             'startgeld_erheben': startgeld_erheben,
             'iban': iban,
@@ -440,11 +450,68 @@ class TurnierModel:
     
     def set_group_time(self, group, time):
         """Setzt die Uhrzeit für eine Gruppe"""
+        try:
+            group = int(group)
+        except (ValueError, TypeError):
+            pass
         self.group_times[group] = time
 
     def get_group_time(self, group):
         """Gibt die Uhrzeit für eine Gruppe zurück"""
-        return self.group_times.get(group, "")
+        if group in self.group_times:
+            return self.group_times[group]
+        try:
+            return self.group_times.get(int(group), "")
+        except (ValueError, TypeError):
+            return ""
+
+    def set_anzahl_gruppen(self, anzahl):
+        """Setzt die vorgesehene Anzahl an Gruppen"""
+        try:
+            val = max(0, int(anzahl))
+            self.turnier['anzahl_gruppen'] = val
+            return True
+        except (ValueError, TypeError):
+            return False
+
+    def get_anzahl_gruppen(self):
+        """Gibt die vorgesehene Anzahl an Gruppen zurück"""
+        try:
+            return max(0, int(self.turnier.get('anzahl_gruppen', 0)))
+        except (ValueError, TypeError):
+            return 0
+
+    def set_max_scheiben(self, max_scheiben):
+        """Setzt die maximale Anzahl an Scheiben pro Gruppe"""
+        try:
+            val = max(1, int(max_scheiben))
+            self.turnier['max_scheiben'] = val
+            return True
+        except (ValueError, TypeError):
+            return False
+
+    def get_max_scheiben(self):
+        """Gibt die maximale Anzahl an Scheiben pro Gruppe zurück"""
+        try:
+            return max(1, int(self.turnier.get('max_scheiben', 3)))
+        except (ValueError, TypeError):
+            return 3
+
+    def set_show_empty_slots_ui(self, show):
+        """Setzt, ob leere Plätze in der Gruppenverwaltung angezeigt werden"""
+        self.turnier['show_empty_slots_ui'] = bool(show)
+
+    def get_show_empty_slots_ui(self):
+        """Gibt zurück, ob leere Plätze in der Gruppenverwaltung angezeigt werden"""
+        return bool(self.turnier.get('show_empty_slots_ui', True))
+
+    def set_show_empty_slots_pdf(self, show):
+        """Setzt, ob leere Plätze im Gruppen-PDF angezeigt werden"""
+        self.turnier['show_empty_slots_pdf'] = bool(show)
+
+    def get_show_empty_slots_pdf(self):
+        """Gibt zurück, ob leere Plätze im Gruppen-PDF angezeigt werden"""
+        return bool(self.turnier.get('show_empty_slots_pdf', True))
 
     def get_all_group_times(self):
         """Gibt alle Gruppen-Uhrzeiten zurück"""

@@ -90,17 +90,22 @@ Im Bereich **„Manuelle Zuweisung“** unterhalb der Schützenliste können Sie
 
 Der Reiter **„Gruppenverwaltung“** bietet eine detaillierte Übersicht über alle Gruppen sowie Werkzeuge zur Zeitplanung und zum PDF-Export:
 
+* **Gruppeneinstellungen & freie Plätze:**
+  * **Vorgesehene Anzahl Gruppen:** Geben Sie oben an, wie viele Gruppen für das Turnier vorgesehen sind, und klicken Sie auf **„Übernehmen“** (oder bestätigen Sie mit `Enter`). Diese Gruppen werden sofort in der Übersicht angezeigt – auch wenn ihnen noch keine Schützen zugewiesen wurden. Werden darüber hinaus weiteren Gruppen manuell oder automatisch Schützen zugewiesen, werden diese zusätzlichen Gruppen ebenfalls automatisch erzeugt und angezeigt.
+  * **Freie Scheibenplätze:** Anhand der Einstellung **„Max. Scheiben“** aus der Schützenverwaltung werden nicht belegte Scheiben innerhalb einer Gruppe als freie (leere) Plätze dargestellt.
+  * **Auswahl für Anzeige und PDF:** Über die beiden Auswahlfelder **„Leere Plätze in der Anzeige anzeigen“** und **„Leere Plätze im Gruppen-PDF anzeigen“** legen Sie flexibel fest, ob freie Scheibenplätze in der Tabellenansicht und/oder im exportierten Gruppen-PDF als leere Zeilen aufgeführt werden sollen.
 * **Zweigeteilte Ansicht:**
-  * Links (**„Gruppenübersicht“**) sehen Sie alle bereits eingeteilten Schützen, sortiert nach Gruppe und Scheibe.
+  * Links (**„Gruppenübersicht“**) sehen Sie alle Gruppen mit den zugewiesenen Schützen sowie (sofern aktiviert) den noch freien Scheibenplätzen, sortiert nach Gruppe und Scheibe.
   * Rechts (**„Nicht zugewiesene Schützen“**) sind alle Teilnehmer aufgelistet, die noch keiner Gruppe/Scheibe zugeteilt wurden.
 * **Uhrzeit für Gruppe festlegen:**
   1. Wählen Sie in der linken Liste einen beliebigen Schützen der gewünschten Gruppe aus.
   2. Tragen Sie im Bereich **„Uhrzeit für Gruppe festlegen“** die Startzeit ein (z. B. `10:00`).
   3. Klicken Sie auf **„Für ausgewählte Gruppe speichern“**.
-* **Zuweisung für Schützen ändern:**
+* **Zuweisung für Schützen ändern oder entfernen:**
   1. Wählen Sie einen Schützen aus der linken oder rechten Liste aus.
   2. Geben Sie rechts unten im Bereich **„Zuweisung für Schützen ändern“** die neue **Gruppe** und **Scheibe** ein.
   3. Klicken Sie auf **„Zuweisung ändern“** (inkl. automatischer Prüfung auf Doppelbelegung).
+  4. Um eine bestehende Zuordnung aufzuheben, wählen Sie den Schützen in der linken Liste (**„Gruppenübersicht“**) aus und klicken Sie auf **„Zuweisung entfernen“**. Der Schütze wird dadurch wieder in die Liste **„Nicht zugewiesene Schützen“** verschoben und sein bisheriger Scheibenplatz wird frei.
 * **PDF-Listen direkt erstellen:**
   * **„Gruppen-PDF erstellen“:** Erzeugt eine übersichtliche PDF-Gesamtliste aller Gruppen mit Uhrzeiten und Scheibenzuweisungen.
   * **„Startliste Vereine“:** Erzeugt in einem gewählten Zielordner für jeden teilnehmenden Verein eine eigene PDF-Startliste inkl. Startzeiten, Scheiben, Startgeld-Summe und (sofern aktiviert) Überweisungsdaten.
