@@ -30,7 +30,7 @@ class GruppenTab:
         settings_frame = ttk.LabelFrame(self.frame, text="Gruppeneinstellungen & Anzeige", padding="10")
         settings_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
 
-        ttk.Label(settings_frame, text="Vorgesehene Anzahl Gruppen:").pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label(settings_frame, text="Vorgesehene Anzahl Gruppen pro Tag:").pack(side=tk.LEFT, padx=(0, 5))
         self.anzahl_gruppen_var = tk.StringVar(value=str(self.turnier_model.get_anzahl_gruppen()))
         self.anzahl_gruppen_spinbox = ttk.Spinbox(
             settings_frame,
@@ -91,23 +91,25 @@ class GruppenTab:
 
         self.tree = ttk.Treeview(
             list_frame,
-            columns=("Gruppe", "Uhrzeit", "Scheibe", "Schütze", "Verein", "Klasse"),
+            columns=("Gruppe", "Tag", "Uhrzeit", "Scheibe", "Schütze", "Verein", "Klasse"),
             show="headings",
             yscrollcommand=scrollbar.set,
             height=18
         )
         self.tree.heading("Gruppe", text="Gruppe")
+        self.tree.heading("Tag", text="Tag")
         self.tree.heading("Uhrzeit", text="Uhrzeit")
         self.tree.heading("Scheibe", text="Scheibe")
         self.tree.heading("Schütze", text="Schütze")
         self.tree.heading("Verein", text="Verein")
         self.tree.heading("Klasse", text="Klasse")
-        self.tree.column("Gruppe", width=60, anchor="center")
-        self.tree.column("Uhrzeit", width=80, anchor="center")
-        self.tree.column("Scheibe", width=60, anchor="center")
-        self.tree.column("Schütze", width=250)
-        self.tree.column("Verein", width=150)
-        self.tree.column("Klasse", width=120)
+        self.tree.column("Gruppe", width=55, anchor="center")
+        self.tree.column("Tag", width=85, anchor="center")
+        self.tree.column("Uhrzeit", width=70, anchor="center")
+        self.tree.column("Scheibe", width=55, anchor="center")
+        self.tree.column("Schütze", width=220)
+        self.tree.column("Verein", width=140)
+        self.tree.column("Klasse", width=110)
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.config(command=self.tree.yview)
         self.tree.bind("<<TreeviewSelect>>", self.on_schuetze_selected)
@@ -140,20 +142,25 @@ class GruppenTab:
         edit_frame = ttk.Frame(self.frame)
         edit_frame.grid(row=3, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=10)
 
-        # Uhrzeit-Eingabe
-        time_frame = ttk.LabelFrame(edit_frame, text="Uhrzeit für Gruppe festlegen", padding="10")
+        # Datum- und Uhrzeit-Eingabe
+        time_frame = ttk.LabelFrame(edit_frame, text="Datum & Uhrzeit für Gruppe festlegen", padding="10")
         time_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
 
-        ttk.Label(time_frame, text="Uhrzeit (HH:MM):").grid(row=0, column=0, padx=5)
+        ttk.Label(time_frame, text="Datum:").grid(row=0, column=0, padx=5)
+        self.date_var = tk.StringVar()
+        self.date_combo = ttk.Combobox(time_frame, textvariable=self.date_var, width=12)
+        self.date_combo.grid(row=0, column=1, padx=5)
+
+        ttk.Label(time_frame, text="Uhrzeit (HH:MM):").grid(row=0, column=2, padx=5)
         self.time_var = tk.StringVar()
-        self.time_entry = ttk.Entry(time_frame, textvariable=self.time_var, width=10)
-        self.time_entry.grid(row=0, column=1, padx=5)
+        self.time_entry = ttk.Entry(time_frame, textvariable=self.time_var, width=8)
+        self.time_entry.grid(row=0, column=3, padx=5)
 
         ttk.Button(
             time_frame,
             text="Für ausgewählte Gruppe speichern",
             command=self.save_group_time
-        ).grid(row=0, column=2, padx=10)
+        ).grid(row=0, column=4, padx=10)
 
         # Zuweisung ändern
         assign_frame = ttk.LabelFrame(edit_frame, text="Zuweisung für Schützen ändern", padding="10")
@@ -222,11 +229,13 @@ class GruppenTab:
 
         self.turnier_model.set_anzahl_gruppen(val)
         self.refresh()
+        if self.on_assignment_changed:
+            self.on_assignment_changed()
 
     def on_empty_slots_option_changed(self):
         """Wird aufgerufen, wenn die Auswahl für leere Plätze (Anzeige / PDF) geändert wird"""
         self.turnier_model.set_show_empty_slots_ui(self.show_empty_ui_var.get())
-        self.turnier_model.set_show_empty_slots_pdf(self.show_empty_pdf_var.get())
+        self.turnier_model.set_show_empty_slots_pdf(self.show_empty_slots_pdf_var_val() if hasattr(self, 'show_empty_slots_pdf_var_val') else self.show_empty_pdf_var.get())
         self.refresh()
 
     def _get_group_from_tree_item(self, item_id):
@@ -247,6 +256,7 @@ class GruppenTab:
         """Aktualisiert die Anzeige"""
         max_scheiben = self.turnier_model.get_max_scheiben()
         anzahl_gruppen = self.turnier_model.get_anzahl_gruppen()
+        gesamt_gruppen = self.turnier_model.get_gesamt_anzahl_gruppen()
         show_empty_ui = self.turnier_model.get_show_empty_slots_ui()
         show_empty_pdf = self.turnier_model.get_show_empty_slots_pdf()
 
@@ -255,6 +265,7 @@ class GruppenTab:
         self.show_empty_ui_var.set(show_empty_ui)
         self.show_empty_pdf_var.set(show_empty_pdf)
         self.max_scheiben_info_label.config(text=f"(Max. Scheiben pro Gruppe: {max_scheiben})")
+        self.date_combo['values'] = self.turnier_model.get_turnier_tage()
 
         for item in self.tree.get_children():
             self.tree.delete(item)
@@ -280,14 +291,15 @@ class GruppenTab:
             groups[gruppe].append(s)
 
         # Alle darzustellenden Gruppen ermitteln:
-        # Vorgesehene Gruppen (1..anzahl_gruppen) + alle Gruppen mit zugewiesenen Schützen
-        planned_groups = set(range(1, anzahl_gruppen + 1))
+        # Vorgesehene Gruppen (1..gesamt_gruppen) + alle Gruppen mit zugewiesenen Schützen
+        planned_groups = set(range(1, gesamt_gruppen + 1))
         assigned_group_nums = {g for g in groups.keys() if isinstance(g, int)}
         all_gruppen = sorted(planned_groups | assigned_group_nums)
 
         for gruppe in all_gruppen:
             schuetzen_in_gruppe = groups.get(gruppe, [])
             group_time = self.turnier_model.get_group_time(gruppe)
+            group_date = self.turnier_model.get_group_date(gruppe)
 
             rows = []
             if show_empty_ui:
@@ -334,15 +346,17 @@ class GruppenTab:
                         s.get('verein', ''),
                         s.get('klasse', '')
                     ))
-                if not rows and isinstance(gruppe, int) and gruppe <= anzahl_gruppen:
+                if not rows and isinstance(gruppe, int) and gruppe <= gesamt_gruppen:
                     rows.append(("", "", "", ""))
 
             for i, (scheibe_val, schuetze_name, verein_val, klasse_val) in enumerate(rows):
                 display_gruppe = gruppe if i == 0 else ""
+                display_date = group_date if i == 0 else ""
                 display_time = group_time if i == 0 else ""
 
                 self.tree.insert("", tk.END, values=(
                     display_gruppe,
+                    display_date,
                     display_time,
                     scheibe_val,
                     schuetze_name,
@@ -359,7 +373,7 @@ class GruppenTab:
             ))
 
     def save_group_time(self):
-        """Speichert die Uhrzeit für die ausgewählte Gruppe"""
+        """Speichert das Datum und die Uhrzeit für die ausgewählte Gruppe"""
         selected = self.tree.selection()
         if not selected:
             messagebox.showwarning("Keine Auswahl", "Bitte wählen Sie einen Eintrag in der Liste aus, um die Gruppe zu bestimmen.")
@@ -370,21 +384,26 @@ class GruppenTab:
             messagebox.showwarning("Fehler", "Konnte die Gruppe nicht bestimmen.")
             return
 
-        time_str = self.time_var.get()
+        time_str = self.time_var.get().strip()
+        date_str = self.date_var.get().strip()
 
         self.turnier_model.set_group_time(gruppe, time_str)
+        self.turnier_model.set_group_date(gruppe, date_str)
         self.refresh()
-        messagebox.showinfo("Erfolg", f"Uhrzeit für Gruppe {gruppe} wurde gespeichert.")
+        if self.on_assignment_changed:
+            self.on_assignment_changed()
+        messagebox.showinfo("Erfolg", f"Datum und Uhrzeit für Gruppe {gruppe} wurden gespeichert.")
 
     def create_group_pdf(self):
-        """Erstellt ein PDF mit der Gruppenübersicht"""
+        """Erstellt das Gruppen-PDF (bzw. bei mehreren Tagen pro Tag ein PDF)"""
         schuetzen = self.schuetze_model.get_all_schuetzen()
         assigned_schuetzen = [s for s in schuetzen if s.get('gruppe') is not None]
         show_empty_pdf = self.turnier_model.get_show_empty_slots_pdf()
         anzahl_gruppen = self.turnier_model.get_anzahl_gruppen()
+        gesamt_gruppen = self.turnier_model.get_gesamt_anzahl_gruppen()
         max_scheiben = self.turnier_model.get_max_scheiben()
 
-        if not assigned_schuetzen and not (show_empty_pdf and anzahl_gruppen > 0):
+        if not assigned_schuetzen and not (show_empty_pdf and gesamt_gruppen > 0):
             messagebox.showinfo("Info", "Es sind keine Schützen Gruppen zugewiesen. Das PDF wird nicht erstellt.")
             return
 
@@ -412,12 +431,13 @@ class GruppenTab:
 
         if widget == self.tree:
             gruppe = self._get_group_from_tree_item(selected[0])
-            scheibe = values[2]
-            schuetze_name = str(values[3]).strip() if len(values) > 3 else ""
+            scheibe = values[3]
+            schuetze_name = str(values[4]).strip() if len(values) > 4 else ""
 
             self.gruppe_var.set(gruppe)
             self.scheibe_var.set(scheibe)
             self.time_var.set(self.turnier_model.get_group_time(gruppe))
+            self.date_var.set(self.turnier_model.get_group_date(gruppe))
 
             # Wenn ein belegter Platz ausgewählt wurde, Auswahl in der rechten Liste aufheben.
             # Bei Auswahl eines leeren Platzes bleibt ein evtl. rechts ausgewählter Schütze markiert,
@@ -431,7 +451,7 @@ class GruppenTab:
             if self.tree.selection():
                 left_item = self.tree.item(self.tree.selection()[0])
                 left_vals = left_item.get('values', [])
-                left_name = str(left_vals[3]).strip() if len(left_vals) > 3 else ""
+                left_name = str(left_vals[4]).strip() if len(left_vals) > 4 else ""
                 if not left_name:
                     keep_free_target = True
                 self.tree.selection_remove(self.tree.selection())
@@ -459,13 +479,13 @@ class GruppenTab:
         if selected_assigned:
             item_assigned = self.tree.item(selected_assigned[0])
             vals_assigned = item_assigned.get('values', [])
-            assigned_name = str(vals_assigned[3]).strip() if len(vals_assigned) > 3 else ""
+            assigned_name = str(vals_assigned[4]).strip() if len(vals_assigned) > 4 else ""
             if assigned_name:
                 selected_tree = self.tree
                 selected_item = selected_assigned[0]
-                name_index = 3
-                verein_index = 4
-                klasse_index = 5
+                name_index = 4
+                verein_index = 5
+                klasse_index = 6
             elif selected_unassigned:
                 selected_tree = self.unassigned_tree
                 selected_item = selected_unassigned[0]
@@ -565,16 +585,16 @@ class GruppenTab:
         selected_item = selected_assigned[0]
         item = self.tree.item(selected_item)
         values = item.get('values', [])
-        schuetze_name_full = str(values[3]).strip() if len(values) > 3 else ""
+        schuetze_name_full = str(values[4]).strip() if len(values) > 4 else ""
 
         if not schuetze_name_full:
             messagebox.showwarning("Leerer Platz ausgewählt", "Auf dem ausgewählten Platz ist kein Schütze zugewiesen.")
             return
 
         gruppe = self._get_group_from_tree_item(selected_item)
-        scheibe = values[2] if len(values) > 2 else None
-        schuetze_verein = str(values[4]).strip() if len(values) > 4 else ""
-        schuetze_klasse = str(values[5]).strip() if len(values) > 5 else ""
+        scheibe = values[3] if len(values) > 3 else None
+        schuetze_verein = str(values[5]).strip() if len(values) > 5 else ""
+        schuetze_klasse = str(values[6]).strip() if len(values) > 6 else ""
 
         try:
             gruppe_int = int(gruppe)

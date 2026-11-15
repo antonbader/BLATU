@@ -125,7 +125,7 @@ class SchuetzenTab:
         
         self.tree = ttk.Treeview(
             list_frame, 
-            columns=("Name", "Vorname", "Klasse", "Verein", "Gruppe", "Scheibe", "PIN"),
+            columns=("Name", "Vorname", "Klasse", "Verein", "Tag", "Gruppe", "Scheibe", "PIN"),
             show="headings", 
             yscrollcommand=scrollbar.set, 
             height=15
@@ -134,16 +134,18 @@ class SchuetzenTab:
         self.tree.heading("Vorname", text="Vorname", command=lambda: self.sort_by_column("Vorname"))
         self.tree.heading("Klasse", text="Klasse", command=lambda: self.sort_by_column("Klasse"))
         self.tree.heading("Verein", text="Verein", command=lambda: self.sort_by_column("Verein"))
+        self.tree.heading("Tag", text="Tag", command=lambda: self.sort_by_column("Tag"))
         self.tree.heading("Gruppe", text="Gruppe", command=lambda: self.sort_by_column("Gruppe"))
         self.tree.heading("Scheibe", text="Scheibe", command=lambda: self.sort_by_column("Scheibe"))
         self.tree.heading("PIN", text="PIN", command=lambda: self.sort_by_column("PIN"))
-        self.tree.column("Name", width=150)
-        self.tree.column("Vorname", width=150)
-        self.tree.column("Klasse", width=120)
-        self.tree.column("Verein", width=150)
-        self.tree.column("Gruppe", width=70, anchor="center")
-        self.tree.column("Scheibe", width=70, anchor="center")
-        self.tree.column("PIN", width=70, anchor="center")
+        self.tree.column("Name", width=140)
+        self.tree.column("Vorname", width=140)
+        self.tree.column("Klasse", width=110)
+        self.tree.column("Verein", width=140)
+        self.tree.column("Tag", width=85, anchor="center")
+        self.tree.column("Gruppe", width=65, anchor="center")
+        self.tree.column("Scheibe", width=65, anchor="center")
+        self.tree.column("PIN", width=65, anchor="center")
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.config(command=self.tree.yview)
         self.tree.bind("<Double-1>", lambda e: self.edit_selected())
@@ -407,23 +409,27 @@ class SchuetzenTab:
             sort_key = column_map.get(self.sort_column, "name")
 
             def sort_func(x):
+                if self.sort_column == "Tag":
+                    return (1, self.turnier_model.get_schuetze_tag(x).lower())
                 val = x.get(sort_key)
-                if val is None:
-                    return -1 # None-Werte an den Anfang
-                if isinstance(val, str):
-                    return val.lower()
-                return val
+                if val is None or val == "":
+                    return (0, "")
+                if isinstance(val, (int, float)):
+                    return (1, val)
+                return (1, str(val).lower())
 
             schuetzen = sorted(schuetzen, key=sort_func, reverse=self.sort_reverse)
 
         for schuetze in schuetzen:
+            tag_val = self.turnier_model.get_schuetze_tag(schuetze)
             self.tree.insert("", tk.END, values=(
                 schuetze.get('name', ''),
                 schuetze.get('vorname', ''),
                 schuetze.get('klasse', ''),
                 schuetze.get('verein', ''),
-                schuetze.get('gruppe', ''),
-                schuetze.get('scheibe', ''),
+                tag_val,
+                schuetze.get('gruppe', '') if schuetze.get('gruppe') is not None else '',
+                schuetze.get('scheibe', '') if schuetze.get('scheibe') is not None else '',
                 schuetze.get('pin', '')
             ))
     

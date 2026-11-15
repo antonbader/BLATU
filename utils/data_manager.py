@@ -46,6 +46,7 @@ class DataManager:
                 "mannschaften": mannschaften,
                 "ergebnisse": self.turnier_model.get_all_ergebnisse(),
                 "group_times": self.turnier_model.get_all_group_times(),
+                "group_dates": self.turnier_model.get_all_group_dates(),
                 "pdf_font_sizes": self.turnier_model.get_pdf_font_sizes()
             }
             
@@ -113,6 +114,7 @@ class DataManager:
         self.turnier_model.clear_mannschaften()
         self.turnier_model.clear_ergebnisse()
         self.turnier_model.clear_group_times()
+        self.turnier_model.clear_group_dates()
         self.turnier_model.reset_pdf_font_sizes()
 
         turnier_data_from_file = None
@@ -122,10 +124,15 @@ class DataManager:
             # Turnierdaten
             turnier = data.get('turnier', {})
             mannschaft_groesse = data.get('mannschaft_groesse', turnier.get('mannschaft_groesse', 3))
+            startdatum_val = turnier.get('startdatum') if 'startdatum' in turnier else turnier.get('datum', '')
+            enddatum_val = turnier.get('enddatum') if 'enddatum' in turnier else None
+            mehrtaegig_val = turnier.get('mehrtaegig') if 'mehrtaegig' in turnier else None
             self.turnier_model.set_turnier_data(
                 turnier.get('name', ''),
-                turnier.get('datum', ''),
+                startdatum_val,
                 turnier.get('anzahl_passen', 1),
+                enddatum=enddatum_val,
+                mehrtaegig=mehrtaegig_val,
                 show_halves=turnier.get('show_halves', False),
                 max_scheiben=turnier.get('max_scheiben', 3),
                 anzahl_gruppen=turnier.get('anzahl_gruppen', 0),
@@ -139,7 +146,7 @@ class DataManager:
                 kontoinhaber=turnier.get('kontoinhaber', ''),
                 zahldatum=turnier.get('zahldatum', '')
             )
-            turnier_data_from_file = turnier
+            turnier_data_from_file = self.turnier_model.get_turnier_data()
 
             # Klassen
             for klasse_data in data.get('klassen', []):
@@ -189,6 +196,11 @@ class DataManager:
             group_times = data.get('group_times', {})
             for group, time in group_times.items():
                 self.turnier_model.set_group_time(int(group), time)
+
+            # Gruppen-Daten
+            group_dates = data.get('group_dates', {})
+            for group, date_str in group_dates.items():
+                self.turnier_model.set_group_date(int(group), date_str)
 
             # Ergebnisse
             ergebnisse = data.get('ergebnisse', {})

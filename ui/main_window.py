@@ -204,6 +204,10 @@ class MainWindow:
     
     def on_turnier_changed(self):
         """Wird aufgerufen wenn sich Turnierdaten ändern"""
+        if hasattr(self, 'schuetzen_tab'):
+            self.schuetzen_tab.refresh()
+        if hasattr(self, 'gruppen_tab'):
+            self.gruppen_tab.refresh()
         # Ergebnisse-Tab muss Passen-Felder neu erstellen
         if hasattr(self, 'ergebnisse_tab'):
             self.ergebnisse_tab.refresh()
@@ -242,6 +246,8 @@ class MainWindow:
         """Wird aufgerufen, wenn sich eine Zuweisung in der Gruppenverwaltung ändert"""
         if hasattr(self, 'schuetzen_tab'):
             self.schuetzen_tab.refresh()
+        if hasattr(self, 'ergebnisse_tab'):
+            self.ergebnisse_tab.refresh_silent_update()
         if hasattr(self, 'schiesszettel_tab'):
             self.schiesszettel_tab.refresh()
         if hasattr(self, 'online_eingabe_tab'):
@@ -263,6 +269,10 @@ class MainWindow:
             self.schiesszettel_tab.refresh()
         elif tab_text == "Gruppenverwaltung":
             self.gruppen_tab.refresh()
+        elif tab_text == "Schützenverwaltung":
+            self.schuetzen_tab.refresh_silent()
+        elif tab_text == "Ergebniseingabe":
+            self.ergebnisse_tab.refresh_silent_update()
         elif tab_text == "Startgeld":
             self.startgeld_tab.refresh()
         elif tab_text in ("Export/Import", "Export/Inport"):

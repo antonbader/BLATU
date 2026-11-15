@@ -220,6 +220,9 @@ class ExportImportTab:
         return {
             "turniername": turnier_data.get("name", ""),
             "datum": turnier_data.get("datum", ""),
+            "startdatum": turnier_data.get("startdatum", ""),
+            "enddatum": turnier_data.get("enddatum", ""),
+            "mehrtaegig": turnier_data.get("mehrtaegig", False),
             "klassen": klassen,
             "schuetzen": schuetzen_list
         }
@@ -306,10 +309,15 @@ class ExportImportTab:
 
             # Turnierdaten aktualisieren
             current_turnier = self.turnier_model.get_turnier_data()
+            startdatum_in = data.get("startdatum") or turnier_dict.get("startdatum")
+            enddatum_in = data.get("enddatum") if "enddatum" in data else turnier_dict.get("enddatum")
+            mehrtaegig_in = data.get("mehrtaegig") if "mehrtaegig" in data else turnier_dict.get("mehrtaegig")
             self.turnier_model.set_turnier_data(
                 turniername if turniername else current_turnier.get("name", ""),
-                datum if datum else current_turnier.get("datum", ""),
+                startdatum_in if startdatum_in else (datum if datum else current_turnier.get("datum", "")),
                 current_turnier.get("anzahl_passen", 1),
+                enddatum=enddatum_in,
+                mehrtaegig=mehrtaegig_in,
                 show_halves=current_turnier.get("show_halves", False),
                 max_scheiben=current_turnier.get("max_scheiben", 3),
                 mannschaft_groesse=current_turnier.get("mannschaft_groesse", 3),
@@ -703,8 +711,10 @@ class ExportImportTab:
         if target_pass_count > current_turnier.get("anzahl_passen", 1):
             self.turnier_model.set_turnier_data(
                 current_turnier.get("name", ""),
-                current_turnier.get("datum", ""),
+                current_turnier.get("startdatum", current_turnier.get("datum", "")),
                 target_pass_count,
+                enddatum=current_turnier.get("enddatum", ""),
+                mehrtaegig=current_turnier.get("mehrtaegig", False),
                 show_halves=current_turnier.get("show_halves", False),
                 max_scheiben=current_turnier.get("max_scheiben", 3),
                 mannschaft_groesse=current_turnier.get("mannschaft_groesse", 3),

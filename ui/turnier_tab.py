@@ -3,6 +3,7 @@
 Turnierverwaltung Tab
 """
 
+from datetime import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox
 
@@ -39,27 +40,43 @@ class TurnierTab:
         
         # Name
         ttk.Label(input_frame, text="Name des Turniers:", font=("Arial", 10)).grid(
-            row=0, column=0, sticky=tk.W, pady=10
+            row=0, column=0, sticky=tk.W, pady=8
         )
         self.name_entry = ttk.Entry(input_frame, width=30, font=("Arial", 10))
-        self.name_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), pady=10, padx=10)
-        
-        # Datum
-        ttk.Label(input_frame, text="Datum:", font=("Arial", 10)).grid(
-            row=1, column=0, sticky=tk.W, pady=10
+        self.name_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), pady=8, padx=10)
+
+        # Checkbox für mehrtägiges Turnier
+        self.mehrtaegig_var = tk.BooleanVar(value=False)
+        self.mehrtaegig_check = ttk.Checkbutton(
+            input_frame,
+            text="Turnier über mehrere Tage",
+            variable=self.mehrtaegig_var,
+            command=self.toggle_datum_fields
         )
+        self.mehrtaegig_check.grid(row=1, column=0, columnspan=2, sticky=tk.W, pady=(5, 5))
+        
+        # Datum / Startdatum
+        self.datum_label = ttk.Label(input_frame, text="Datum:", font=("Arial", 10))
+        self.datum_label.grid(row=2, column=0, sticky=tk.W, pady=5)
         self.datum_entry = ttk.Entry(input_frame, width=30, font=("Arial", 10))
-        self.datum_entry.grid(row=1, column=1, sticky=(tk.W, tk.E), pady=10, padx=10)
+        self.datum_entry.grid(row=2, column=1, sticky=(tk.W, tk.E), pady=5, padx=10)
+
+        # Enddatum (bei mehreren Tagen)
+        self.enddatum_label = ttk.Label(input_frame, text="Enddatum:", font=("Arial", 10))
+        self.enddatum_label.grid(row=3, column=0, sticky=tk.W, pady=5)
+        self.enddatum_entry = ttk.Entry(input_frame, width=30, font=("Arial", 10))
+        self.enddatum_entry.grid(row=3, column=1, sticky=(tk.W, tk.E), pady=5, padx=10)
+
         ttk.Label(
             input_frame, 
-            text="(z.B. 15.10.2024)", 
+            text="(Format: TT.MM.JJJJ, z.B. 15.10.2024)", 
             font=("Arial", 9), 
             foreground="gray"
-        ).grid(row=2, column=1, sticky=tk.W, padx=10)
+        ).grid(row=4, column=1, sticky=tk.W, padx=10)
         
         # Anzahl Passen
         ttk.Label(input_frame, text="Anzahl Passen:", font=("Arial", 10)).grid(
-            row=3, column=0, sticky=tk.W, pady=10
+            row=5, column=0, sticky=tk.W, pady=8
         )
         self.passen_spinbox = ttk.Spinbox(
             input_frame, 
@@ -68,7 +85,7 @@ class TurnierTab:
             width=28,
             font=("Arial", 10)
         )
-        self.passen_spinbox.grid(row=3, column=1, sticky=(tk.W, tk.E), pady=10, padx=10)
+        self.passen_spinbox.grid(row=5, column=1, sticky=(tk.W, tk.E), pady=8, padx=10)
         self.passen_spinbox.set(1)
         
         # Checkbox für Hälfte-Ansicht
@@ -79,14 +96,14 @@ class TurnierTab:
             variable=self.show_halves_var,
             command=self.on_halves_changed
         )
-        self.show_halves_check.grid(row=4, column=0, columnspan=2, sticky=tk.W, pady=10, padx=10)
+        self.show_halves_check.grid(row=6, column=0, columnspan=2, sticky=tk.W, pady=8, padx=10)
         
         ttk.Label(
             input_frame,
             text="Hinweis: Bei ungerader Passenanzahl ist diese Option nicht verfügbar",
             font=("Arial", 9),
             foreground="gray"
-        ).grid(row=5, column=0, columnspan=2, sticky=tk.W, padx=10)
+        ).grid(row=7, column=0, columnspan=2, sticky=tk.W, padx=10)
         
         input_frame.columnconfigure(1, weight=1)
 
@@ -174,6 +191,17 @@ class TurnierTab:
         
         self.refresh()
     
+    def toggle_datum_fields(self):
+        """Passt die Datumsfelder je nach Auswahl (ein- oder mehrtägig) an."""
+        if self.mehrtaegig_var.get():
+            self.datum_label.config(text="Startdatum:")
+            self.enddatum_label.config(state=tk.NORMAL)
+            self.enddatum_entry.config(state=tk.NORMAL)
+        else:
+            self.datum_label.config(text="Datum:")
+            self.enddatum_label.config(state=tk.DISABLED)
+            self.enddatum_entry.config(state=tk.DISABLED)
+
     def toggle_bank_fields(self):
         """Aktiviert oder deaktiviert die Bankdaten-Eingabefelder."""
         state = tk.NORMAL if self.startgeld_erheben_var.get() else tk.DISABLED
@@ -208,6 +236,8 @@ class TurnierTab:
         """Speichert die Turniereinstellungen"""
         name = self.name_entry.get().strip()
         datum = self.datum_entry.get().strip()
+        mehrtaegig = self.mehrtaegig_var.get()
+        enddatum = self.enddatum_entry.get().strip() if mehrtaegig else ""
         
         try:
             passen = int(self.passen_spinbox.get())
@@ -223,6 +253,27 @@ class TurnierTab:
         if not name:
             messagebox.showwarning("Eingabefehler", "Bitte einen Turniernamen eingeben!")
             return
+
+        if mehrtaegig:
+            if not datum or not enddatum:
+                messagebox.showwarning(
+                    "Eingabefehler",
+                    "Bitte bei einem mehrtägigen Turnier sowohl das Startdatum als auch das Enddatum eingeben!"
+                )
+                return
+            for fmt in ("%d.%m.%Y", "%Y-%m-%d", "%d.%m.%y"):
+                try:
+                    start_dt = datetime.strptime(datum, fmt)
+                    end_dt = datetime.strptime(enddatum, fmt)
+                    if end_dt < start_dt:
+                        messagebox.showwarning(
+                            "Eingabefehler",
+                            "Das Enddatum darf nicht vor dem Startdatum liegen!"
+                        )
+                        return
+                    break
+                except ValueError:
+                    continue
         
         # Prüfen ob Hälfte-Ansicht mit ungerader Passenanzahl kombiniert wird
         show_halves = self.show_halves_var.get()
@@ -244,6 +295,8 @@ class TurnierTab:
 
         self.turnier_model.set_turnier_data(
             name, datum, passen,
+            enddatum=enddatum,
+            mehrtaegig=mehrtaegig,
             show_halves=show_halves,
             startgeld_erheben=startgeld_erheben,
             iban=iban,
@@ -267,6 +320,8 @@ class TurnierTab:
             # explizit alle Standardwerte übergeben
             self.turnier_model.set_turnier_data(
                 "", "", 1,
+                enddatum="",
+                mehrtaegig=False,
                 show_halves=False,
                 max_scheiben=3,
                 startgeld_erheben=False,
@@ -277,6 +332,7 @@ class TurnierTab:
                 zahldatum=""
             )
             self.refresh()
+            self.on_change_callback()
             if self.on_turnier_data_changed_callback:
                 self.on_turnier_data_changed_callback()
             messagebox.showinfo("Erfolg", "Turniereinstellungen wurden zurückgesetzt!")
@@ -287,9 +343,29 @@ class TurnierTab:
         
         self.name_entry.delete(0, tk.END)
         self.name_entry.insert(0, turnier.get("name", ""))
-        
+
+        raw_datum = turnier.get("datum", "")
+        startdatum = turnier.get("startdatum")
+        enddatum = turnier.get("enddatum", "")
+        mehrtaegig = bool(turnier.get("mehrtaegig", False))
+        if startdatum is None:
+            if " - " in raw_datum:
+                parts = [p.strip() for p in raw_datum.split(" - ", 1)]
+                startdatum = parts[0]
+                enddatum = parts[1] if len(parts) > 1 else ""
+                mehrtaegig = bool(enddatum and enddatum != startdatum)
+            else:
+                startdatum = raw_datum
+
+        self.mehrtaegig_var.set(mehrtaegig)
+        self.enddatum_entry.config(state=tk.NORMAL)
+
         self.datum_entry.delete(0, tk.END)
-        self.datum_entry.insert(0, turnier.get("datum", ""))
+        self.datum_entry.insert(0, startdatum or "")
+        self.enddatum_entry.delete(0, tk.END)
+        self.enddatum_entry.insert(0, enddatum or "")
+
+        self.toggle_datum_fields()
         
         self.passen_spinbox.set(turnier.get("anzahl_passen", 1))
         self.show_halves_var.set(turnier.get("show_halves", False))
@@ -326,7 +402,9 @@ class TurnierTab:
         
         if turnier["name"]:
             info_text = f"Turnier: {turnier['name']}\n"
-            if turnier['datum']:
+            if turnier.get('mehrtaegig') and turnier.get('startdatum') and turnier.get('enddatum'):
+                info_text += f"Zeitraum: {turnier['startdatum']} bis {turnier['enddatum']}\n"
+            elif turnier.get('datum'):
                 info_text += f"Datum: {turnier['datum']}\n"
             info_text += f"Anzahl Passen: {turnier['anzahl_passen']}\n"
             if turnier.get('show_halves', False):
