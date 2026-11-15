@@ -142,16 +142,10 @@ class PDFGenerator:
                 # Klassenname
                 elements.append(Paragraph(f"Klasse: {klasse}", class_style))
                 
-                # Ergebnisse sortieren
+                # Ergebnisse sortieren gemäß gewählter Auswerte-Art (Classic oder nach Passen)
                 ergebnisse_sortiert = sorted(
                     klassen_ergebnisse[klasse],
-                    key=lambda x: (
-                        x['gesamt'],
-                        x['anzahl_10er'],
-                        x['anzahl_9er'],
-                        1 if x.get('stechen') is not None else 0,
-                        x.get('stechen') if x.get('stechen') is not None else -1
-                    ),
+                    key=self.turnier_model.get_dict_result_sort_key,
                     reverse=True
                 )
                 
@@ -180,13 +174,8 @@ class PDFGenerator:
                 row_place_indices = []
                 
                 for idx, ergebnis in enumerate(ergebnisse_sortiert):
-                    # Platzierung
-                    if prev_ergebnis and (
-                        ergebnis['gesamt'] == prev_ergebnis['gesamt'] and
-                        ergebnis['anzahl_10er'] == prev_ergebnis['anzahl_10er'] and
-                        ergebnis['anzahl_9er'] == prev_ergebnis['anzahl_9er'] and
-                        ergebnis.get('stechen') == prev_ergebnis.get('stechen')
-                    ):
+                    # Platzierung gemäß gewählter Auswerte-Art (inkl. Stechschießen)
+                    if prev_ergebnis and self.turnier_model.are_results_tied(ergebnis, prev_ergebnis, include_stechen=True):
                         current_platz = platz
                     else:
                         platz = idx + 1

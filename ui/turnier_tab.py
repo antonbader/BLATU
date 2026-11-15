@@ -7,7 +7,13 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-from config import MIN_PASSEN, MAX_PASSEN
+from config import (
+    MIN_PASSEN,
+    MAX_PASSEN,
+    AUSWERTE_ART_CLASSIC,
+    AUSWERTE_ART_NACH_PASSEN,
+    AUSWERTE_ARTEN
+)
 
 
 class TurnierTab:
@@ -104,6 +110,36 @@ class TurnierTab:
             font=("Arial", 9),
             foreground="gray"
         ).grid(row=7, column=0, columnspan=2, sticky=tk.W, padx=10)
+
+        # Auswerte-Art bei Ergebnisgleichheit
+        ttk.Label(
+            input_frame,
+            text="Auswertung bei Ergebnisgleichheit:",
+            font=("Arial", 10)
+        ).grid(row=8, column=0, sticky=tk.W, pady=(10, 4))
+
+        self.auswerte_art_var = tk.StringVar(value=AUSWERTE_ART_CLASSIC)
+        self.auswerte_art_combo = ttk.Combobox(
+            input_frame,
+            textvariable=self.auswerte_art_var,
+            values=list(AUSWERTE_ARTEN),
+            state="readonly",
+            width=28,
+            font=("Arial", 10)
+        )
+        self.auswerte_art_combo.grid(row=8, column=1, sticky=(tk.W, tk.E), pady=(10, 4), padx=10)
+        self.auswerte_art_combo.bind("<<ComboboxSelected>>", self.on_auswerte_art_changed)
+
+        self.auswerte_art_hint_label = ttk.Label(
+            input_frame,
+            text="",
+            font=("Arial", 9),
+            foreground="gray",
+            wraplength=380,
+            justify=tk.LEFT
+        )
+        self.auswerte_art_hint_label.grid(row=9, column=0, columnspan=2, sticky=tk.W, padx=10, pady=(0, 4))
+        self.update_auswerte_art_hint()
         
         input_frame.columnconfigure(1, weight=1)
 
@@ -217,6 +253,26 @@ class TurnierTab:
         self.zahldatum_label.config(state=state)
         self.zahldatum_entry.config(state=state)
 
+    def on_auswerte_art_changed(self, event=None):
+        """Aktualisiert den Hinweistext bei Änderung der Auswerte-Art."""
+        self.update_auswerte_art_hint()
+
+    def update_auswerte_art_hint(self):
+        """Zeigt eine kurze Erklärung zur aktuell gewählten Auswerte-Art an."""
+        art = self.auswerte_art_var.get()
+        if art == AUSWERTE_ART_NACH_PASSEN:
+            hint = (
+                "1. Höchstes Ergebnis ab letzter Wertungspasse rückwärts  •  "
+                "2. Anzahl 10er, 9er  •  3. Gleicher Rang (Stechschießen möglich)"
+            )
+        else:
+            hint = (
+                "1. Höchste Zahl der 10er, dann 9er  •  "
+                "2. Gleicher Rang (Stechschießen möglich)"
+            )
+        if hasattr(self, "auswerte_art_hint_label"):
+            self.auswerte_art_hint_label.config(text=hint)
+
     def on_halves_changed(self):
         """Wird aufgerufen wenn die Checkbox geändert wird"""
         try:
@@ -286,6 +342,10 @@ class TurnierTab:
             )
             return
         
+        auswerte_art = self.auswerte_art_var.get()
+        if auswerte_art not in AUSWERTE_ARTEN:
+            auswerte_art = AUSWERTE_ART_CLASSIC
+
         startgeld_erheben = self.startgeld_erheben_var.get()
         iban = self.iban_entry.get().strip()
         bic = self.bic_entry.get().strip()
@@ -298,6 +358,7 @@ class TurnierTab:
             enddatum=enddatum,
             mehrtaegig=mehrtaegig,
             show_halves=show_halves,
+            auswerte_art=auswerte_art,
             startgeld_erheben=startgeld_erheben,
             iban=iban,
             bic=bic,
@@ -323,6 +384,7 @@ class TurnierTab:
                 enddatum="",
                 mehrtaegig=False,
                 show_halves=False,
+                auswerte_art=AUSWERTE_ART_CLASSIC,
                 max_scheiben=3,
                 startgeld_erheben=False,
                 iban="",
@@ -369,6 +431,12 @@ class TurnierTab:
         
         self.passen_spinbox.set(turnier.get("anzahl_passen", 1))
         self.show_halves_var.set(turnier.get("show_halves", False))
+
+        auswerte_art = turnier.get("auswerte_art", AUSWERTE_ART_CLASSIC)
+        if auswerte_art not in AUSWERTE_ARTEN:
+            auswerte_art = AUSWERTE_ART_CLASSIC
+        self.auswerte_art_var.set(auswerte_art)
+        self.update_auswerte_art_hint()
         
         self.startgeld_erheben_var.set(turnier.get("startgeld_erheben", False))
 
@@ -408,9 +476,10 @@ class TurnierTab:
                 info_text += f"Datum: {turnier['datum']}\n"
             info_text += f"Anzahl Passen: {turnier['anzahl_passen']}\n"
             if turnier.get('show_halves', False):
-                info_text += "Anzeige: 1. und 2. Hälfte"
+                info_text += "Anzeige: 1. und 2. Hälfte\n"
             else:
-                info_text += "Anzeige: Einzelne Passen"
+                info_text += "Anzeige: Einzelne Passen\n"
+            info_text += f"Auswertung bei Ergebnisgleichheit: {turnier.get('auswerte_art', AUSWERTE_ART_CLASSIC)}"
         else:
             info_text = "Noch keine Turniereinstellungen vorhanden."
         

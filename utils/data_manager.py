@@ -134,6 +134,7 @@ class DataManager:
                 enddatum=enddatum_val,
                 mehrtaegig=mehrtaegig_val,
                 show_halves=turnier.get('show_halves', False),
+                auswerte_art=turnier.get('auswerte_art', 'Classic'),
                 max_scheiben=turnier.get('max_scheiben', 3),
                 anzahl_gruppen=turnier.get('anzahl_gruppen', 0),
                 show_empty_slots_ui=turnier.get('show_empty_slots_ui', True),

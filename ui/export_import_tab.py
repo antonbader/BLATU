@@ -223,6 +223,7 @@ class ExportImportTab:
             "startdatum": turnier_data.get("startdatum", ""),
             "enddatum": turnier_data.get("enddatum", ""),
             "mehrtaegig": turnier_data.get("mehrtaegig", False),
+            "auswerte_art": turnier_data.get("auswerte_art", "Classic"),
             "klassen": klassen,
             "schuetzen": schuetzen_list
         }
@@ -312,6 +313,7 @@ class ExportImportTab:
             startdatum_in = data.get("startdatum") or turnier_dict.get("startdatum")
             enddatum_in = data.get("enddatum") if "enddatum" in data else turnier_dict.get("enddatum")
             mehrtaegig_in = data.get("mehrtaegig") if "mehrtaegig" in data else turnier_dict.get("mehrtaegig")
+            auswerte_art_in = data.get("auswerte_art") or turnier_dict.get("auswerte_art") or current_turnier.get("auswerte_art", "Classic")
             self.turnier_model.set_turnier_data(
                 turniername if turniername else current_turnier.get("name", ""),
                 startdatum_in if startdatum_in else (datum if datum else current_turnier.get("datum", "")),
@@ -319,6 +321,7 @@ class ExportImportTab:
                 enddatum=enddatum_in,
                 mehrtaegig=mehrtaegig_in,
                 show_halves=current_turnier.get("show_halves", False),
+                auswerte_art=auswerte_art_in,
                 max_scheiben=current_turnier.get("max_scheiben", 3),
                 mannschaft_groesse=current_turnier.get("mannschaft_groesse", 3),
                 startgeld_erheben=current_turnier.get("startgeld_erheben", False),

@@ -35,11 +35,17 @@ class StechschiessenWindow:
         """Prüft auf Punkt-Gleichstände und öffnet das Fenster, falls vorhanden."""
         tie_groups = cls.find_tie_groups(turnier_model, schuetze_model)
         if not tie_groups:
-            messagebox.showinfo(
-                "Kein Punkt-Gleichstand",
-                "Es liegt aktuell kein Punkt-Gleichstand (gleiche Gesamtringzahl, 10er und 9er) "
-                "innerhalb einer Klasse vor."
-            )
+            if turnier_model.is_auswertung_nach_passen():
+                msg = (
+                    "Es liegt aktuell kein Punkt-Gleichstand (gleiche Gesamtringzahl, "
+                    "gleiche Passen, 10er und 9er) innerhalb einer Klasse vor."
+                )
+            else:
+                msg = (
+                    "Es liegt aktuell kein Punkt-Gleichstand (gleiche Gesamtringzahl, "
+                    "10er und 9er) innerhalb einer Klasse vor."
+                )
+            messagebox.showinfo("Kein Punkt-Gleichstand", msg)
             return None
         return cls(parent, turnier_model, schuetze_model, on_save_callback=on_save_callback, tie_groups=tie_groups)
 
@@ -47,7 +53,7 @@ class StechschiessenWindow:
     def find_tie_groups(turnier_model, schuetze_model):
         """
         Sucht in allen Klassen nach Schützen mit identischem regulärem Ergebnis
-        (Gesamt > 0, gleiche 10er, gleiche 9er).
+        gemäß der gewählten Auswerte-Art ('Classic' oder 'nach Passen').
         """
         by_class = {}
         for schuetze in schuetze_model.get_all_schuetzen():
@@ -56,7 +62,7 @@ class StechschiessenWindow:
             if not ergebnis:
                 continue
 
-            passen = ergebnis.get('passen', [])
+            passen = list(ergebnis.get('passen', []))
             gesamt = sum(passen)
             if gesamt <= 0:
                 continue
@@ -72,6 +78,7 @@ class StechschiessenWindow:
                 'vorname': schuetze['vorname'],
                 'verein': schuetze.get('verein', ''),
                 'klasse': klasse,
+                'ergebnisse': passen,
                 'gesamt': gesamt,
                 'anzahl_10er': anzahl_10er,
                 'anzahl_9er': anzahl_9er,
@@ -81,9 +88,11 @@ class StechschiessenWindow:
         tie_groups = []
         for klasse in sorted(by_class.keys()):
             shooters = by_class[klasse]
-            # Sortiere regulär nach Gesamt, 10er, 9er
+            # Sortiere regulär gemäß der gewählten Auswerte-Art
             shooters.sort(
-                key=lambda s: (s['gesamt'], s['anzahl_10er'], s['anzahl_9er']),
+                key=lambda s: turnier_model.get_regular_sort_key(
+                    s['gesamt'], s['ergebnisse'], s['anzahl_10er'], s['anzahl_9er']
+                ),
                 reverse=True
             )
 
@@ -91,13 +100,18 @@ class StechschiessenWindow:
             idx = 0
             while idx < len(shooters):
                 current = shooters[idx]
-                score_key = (current['gesamt'], current['anzahl_10er'], current['anzahl_9er'])
+                score_key = turnier_model.get_regular_sort_key(
+                    current['gesamt'], current['ergebnisse'], current['anzahl_10er'], current['anzahl_9er']
+                )
                 reg_platz = idx + 1
                 group = [current]
                 j = idx + 1
                 while j < len(shooters):
                     other = shooters[j]
-                    if (other['gesamt'], other['anzahl_10er'], other['anzahl_9er']) == score_key:
+                    other_key = turnier_model.get_regular_sort_key(
+                        other['gesamt'], other['ergebnisse'], other['anzahl_10er'], other['anzahl_9er']
+                    )
+                    if other_key == score_key:
                         group.append(other)
                         j += 1
                     else:
@@ -108,6 +122,7 @@ class StechschiessenWindow:
                         'klasse': klasse,
                         'platz': reg_platz,
                         'gesamt': current['gesamt'],
+                        'ergebnisse': current['ergebnisse'],
                         'anzahl_10er': current['anzahl_10er'],
                         'anzahl_9er': current['anzahl_9er'],
                         'shooters': group

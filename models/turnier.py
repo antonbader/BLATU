@@ -6,7 +6,13 @@ Verwaltet Turnierdaten, Klassen, Mannschaften und Ergebnisse
 
 import copy
 from datetime import datetime, timedelta
-from config import DEFAULT_TURNIER, DEFAULT_PDF_FONT_SIZES
+from config import (
+    DEFAULT_TURNIER,
+    DEFAULT_PDF_FONT_SIZES,
+    AUSWERTE_ART_CLASSIC,
+    AUSWERTE_ART_NACH_PASSEN,
+    AUSWERTE_ARTEN
+)
 
 
 class TurnierModel:
@@ -25,7 +31,7 @@ class TurnierModel:
         self.last_update_time = 0
     
     def set_turnier_data(self, name, datum, anzahl_passen, *, enddatum=None, mehrtaegig=None,
-                         show_halves=False, max_scheiben=None,
+                         show_halves=False, auswerte_art=None, max_scheiben=None,
                          anzahl_gruppen=None, show_empty_slots_ui=None, show_empty_slots_pdf=None,
                          mannschaft_groesse=None, startgeld_erheben=False, iban="", bic="",
                          bankname="", kontoinhaber="", zahldatum=""):
@@ -35,6 +41,10 @@ class TurnierModel:
                 self.mannschaft_groesse = max(1, int(mannschaft_groesse))
             except (ValueError, TypeError):
                 pass
+        if auswerte_art is None:
+            auswerte_art = self.turnier.get('auswerte_art', AUSWERTE_ART_CLASSIC)
+        if auswerte_art not in AUSWERTE_ARTEN:
+            auswerte_art = AUSWERTE_ART_CLASSIC
         if max_scheiben is None:
             max_scheiben = self.turnier.get('max_scheiben', 3)
         if anzahl_gruppen is None:
@@ -82,6 +92,7 @@ class TurnierModel:
             'mehrtaegig': mehrtaegig_val,
             'anzahl_passen': anzahl_passen,
             'show_halves': show_halves,
+            'auswerte_art': auswerte_art,
             'max_scheiben': max_scheiben,
             'anzahl_gruppen': anzahl_gruppen,
             'show_empty_slots_ui': show_empty_slots_ui,
@@ -94,12 +105,114 @@ class TurnierModel:
             'kontoinhaber': kontoinhaber,
             'zahldatum': zahldatum
         }
+        self._touch()
     
     def get_turnier_data(self):
         """Gibt die Turnierdaten zurück"""
         data = self.turnier.copy()
         data['mannschaft_groesse'] = self.mannschaft_groesse
+        if data.get('auswerte_art') not in AUSWERTE_ARTEN:
+            data['auswerte_art'] = AUSWERTE_ART_CLASSIC
         return data
+
+    def get_auswerte_art(self):
+        """Gibt die eingestellte Auswerte-Art bei Ergebnisgleichheit zurück ('Classic' oder 'nach Passen')."""
+        art = self.turnier.get('auswerte_art', AUSWERTE_ART_CLASSIC)
+        if art not in AUSWERTE_ARTEN:
+            return AUSWERTE_ART_CLASSIC
+        return art
+
+    def set_auswerte_art(self, auswerte_art):
+        """Setzt die Auswerte-Art bei Ergebnisgleichheit ('Classic' oder 'nach Passen')."""
+        if auswerte_art not in AUSWERTE_ARTEN:
+            auswerte_art = AUSWERTE_ART_CLASSIC
+        self.turnier['auswerte_art'] = auswerte_art
+        self._touch()
+        return auswerte_art
+
+    def is_auswertung_nach_passen(self):
+        """Prüft, ob die Auswertung 'nach Passen' aktiv ist."""
+        return self.get_auswerte_art() == AUSWERTE_ART_NACH_PASSEN
+
+    def get_reversed_passen_tuple(self, passen):
+        """
+        Gibt die Wertungspassen in umgekehrter Reihenfolge (letzte Wertungspasse zuerst)
+        als Tupel ganzer Zahlen zurück.
+        """
+        passen_list = list(passen) if passen else []
+        anzahl_passen = max(
+            1,
+            int(self.turnier.get('anzahl_passen', 1)),
+            max((len(e.get('passen', [])) for e in self.ergebnisse.values() if isinstance(e, dict)), default=0),
+            len(passen_list)
+        )
+        normalized = tuple(
+            int(passen_list[i]) if i < len(passen_list) else 0
+            for i in range(anzahl_passen)
+        )
+        return tuple(reversed(normalized))
+
+    def get_regular_sort_key(self, gesamt, passen, anzahl_10er, anzahl_9er):
+        """
+        Erzeugt den Sortierschlüssel für das reguläre Ergebnis (ohne Stechschießen)
+        abhängig von der gewählten Auswerte-Art:
+        - 'Classic': (Gesamt, 10er, 9er)
+        - 'nach Passen': (Gesamt, Passen rückwärts ab letzter Wertungspasse, 10er, 9er)
+        """
+        if self.is_auswertung_nach_passen():
+            return (
+                int(gesamt or 0),
+                self.get_reversed_passen_tuple(passen),
+                int(anzahl_10er or 0),
+                int(anzahl_9er or 0)
+            )
+        return (
+            int(gesamt or 0),
+            int(anzahl_10er or 0),
+            int(anzahl_9er or 0)
+        )
+
+    def get_result_sort_key(self, gesamt, passen, anzahl_10er, anzahl_9er, stechen=None):
+        """
+        Erzeugt den vollständigen Sortierschlüssel inkl. Stechschießen
+        abhängig von der gewählten Auswerte-Art ('Classic' oder 'nach Passen').
+        """
+        reg_key = self.get_regular_sort_key(gesamt, passen, anzahl_10er, anzahl_9er)
+        stechen_key = (
+            1 if stechen is not None else 0,
+            stechen if stechen is not None else -1
+        )
+        return reg_key + stechen_key
+
+    def get_dict_result_sort_key(self, item):
+        """Hilfsmethode für Ergebnis-Dictionaries (unterstützt klein- und großgeschriebene Keys)."""
+        gesamt = item.get('gesamt', item.get('Gesamt', 0))
+        passen = item.get('ergebnisse', item.get('passen', item.get('Ergebnisse', [])))
+        anzahl_10er = item.get('anzahl_10er', item.get('Anzahl10er', 0))
+        anzahl_9er = item.get('anzahl_9er', item.get('Anzahl9er', 0))
+        stechen = item.get('stechen', item.get('Stechen', None))
+        return self.get_result_sort_key(gesamt, passen, anzahl_10er, anzahl_9er, stechen)
+
+    def are_results_tied(self, item_a, item_b, include_stechen=True):
+        """Prüft, ob zwei Ergebnis-Dictionaries gemäß aktueller Auswerte-Art gleichplatziert sind."""
+        if item_a is None or item_b is None:
+            return False
+        if include_stechen:
+            return self.get_dict_result_sort_key(item_a) == self.get_dict_result_sort_key(item_b)
+        gesamt_a = item_a.get('gesamt', item_a.get('Gesamt', 0))
+        passen_a = item_a.get('ergebnisse', item_a.get('passen', item_a.get('Ergebnisse', [])))
+        z10_a = item_a.get('anzahl_10er', item_a.get('Anzahl10er', 0))
+        z9_a = item_a.get('anzahl_9er', item_a.get('Anzahl9er', 0))
+
+        gesamt_b = item_b.get('gesamt', item_b.get('Gesamt', 0))
+        passen_b = item_b.get('ergebnisse', item_b.get('passen', item_b.get('Ergebnisse', [])))
+        z10_b = item_b.get('anzahl_10er', item_b.get('Anzahl10er', 0))
+        z9_b = item_b.get('anzahl_9er', item_b.get('Anzahl9er', 0))
+
+        return (
+            self.get_regular_sort_key(gesamt_a, passen_a, z10_a, z9_a) ==
+            self.get_regular_sort_key(gesamt_b, passen_b, z10_b, z9_b)
+        )
     
     def add_klasse(self, klasse_name):
         """Fügt eine neue Klasse hinzu"""
@@ -392,17 +505,15 @@ class TurnierModel:
         # Sortieren und Platzierung berechnen
         for group_key, teams in grouped.items():
             teams.sort(
-                key=lambda t: (t['gesamt'], t['anzahl_10er'], t['anzahl_9er']),
+                key=lambda t: self.get_regular_sort_key(
+                    t['gesamt'], t['ergebnisse'], t['anzahl_10er'], t['anzahl_9er']
+                ),
                 reverse=True
             )
             platz = 1
             prev_team = None
             for idx, team in enumerate(teams):
-                if prev_team and (
-                    team['gesamt'] == prev_team['gesamt'] and
-                    team['anzahl_10er'] == prev_team['anzahl_10er'] and
-                    team['anzahl_9er'] == prev_team['anzahl_9er']
-                ):
+                if prev_team and self.are_results_tied(team, prev_team, include_stechen=False):
                     current_platz = platz
                 else:
                     platz = idx + 1
@@ -416,11 +527,11 @@ class TurnierModel:
         """Fügt ein Ergebnis hinzu oder aktualisiert es"""
         current = self.ergebnisse.get(schuetze_id, {})
         old_key = (
-            sum(current.get('passen', [])),
+            tuple(int(x) for x in current.get('passen', [])),
             current.get('anzahl_10er', 0),
             current.get('anzahl_9er', 0)
         ) if current else None
-        new_key = (sum(passen), anzahl_10er, anzahl_9er)
+        new_key = (tuple(int(x) for x in passen), anzahl_10er, anzahl_9er)
 
         current.update({
             'passen': passen,
@@ -453,11 +564,11 @@ class TurnierModel:
         """
         current = self.ergebnisse.get(schuetze_id, {})
         old_key = (
-            sum(current.get('passen', [])),
+            tuple(int(x) for x in current.get('passen', [])),
             current.get('anzahl_10er', 0),
             current.get('anzahl_9er', 0)
         ) if current else None
-        new_key = (sum(passen_sums), anzahl_10er, anzahl_9er)
+        new_key = (tuple(int(x) for x in passen_sums), anzahl_10er, anzahl_9er)
 
         current.update({
             'passen': passen_sums,

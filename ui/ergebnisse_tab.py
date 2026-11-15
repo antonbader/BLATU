@@ -485,6 +485,12 @@ class ErgebnisseTab:
         self.selected_schuetze_index = None
         self.info_label.config(text="Bitte wählen Sie einen Schützen aus")
 
+        if self.ergebnis_window and self.ergebnis_window.window.winfo_exists():
+            self.ergebnis_window.refresh()
+
+        if self.bildschirm_window and self.bildschirm_window.window.winfo_exists():
+            self.bildschirm_window.refresh_display()
+
     def refresh_silent_update(self):
         """Aktualisiert nur die Liste und ggf. geladene Ergebnisse, ohne Selection-Reset"""
         current_filter = self.search_entry.get()

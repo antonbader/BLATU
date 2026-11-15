@@ -17,6 +17,11 @@ WINDOW_WIDTH = 950
 WINDOW_HEIGHT = 750
 WINDOW_TITLE = APP_NAME
 
+# Auswerte-Arten bei Ergebnisgleichheit
+AUSWERTE_ART_CLASSIC = "Classic"
+AUSWERTE_ART_NACH_PASSEN = "nach Passen"
+AUSWERTE_ARTEN = (AUSWERTE_ART_CLASSIC, AUSWERTE_ART_NACH_PASSEN)
+
 # Turnier-Standardwerte
 DEFAULT_TURNIER = {
     "name": "",
@@ -26,6 +31,7 @@ DEFAULT_TURNIER = {
     "mehrtaegig": False,
     "anzahl_passen": 1,
     "show_halves": False,
+    "auswerte_art": AUSWERTE_ART_CLASSIC,
     "max_scheiben": 3,
     "anzahl_gruppen": 0,
     "show_empty_slots_ui": True,

@@ -21,6 +21,9 @@ Alles beginnt im Reiter **„Turnierverwaltung“**. Hier legen Sie die grundleg
 * **Anzahl Passen:** Legen Sie fest, wie viele Passen (Serien) pro Schütze geschossen werden (`1` bis `100`).
 * **Ergebnisse als 1. und 2. Hälfte anzeigen (statt einzelne Passen):** Wenn Sie diese Option aktivieren, werden die Ergebnisse in den Auswertungen und PDFs nicht als einzelne Passen (`P1`, `P2`, ...), sondern als Summe der ersten und zweiten Wettkampfhälfte dargestellt.
   * **Wichtiger Hinweis:** Diese Option ist nur verfügbar, wenn eine **gerade** Anzahl an Passen eingestellt ist.
+* **Auswertung bei Ergebnisgleichheit:** Wählen Sie zwischen den beiden Auswerte-Arten **`Classic`** (Standard) und **`nach Passen`**:
+  * **`Classic`:** Bei Ringgleichheit (gleiches Gesamtergebnis) entscheidet zuerst die höhere Anzahl der 10er, danach die höhere Anzahl der 9er. Besteht weiterhin Gleichstand, erhalten die Schützen denselben Rang (mit der Möglichkeit eines Stechschießens).
+  * **`nach Passen`:** Bei Ergebnisgleichheit wird die bessere Platzierung ermittelt durch: 1. das höchste Ergebnis in der letzten Wertungspasse und in den Wertungspassen zurück vergleichend, bis ein Unterschied gegeben ist, 2. die höchste Zahl der 10er, danach 9er, 3. wenn trotzdem Ergebnisgleichheit bestehen bleibt, wird den Schützen der gleiche Rang zugeteilt (es besteht dann weiterhin die Möglichkeit eines Stechschießens).
 
 Klicken Sie nach der Eingabe auf **„Einstellungen speichern“**. Im unteren Bereich **„Aktuelle Einstellungen“** wird Ihre aktive Konfiguration zur Kontrolle zusammengefasst.
 

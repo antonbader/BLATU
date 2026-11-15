@@ -303,13 +303,8 @@ class BildschirmAnzeigeWindow:
         prev_ergebnis = None
         
         for idx, ergebnis in enumerate(ergebnisse):
-            # Platzierung mit Punktgleichstand (inkl. Stechschießen)
-            if prev_ergebnis and (
-                ergebnis['gesamt'] == prev_ergebnis['gesamt'] and
-                ergebnis['anzahl_10er'] == prev_ergebnis['anzahl_10er'] and
-                ergebnis['anzahl_9er'] == prev_ergebnis['anzahl_9er'] and
-                ergebnis.get('stechen') == prev_ergebnis.get('stechen')
-            ):
+            # Platzierung mit Punktgleichstand gemäß gewählter Auswerte-Art (inkl. Stechschießen)
+            if prev_ergebnis and self.turnier_model.are_results_tied(ergebnis, prev_ergebnis, include_stechen=True):
                 current_platz = platz
             else:
                 platz = idx + 1
@@ -394,16 +389,10 @@ class BildschirmAnzeigeWindow:
                     'stechen': stechen
                 })
         
-        # Sortieren nach Gesamt, 10er, 9er und ggf. Stechschießen
+        # Sortieren gemäß gewählter Auswerte-Art (Classic oder nach Passen) und ggf. Stechschießen
         for klasse in klassen_ergebnisse:
             klassen_ergebnisse[klasse].sort(
-                key=lambda x: (
-                    x['gesamt'],
-                    x['anzahl_10er'],
-                    x['anzahl_9er'],
-                    1 if x.get('stechen') is not None else 0,
-                    x.get('stechen') if x.get('stechen') is not None else -1
-                ),
+                key=self.turnier_model.get_dict_result_sort_key,
                 reverse=True
             )
         
@@ -411,7 +400,7 @@ class BildschirmAnzeigeWindow:
     
     def get_data_hash(self):
         """Erstellt einen Hash der aktuellen Daten für Änderungserkennung"""
-        data = []
+        data = [("__auswerte_art__", self.turnier_model.get_auswerte_art())]
         for schuetze in self.schuetze_model.get_all_schuetzen():
             schuetze_id = SchuetzeModel.get_schuetze_id(schuetze)
             ergebnis = self.turnier_model.get_ergebnis(schuetze_id)

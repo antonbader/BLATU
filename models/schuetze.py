@@ -120,11 +120,13 @@ class SchuetzeModel:
             ergebnis_data = turnier_model.get_ergebnis(schuetze_id)
 
             if ergebnis_data:
-                gesamt = sum(ergebnis_data.get('passen', [0]))
+                passen = list(ergebnis_data.get('passen', []))
+                gesamt = sum(passen)
                 anzahl_10er = ergebnis_data.get('anzahl_10er', 0)
                 anzahl_9er = ergebnis_data.get('anzahl_9er', 0)
                 stechen = ergebnis_data.get('stechen', None)
             else:
+                passen = []
                 gesamt = 0
                 anzahl_10er = 0
                 anzahl_9er = 0
@@ -132,6 +134,7 @@ class SchuetzeModel:
 
             # Erstelle eine Kopie, um das Original nicht zu verändern
             schuetze_with_result = schuetze.copy()
+            schuetze_with_result['Ergebnisse'] = passen
             schuetze_with_result['Gesamt'] = gesamt
             schuetze_with_result['Anzahl10er'] = anzahl_10er
             schuetze_with_result['Anzahl9er'] = anzahl_9er
@@ -143,16 +146,10 @@ class SchuetzeModel:
 
             results_by_class[klasse].append(schuetze_with_result)
 
-        # Sortiere die Schützen in jeder Klasse nach dem Gesamtergebnis (und 10ern/9ern sowie Stechen)
+        # Sortiere die Schützen in jeder Klasse gemäß gewählter Auswerte-Art (Classic oder nach Passen)
         for klasse in results_by_class:
             results_by_class[klasse].sort(
-                key=lambda s: (
-                    s.get('Gesamt', 0),
-                    s.get('Anzahl10er', 0),
-                    s.get('Anzahl9er', 0),
-                    1 if s.get('Stechen') is not None else 0,
-                    s.get('Stechen') if s.get('Stechen') is not None else -1
-                ),
+                key=turnier_model.get_dict_result_sort_key,
                 reverse=True
             )
             # Platzierung hinzufügen (mit korrekter Behandlung von Gleichständen)
@@ -160,11 +157,8 @@ class SchuetzeModel:
             for i, schuetze in enumerate(results_by_class[klasse]):
                 if i > 0:
                     prev_schuetze = results_by_class[klasse][i - 1]
-                    # Prüfen ob punktgleich (inkl. Stechen)
-                    if not (schuetze['Gesamt'] == prev_schuetze['Gesamt'] and
-                            schuetze['Anzahl10er'] == prev_schuetze['Anzahl10er'] and
-                            schuetze['Anzahl9er'] == prev_schuetze['Anzahl9er'] and
-                            schuetze.get('Stechen') == prev_schuetze.get('Stechen')):
+                    # Prüfen ob punktgleich gemäß gewählter Auswerte-Art (inkl. Stechen)
+                    if not turnier_model.are_results_tied(schuetze, prev_schuetze, include_stechen=True):
                         platz = i + 1
                 schuetze['Platz'] = platz
 
