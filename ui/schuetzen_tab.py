@@ -91,6 +91,7 @@ class SchuetzenTab:
 
         ttk.Label(scheiben_frame, text="Max. Scheiben:").pack(side=tk.LEFT, padx=(0, 5))
         self.max_scheiben_var = tk.IntVar(value=self.turnier_model.get_turnier_data().get("max_scheiben", 3))
+        self.max_scheiben_var.trace_add("write", self._on_max_scheiben_changed)
         self.max_scheiben_entry = ttk.Entry(scheiben_frame, textvariable=self.max_scheiben_var, width=5)
         self.max_scheiben_entry.pack(side=tk.LEFT, padx=5)
 
@@ -366,6 +367,15 @@ class SchuetzenTab:
         pin = f"{random.randint(0, 9999):04d}"
         self.pin_entry.delete(0, tk.END)
         self.pin_entry.insert(0, pin)
+
+    def _on_max_scheiben_changed(self, *args):
+        """Aktualisiert max_scheiben im TurnierModel bei gültiger Eingabe"""
+        try:
+            val = int(self.max_scheiben_var.get())
+            if val > 0:
+                self.turnier_model.set_max_scheiben(val)
+        except (tk.TclError, ValueError):
+            pass
 
     def refresh(self):
         """Aktualisiert die Anzeige"""
