@@ -620,7 +620,7 @@ class PDFGenerator:
         return datetime.now().strftime("%d.%m.%Y %H:%M:%S")
 
     def generate_gruppen_pdf(self, schuetzen, show_empty_slots=None, max_scheiben=None, anzahl_gruppen=None):
-        """Erstellt ein PDF mit der Gruppenübersicht"""
+        """Erstellt ein PDF mit der Gruppenübersicht (bei mehreren Tagen pro Tag ein eigenes PDF)"""
         try:
             from reportlab.lib.pagesizes import A4
             from reportlab.lib import colors
@@ -637,6 +637,7 @@ class PDFGenerator:
             )
             return
 
+        import re
         turnier = self.turnier_model.get_turnier_data()
 
         # Dateiname Dialog
@@ -651,17 +652,6 @@ class PDFGenerator:
             return
 
         try:
-            doc = SimpleDocTemplate(
-                file_path,
-                pagesize=A4,
-                rightMargin=1.5*cm,
-                leftMargin=1.5*cm,
-                topMargin=1.5*cm,
-                bottomMargin=1.5*cm
-            )
-
-            elements = []
-
             # Schriftgrößen aus den PDF Settings holen
             font_cfg = self.turnier_model.get_pdf_font_sizes().get('gruppen', {})
             title_size = font_cfg.get('title', 18)
@@ -701,13 +691,6 @@ class PDFGenerator:
                 fontName='Helvetica-Bold'
             )
 
-            # Titel
-            elements.append(Paragraph(f"Gruppeneinteilung für {turnier.get('name', 'Turnier')}", title_style))
-            if turnier.get('datum'):
-                elements.append(Paragraph(f"Datum: {turnier['datum']}", subtitle_style))
-            else:
-                elements.append(Spacer(1, 0.5*cm))
-
             # Gruppen zusammenstellen
             if show_empty_slots is None:
                 show_empty_slots = bool(turnier.get('show_empty_slots_pdf', True))
@@ -719,6 +702,10 @@ class PDFGenerator:
                 anzahl_gruppen = max(0, int(turnier.get('anzahl_gruppen', 0)))
             else:
                 anzahl_gruppen = max(0, int(anzahl_gruppen))
+
+            tage = self.turnier_model.get_turnier_tage()
+            anzahl_tage = max(1, len(tage))
+            gesamt_gruppen = anzahl_gruppen * anzahl_tage
 
             groups = {}
             for s in schuetzen:
@@ -733,90 +720,152 @@ class PDFGenerator:
                     groups[gruppe].append(s)
 
             if show_empty_slots:
-                planned_groups = set(range(1, anzahl_gruppen + 1))
+                planned_groups = set(range(1, gesamt_gruppen + 1))
                 assigned_group_nums = {g for g in groups.keys() if isinstance(g, int)}
                 all_gruppen = sorted(planned_groups | assigned_group_nums)
             else:
                 all_gruppen = sorted(groups.keys())
 
-            # Für jede Gruppe eine Tabelle erstellen
-            for gruppe_nr in all_gruppen:
-                group_time = self.turnier_model.get_group_time(gruppe_nr)
-                time_str = f" - Uhrzeit: {group_time}" if group_time else ""
+            # Gruppen nach Tag (Datum) gruppieren
+            gruppen_by_day_map = {}
+            day_order = []
+            for t in tage:
+                gruppen_by_day_map[t] = []
+                day_order.append(t)
 
-                elements.append(Paragraph(f"Gruppe {gruppe_nr}{time_str}", group_style))
+            for g in all_gruppen:
+                g_date = self.turnier_model.get_group_date(g) or ""
+                if g_date not in gruppen_by_day_map:
+                    gruppen_by_day_map[g_date] = []
+                    day_order.append(g_date)
+                gruppen_by_day_map[g_date].append(g)
 
-                schuetzen_in_gruppe = sorted(groups.get(gruppe_nr, []), key=lambda x: x.get('scheibe', 0))
+            days_to_export = [(d, gruppen_by_day_map[d]) for d in day_order if gruppen_by_day_map.get(d)]
+            if not days_to_export:
+                days_to_export = [(turnier.get('datum', ''), all_gruppen)]
 
-                table_data = [['Scheibe', 'Name', 'Vorname', 'Verein', 'Klasse']]
-                if show_empty_slots:
-                    by_scheibe = {}
-                    extra_schuetzen = []
-                    for s in schuetzen_in_gruppe:
-                        sch_nr = s.get('scheibe')
-                        try:
-                            sch_nr_int = int(sch_nr)
-                        except (ValueError, TypeError):
-                            sch_nr_int = None
+            is_multi_pdf = len(days_to_export) > 1 or (self.turnier_model.is_mehrtaegig() and len(days_to_export) >= 1 and bool(days_to_export[0][0]))
+            base_path, ext = os.path.splitext(file_path)
+            if not ext:
+                ext = ".pdf"
 
-                        if sch_nr_int is not None and sch_nr_int > 0:
-                            by_scheibe.setdefault(sch_nr_int, []).append(s)
-                        else:
-                            extra_schuetzen.append(s)
+            created_files = []
 
-                    all_scheiben = sorted(set(range(1, max_scheiben + 1)) | set(by_scheibe.keys()))
-                    for sch_nr in all_scheiben:
-                        assigned_on_target = by_scheibe.get(sch_nr, [])
-                        if assigned_on_target:
-                            for s in assigned_on_target:
-                                table_data.append([
-                                    sch_nr,
-                                    s.get('name', ''),
-                                    s.get('vorname', ''),
-                                    s.get('verein', ''),
-                                    s.get('klasse', '')
-                                ])
-                        else:
-                            table_data.append([sch_nr, '', '', '', ''])
-
-                    for s in extra_schuetzen:
-                        table_data.append([
-                            s.get('scheibe', ''),
-                            s.get('name', ''),
-                            s.get('vorname', ''),
-                            s.get('verein', ''),
-                            s.get('klasse', '')
-                        ])
+            for day_idx, (day_str, day_gruppen) in enumerate(days_to_export, start=1):
+                if is_multi_pdf and len(days_to_export) > 1:
+                    safe_day = re.sub(r'[\\/*?:"<>|]', '-', day_str).strip().replace(' ', '_') if day_str else f"Tag_{day_idx}"
+                    current_file_path = f"{base_path}_{safe_day}{ext}"
+                elif is_multi_pdf and day_str and not base_path.endswith(day_str):
+                    safe_day = re.sub(r'[\\/*?:"<>|]', '-', day_str).strip().replace(' ', '_')
+                    current_file_path = f"{base_path}_{safe_day}{ext}"
                 else:
-                    for s in schuetzen_in_gruppe:
-                        table_data.append([
-                            s.get('scheibe', ''),
-                            s.get('name', ''),
-                            s.get('vorname', ''),
-                            s.get('verein', ''),
-                            s.get('klasse', '')
-                        ])
+                    current_file_path = file_path
 
-                table = Table(table_data, colWidths=[2.0*cm, 4.2*cm, 4.2*cm, 4.4*cm, 3.2*cm])
-                table_style = TableStyle([
-                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(PDF_COLOR_HEADER)),
-                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                    ('FONTSIZE', (0, 0), (-1, 0), table_header_size),
-                    ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-                    ('TOPPADDING', (0, 0), (-1, 0), 8),
-                    ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-                    ('FONTSIZE', (0, 1), (-1, -1), table_body_size),
-                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor(PDF_COLOR_ROW_ALT)]),
-                    ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-                ])
-                table.setStyle(table_style)
-                elements.append(table)
-                elements.append(Spacer(1, 1*cm))
+                doc = SimpleDocTemplate(
+                    current_file_path,
+                    pagesize=A4,
+                    rightMargin=1.5*cm,
+                    leftMargin=1.5*cm,
+                    topMargin=1.5*cm,
+                    bottomMargin=1.5*cm
+                )
 
-            doc.build(elements)
-            messagebox.showinfo("Erfolg", f"Gruppen-PDF wurde erstellt:\n{file_path}")
+                elements = []
+
+                # Titel & Tagesdatum
+                elements.append(Paragraph(f"Gruppeneinteilung für {turnier.get('name', 'Turnier')}", title_style))
+                display_datum = day_str or turnier.get('datum', '')
+                if display_datum:
+                    elements.append(Paragraph(f"Datum: {display_datum}", subtitle_style))
+                else:
+                    elements.append(Spacer(1, 0.5*cm))
+
+                # Für jede Gruppe des Tages eine Tabelle erstellen
+                for gruppe_nr in day_gruppen:
+                    group_time = self.turnier_model.get_group_time(gruppe_nr)
+                    group_date = self.turnier_model.get_group_date(gruppe_nr)
+                    date_info = f" - Tag: {group_date}" if (group_date and self.turnier_model.is_mehrtaegig()) else ""
+                    time_str = f" - Uhrzeit: {group_time}" if group_time else ""
+
+                    elements.append(Paragraph(f"Gruppe {gruppe_nr}{date_info}{time_str}", group_style))
+
+                    schuetzen_in_gruppe = sorted(groups.get(gruppe_nr, []), key=lambda x: x.get('scheibe', 0))
+
+                    table_data = [['Scheibe', 'Name', 'Vorname', 'Verein', 'Klasse']]
+                    if show_empty_slots:
+                        by_scheibe = {}
+                        extra_schuetzen = []
+                        for s in schuetzen_in_gruppe:
+                            sch_nr = s.get('scheibe')
+                            try:
+                                sch_nr_int = int(sch_nr)
+                            except (ValueError, TypeError):
+                                sch_nr_int = None
+
+                            if sch_nr_int is not None and sch_nr_int > 0:
+                                by_scheibe.setdefault(sch_nr_int, []).append(s)
+                            else:
+                                extra_schuetzen.append(s)
+
+                        all_scheiben = sorted(set(range(1, max_scheiben + 1)) | set(by_scheibe.keys()))
+                        for sch_nr in all_scheiben:
+                            assigned_on_target = by_scheibe.get(sch_nr, [])
+                            if assigned_on_target:
+                                for s in assigned_on_target:
+                                    table_data.append([
+                                        sch_nr,
+                                        s.get('name', ''),
+                                        s.get('vorname', ''),
+                                        s.get('verein', ''),
+                                        s.get('klasse', '')
+                                    ])
+                            else:
+                                table_data.append([sch_nr, '', '', '', ''])
+
+                        for s in extra_schuetzen:
+                            table_data.append([
+                                s.get('scheibe', ''),
+                                s.get('name', ''),
+                                s.get('vorname', ''),
+                                s.get('verein', ''),
+                                s.get('klasse', '')
+                            ])
+                    else:
+                        for s in schuetzen_in_gruppe:
+                            table_data.append([
+                                s.get('scheibe', ''),
+                                s.get('name', ''),
+                                s.get('vorname', ''),
+                                s.get('verein', ''),
+                                s.get('klasse', '')
+                            ])
+
+                    table = Table(table_data, colWidths=[2.0*cm, 4.2*cm, 4.2*cm, 4.4*cm, 3.2*cm])
+                    table_style = TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(PDF_COLOR_HEADER)),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), table_header_size),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                        ('TOPPADDING', (0, 0), (-1, 0), 8),
+                        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                        ('FONTSIZE', (0, 1), (-1, -1), table_body_size),
+                        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor(PDF_COLOR_ROW_ALT)]),
+                        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                    ])
+                    table.setStyle(table_style)
+                    elements.append(table)
+                    elements.append(Spacer(1, 1*cm))
+
+                doc.build(elements)
+                created_files.append(current_file_path)
+
+            if len(created_files) == 1:
+                messagebox.showinfo("Erfolg", f"Gruppen-PDF wurde erstellt:\n{created_files[0]}")
+            else:
+                files_list = "\n".join(created_files)
+                messagebox.showinfo("Erfolg", f"Es wurden {len(created_files)} Gruppen-PDFs (pro Tag ein PDF) erstellt:\n{files_list}")
 
         except Exception as e:
             messagebox.showerror("Fehler", f"Fehler beim Erstellen des Gruppen-PDFs:\n{str(e)}")
@@ -927,25 +976,43 @@ class PDFGenerator:
                 # Schützen sortieren: erst nach Gruppe, dann nach Name
                 schuetzen_im_verein.sort(key=lambda s: (s.get('gruppe', 0), s.get('name', '')))
 
+                mehrtaegig = self.turnier_model.is_mehrtaegig()
+
                 # Tabelle erstellen und Gesamtstartgeld berechnen
-                table_data = [['Name', 'Vorname', 'Klasse', 'Gruppe', 'Startzeit', 'Scheibe', 'Startgeld']]
+                if mehrtaegig:
+                    table_data = [['Name', 'Vorname', 'Klasse', 'Tag', 'Gruppe', 'Startzeit', 'Scheibe', 'Startgeld']]
+                else:
+                    table_data = [['Name', 'Vorname', 'Klasse', 'Gruppe', 'Startzeit', 'Scheibe', 'Startgeld']]
                 total_startgeld_verein = 0
                 for s in schuetzen_im_verein:
                     gruppe_nr = s.get('gruppe')
                     startzeit = self.turnier_model.get_group_time(gruppe_nr) if gruppe_nr else ''
+                    tag_str = self.turnier_model.get_group_date(gruppe_nr) if gruppe_nr else ''
                     startgeld_cent = self.turnier_model.get_klasse_startgeld(s.get('klasse', ''))
                     total_startgeld_verein += startgeld_cent
                     startgeld_euro = f"{startgeld_cent / 100.0:.2f} €"
 
-                    table_data.append([
-                        s.get('name', ''),
-                        s.get('vorname', ''),
-                        s.get('klasse', ''),
-                        s.get('gruppe', ''),
-                        startzeit,
-                        s.get('scheibe', ''),
-                        startgeld_euro
-                    ])
+                    if mehrtaegig:
+                        table_data.append([
+                            s.get('name', ''),
+                            s.get('vorname', ''),
+                            s.get('klasse', ''),
+                            tag_str,
+                            s.get('gruppe', ''),
+                            startzeit,
+                            s.get('scheibe', ''),
+                            startgeld_euro
+                        ])
+                    else:
+                        table_data.append([
+                            s.get('name', ''),
+                            s.get('vorname', ''),
+                            s.get('klasse', ''),
+                            s.get('gruppe', ''),
+                            startzeit,
+                            s.get('scheibe', ''),
+                            startgeld_euro
+                        ])
 
                 table = Table(table_data)
                 table_style = TableStyle([

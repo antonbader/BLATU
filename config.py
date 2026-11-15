@@ -21,6 +21,9 @@ WINDOW_TITLE = APP_NAME
 DEFAULT_TURNIER = {
     "name": "",
     "datum": "",
+    "startdatum": "",
+    "enddatum": "",
+    "mehrtaegig": False,
     "anzahl_passen": 1,
     "show_halves": False,
     "max_scheiben": 3,

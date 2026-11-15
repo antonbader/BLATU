@@ -15,7 +15,9 @@ Dieses Handbuch führt Sie schrittweise durch sämtliche Reiter und Funktionen d
 Alles beginnt im Reiter **„Turnierverwaltung“**. Hier legen Sie die grundlegenden Parameter für Ihren Wettkampf fest:
 
 * **Name des Turniers:** Geben Sie einen aussagekräftigen Namen für die Veranstaltung ein (z. B. „Vereinsmeisterschaft 2026“).
-* **Datum:** Tragen Sie das Datum des Wettkampfs ein (z. B. `15.10.2026`). Dieses erscheint später auf allen Ergebnislisten, Startlisten, Schießzetteln und Urkunden.
+* **Datum / Mehrtägiges Turnier:**
+  * Für ein eintägiges Turnier tragen Sie das **Datum** des Wettkampfs ein (z. B. `15.10.2026`).
+  * Geht Ihr Turnier über mehrere Tage, aktivieren Sie die Checkbox **„Turnier über mehrere Tage“** und legen Sie sowohl das **Startdatum** als auch das **Enddatum** fest (z. B. `15.10.2026` bis `17.10.2026`). Dieses Datum bzw. der Zeitraum erscheint später auf allen Ergebnislisten, Startlisten, Schießzetteln und Urkunden.
 * **Anzahl Passen:** Legen Sie fest, wie viele Passen (Serien) pro Schütze geschossen werden (`1` bis `100`).
 * **Ergebnisse als 1. und 2. Hälfte anzeigen (statt einzelne Passen):** Wenn Sie diese Option aktivieren, werden die Ergebnisse in den Auswertungen und PDFs nicht als einzelne Passen (`P1`, `P2`, ...), sondern als Summe der ersten und zweiten Wettkampfhälfte dargestellt.
   * **Wichtiger Hinweis:** Diese Option ist nur verfügbar, wenn eine **gerade** Anzahl an Passen eingestellt ist.
@@ -63,7 +65,7 @@ Wechseln Sie in den Reiter **„Schützenverwaltung“**, um die Teilnehmer Ihre
 * **Schütze bearbeiten:** Doppelklicken Sie auf einen Schützen in der Liste oder markieren Sie ihn und klicken Sie unten auf **„Bearbeiten“**. Die Daten werden in die Eingabefelder geladen. Passen Sie die Angaben an und klicken Sie auf **„Schütze aktualisieren“**.
   * *Gut zu wissen:* Wenn Sie den Namen oder die Klasse eines Schützen nachträglich korrigieren, bleiben dessen bereits eingetragene Ergebnisse und Mannschaftszuordnungen automatisch erhalten. Bei einem Klassenwechsel wird der Startgeld-Status zur Sicherheit auf „Überprüfen“ gesetzt.
 * **Schützen löschen:** Markieren Sie einen Schützen und klicken Sie auf **„Ausgewählten löschen“** oder leeren Sie die gesamte Liste über **„Alle Schützen löschen“**.
-* **Sortieren:** Ein Klick auf eine beliebige Spaltenüberschrift (`Name`, `Vorname`, `Klasse`, `Verein`, `Gruppe`, `Scheibe`, `PIN`) sortiert die Tabelle auf- bzw. absteigend.
+* **Sortieren:** Ein Klick auf eine beliebige Spaltenüberschrift (`Name`, `Vorname`, `Klasse`, `Verein`, `Tag`, `Gruppe`, `Scheibe`, `PIN`) sortiert die Tabelle auf- bzw. absteigend. In der Spalte `Tag` wird zudem angezeigt, welchem Turniertag der Schütze über seine Gruppe zugeordnet ist.
 
 ### 3.3. Automatische Zuweisung zu Gruppen und Scheiben
 
@@ -91,15 +93,15 @@ Im Bereich **„Manuelle Zuweisung“** unterhalb der Schützenliste können Sie
 Der Reiter **„Gruppenverwaltung“** bietet eine detaillierte Übersicht über alle Gruppen sowie Werkzeuge zur Zeitplanung und zum PDF-Export:
 
 * **Gruppeneinstellungen & freie Plätze:**
-  * **Vorgesehene Anzahl Gruppen:** Geben Sie oben an, wie viele Gruppen für das Turnier vorgesehen sind, und klicken Sie auf **„Übernehmen“** (oder bestätigen Sie mit `Enter`). Diese Gruppen werden sofort in der Übersicht angezeigt – auch wenn ihnen noch keine Schützen zugewiesen wurden. Werden darüber hinaus weiteren Gruppen manuell oder automatisch Schützen zugewiesen, werden diese zusätzlichen Gruppen ebenfalls automatisch erzeugt und angezeigt.
+  * **Vorgesehene Anzahl Gruppen pro Tag:** Geben Sie oben an, wie viele Gruppen pro Turniertag vorgesehen sind, und klicken Sie auf **„Übernehmen“** (oder bestätigen Sie mit `Enter`). Bei mehrtägigen Turnieren gilt diese Anzahl für jeden Turniertag (bei z. B. 2 Tagen und 4 Gruppen pro Tag werden die Gruppen 1–4 automatisch dem ersten und die Gruppen 5–8 dem zweiten Turniertag zugeordnet). Diese Gruppen werden sofort in der Übersicht angezeigt – auch wenn ihnen noch keine Schützen zugewiesen wurden. Werden darüber hinaus weiteren Gruppen manuell oder automatisch Schützen zugewiesen, werden diese zusätzlichen Gruppen ebenfalls automatisch erzeugt und angezeigt.
   * **Freie Scheibenplätze:** Anhand der Einstellung **„Max. Scheiben“** aus der Schützenverwaltung werden nicht belegte Scheiben innerhalb einer Gruppe als freie (leere) Plätze dargestellt.
   * **Auswahl für Anzeige und PDF:** Über die beiden Auswahlfelder **„Leere Plätze in der Anzeige anzeigen“** und **„Leere Plätze im Gruppen-PDF anzeigen“** legen Sie flexibel fest, ob freie Scheibenplätze in der Tabellenansicht und/oder im exportierten Gruppen-PDF als leere Zeilen aufgeführt werden sollen.
 * **Zweigeteilte Ansicht:**
-  * Links (**„Gruppenübersicht“**) sehen Sie alle Gruppen mit den zugewiesenen Schützen sowie (sofern aktiviert) den noch freien Scheibenplätzen, sortiert nach Gruppe und Scheibe.
+  * Links (**„Gruppenübersicht“**) sehen Sie alle Gruppen mit dem zugeordneten Tag, der Uhrzeit, den zugewiesenen Schützen sowie (sofern aktiviert) den noch freien Scheibenplätzen, sortiert nach Gruppe und Scheibe.
   * Rechts (**„Nicht zugewiesene Schützen“**) sind alle Teilnehmer aufgelistet, die noch keiner Gruppe/Scheibe zugeteilt wurden.
-* **Uhrzeit für Gruppe festlegen:**
-  1. Wählen Sie in der linken Liste einen beliebigen Schützen der gewünschten Gruppe aus.
-  2. Tragen Sie im Bereich **„Uhrzeit für Gruppe festlegen“** die Startzeit ein (z. B. `10:00`).
+* **Datum & Uhrzeit für Gruppe festlegen:**
+  1. Wählen Sie in der linken Liste einen beliebigen Eintrag der gewünschten Gruppe aus.
+  2. Wählen oder tragen Sie im Bereich **„Datum & Uhrzeit für Gruppe festlegen“** das Datum (Tag) sowie die Startzeit (z. B. `10:00`) ein.
   3. Klicken Sie auf **„Für ausgewählte Gruppe speichern“**.
 * **Zuweisung für Schützen ändern oder entfernen:**
   1. Wählen Sie einen Schützen aus der linken oder rechten Liste aus.
@@ -107,8 +109,8 @@ Der Reiter **„Gruppenverwaltung“** bietet eine detaillierte Übersicht über
   3. Klicken Sie auf **„Zuweisung ändern“** (inkl. automatischer Prüfung auf Doppelbelegung).
   4. Um eine bestehende Zuordnung aufzuheben, wählen Sie den Schützen in der linken Liste (**„Gruppenübersicht“**) aus und klicken Sie auf **„Zuweisung entfernen“**. Der Schütze wird dadurch wieder in die Liste **„Nicht zugewiesene Schützen“** verschoben und sein bisheriger Scheibenplatz wird frei.
 * **PDF-Listen direkt erstellen:**
-  * **„Gruppen-PDF erstellen“:** Erzeugt eine übersichtliche PDF-Gesamtliste aller Gruppen mit Uhrzeiten und Scheibenzuweisungen.
-  * **„Startliste Vereine“:** Erzeugt in einem gewählten Zielordner für jeden teilnehmenden Verein eine eigene PDF-Startliste inkl. Startzeiten, Scheiben, Startgeld-Summe und (sofern aktiviert) Überweisungsdaten.
+  * **„Gruppen-PDF erstellen“:** Erzeugt eine übersichtliche PDF-Liste der Gruppen mit Uhrzeiten und Scheibenzuweisungen. Geht ein Turnier über mehrere Tage, wird automatisch **pro Tag ein eigenes PDF** erzeugt.
+  * **„Startliste Vereine“:** Erzeugt in einem gewählten Zielordner für jeden teilnehmenden Verein eine eigene PDF-Startliste inkl. Startzeiten, Scheiben, Startgeld-Summe und (sofern aktiviert) Überweisungsdaten. Bei mehrtägigen Turnieren wird in den Vereins-Startlisten zusätzlich der **Tag** jedes Schützen ausgewiesen.
 
 ---
 

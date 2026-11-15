@@ -5,6 +5,7 @@ Verwaltet Turnierdaten, Klassen, Mannschaften und Ergebnisse
 """
 
 import copy
+from datetime import datetime, timedelta
 from config import DEFAULT_TURNIER, DEFAULT_PDF_FONT_SIZES
 
 
@@ -19,10 +20,12 @@ class TurnierModel:
         self.mannschaften = []
         self.ergebnisse = {}
         self.group_times = {}
+        self.group_dates = {}
         self.pdf_font_sizes = copy.deepcopy(DEFAULT_PDF_FONT_SIZES)
         self.last_update_time = 0
     
-    def set_turnier_data(self, name, datum, anzahl_passen, *, show_halves=False, max_scheiben=None,
+    def set_turnier_data(self, name, datum, anzahl_passen, *, enddatum=None, mehrtaegig=None,
+                         show_halves=False, max_scheiben=None,
                          anzahl_gruppen=None, show_empty_slots_ui=None, show_empty_slots_pdf=None,
                          mannschaft_groesse=None, startgeld_erheben=False, iban="", bic="",
                          bankname="", kontoinhaber="", zahldatum=""):
@@ -40,9 +43,43 @@ class TurnierModel:
             show_empty_slots_ui = self.turnier.get('show_empty_slots_ui', True)
         if show_empty_slots_pdf is None:
             show_empty_slots_pdf = self.turnier.get('show_empty_slots_pdf', True)
+
+        raw_datum = (datum or "").strip()
+        if enddatum is None and mehrtaegig is None:
+            if " - " in raw_datum:
+                parts = [p.strip() for p in raw_datum.split(" - ", 1)]
+                startdatum_val = parts[0]
+                enddatum_val = parts[1] if len(parts) > 1 else ""
+                mehrtaegig_val = bool(enddatum_val and enddatum_val != startdatum_val)
+            elif raw_datum == self.turnier.get('datum', '') and self.turnier.get('mehrtaegig', False):
+                startdatum_val = self.turnier.get('startdatum', raw_datum)
+                enddatum_val = self.turnier.get('enddatum', '')
+                mehrtaegig_val = True
+            else:
+                startdatum_val = raw_datum
+                enddatum_val = ""
+                mehrtaegig_val = False
+        else:
+            startdatum_val = raw_datum
+            enddatum_val = (enddatum or "").strip()
+            if mehrtaegig is None:
+                mehrtaegig_val = bool(enddatum_val and enddatum_val != startdatum_val)
+            else:
+                mehrtaegig_val = bool(mehrtaegig)
+            if not mehrtaegig_val:
+                enddatum_val = ""
+
+        if mehrtaegig_val and startdatum_val and enddatum_val and startdatum_val != enddatum_val:
+            display_datum = f"{startdatum_val} - {enddatum_val}"
+        else:
+            display_datum = startdatum_val
+
         self.turnier = {
             'name': name,
-            'datum': datum,
+            'datum': display_datum,
+            'startdatum': startdatum_val,
+            'enddatum': enddatum_val,
+            'mehrtaegig': mehrtaegig_val,
             'anzahl_passen': anzahl_passen,
             'show_halves': show_halves,
             'max_scheiben': max_scheiben,
@@ -448,6 +485,55 @@ class TurnierModel:
         self.ergebnisse = {}
         self._touch()
     
+    def is_mehrtaegig(self):
+        """Gibt zurück, ob das Turnier über mehrere Tage geht."""
+        if self.turnier.get('mehrtaegig', False):
+            return True
+        tage = self.get_turnier_tage()
+        if len(tage) > 1:
+            return True
+        unique_group_dates = {str(d).strip() for d in self.group_dates.values() if d and str(d).strip()}
+        return len(unique_group_dates) > 1
+
+    def get_turnier_tage(self):
+        """Gibt eine geordnete Liste der Turniertage (als Datums-Strings) zurück."""
+        startdatum = (self.turnier.get('startdatum') or "").strip()
+        raw_datum = (self.turnier.get('datum') or "").strip()
+        enddatum = (self.turnier.get('enddatum') or "").strip()
+
+        if not startdatum and raw_datum:
+            if " - " in raw_datum:
+                parts = [p.strip() for p in raw_datum.split(" - ", 1)]
+                startdatum = parts[0]
+                if not enddatum and len(parts) > 1:
+                    enddatum = parts[1]
+            else:
+                startdatum = raw_datum
+
+        mehrtaegig = self.turnier.get('mehrtaegig', False) or bool(enddatum and enddatum != startdatum)
+        if not mehrtaegig or not enddatum or enddatum == startdatum:
+            return [startdatum] if startdatum else []
+
+        if not startdatum:
+            return [enddatum] if enddatum else []
+
+        for fmt in ("%d.%m.%Y", "%Y-%m-%d", "%d.%m.%y"):
+            try:
+                start_dt = datetime.strptime(startdatum, fmt)
+                end_dt = datetime.strptime(enddatum, fmt)
+                if end_dt >= start_dt and (end_dt - start_dt).days <= 366:
+                    out_fmt = "%d.%m.%Y" if fmt == "%d.%m.%y" else fmt
+                    days = []
+                    curr = start_dt
+                    while curr <= end_dt:
+                        days.append(curr.strftime(out_fmt))
+                        curr += timedelta(days=1)
+                    return days
+            except ValueError:
+                continue
+
+        return [startdatum, enddatum]
+
     def set_group_time(self, group, time):
         """Setzt die Uhrzeit für eine Gruppe"""
         try:
@@ -465,8 +551,54 @@ class TurnierModel:
         except (ValueError, TypeError):
             return ""
 
+    def set_group_date(self, group, date_str):
+        """Setzt das Datum für eine Gruppe"""
+        try:
+            group = int(group)
+        except (ValueError, TypeError):
+            pass
+        date_str = (date_str or "").strip()
+        if date_str:
+            self.group_dates[group] = date_str
+        else:
+            self.group_dates.pop(group, None)
+
+    def get_group_date(self, group):
+        """Gibt das Datum für eine Gruppe zurück (manuell gesetzt oder abgeleitet aus Turniertagen)"""
+        if group is None or group == "":
+            return ""
+        if group in self.group_dates and self.group_dates[group]:
+            return self.group_dates[group]
+        try:
+            g_int = int(group)
+            if g_int in self.group_dates and self.group_dates[g_int]:
+                return self.group_dates[g_int]
+        except (ValueError, TypeError):
+            g_int = None
+
+        tage = self.get_turnier_tage()
+        if len(tage) == 1:
+            return tage[0]
+        elif len(tage) > 1 and g_int is not None and g_int > 0:
+            anzahl_pro_tag = self.get_anzahl_gruppen()
+            if anzahl_pro_tag > 0:
+                day_idx = (g_int - 1) // anzahl_pro_tag
+                if 0 <= day_idx < len(tage):
+                    return tage[day_idx]
+                return tage[-1]
+        return ""
+
+    def get_schuetze_tag(self, schuetze):
+        """Gibt den zugeordneten Tag (Datum) eines Schützen anhand seiner Gruppe zurück"""
+        if not schuetze:
+            return ""
+        gruppe = schuetze.get('gruppe')
+        if gruppe is None or gruppe == "":
+            return ""
+        return self.get_group_date(gruppe)
+
     def set_anzahl_gruppen(self, anzahl):
-        """Setzt die vorgesehene Anzahl an Gruppen"""
+        """Setzt die vorgesehene Anzahl an Gruppen (pro Tag)"""
         try:
             val = max(0, int(anzahl))
             self.turnier['anzahl_gruppen'] = val
@@ -475,11 +607,17 @@ class TurnierModel:
             return False
 
     def get_anzahl_gruppen(self):
-        """Gibt die vorgesehene Anzahl an Gruppen zurück"""
+        """Gibt die vorgesehene Anzahl an Gruppen pro Tag zurück"""
         try:
             return max(0, int(self.turnier.get('anzahl_gruppen', 0)))
         except (ValueError, TypeError):
             return 0
+
+    def get_gesamt_anzahl_gruppen(self):
+        """Gibt die gesamte vorgesehene Anzahl an Gruppen über alle Turniertage zurück"""
+        anzahl_pro_tag = self.get_anzahl_gruppen()
+        anzahl_tage = max(1, len(self.get_turnier_tage()))
+        return anzahl_pro_tag * anzahl_tage
 
     def set_max_scheiben(self, max_scheiben):
         """Setzt die maximale Anzahl an Scheiben pro Gruppe"""
@@ -521,6 +659,14 @@ class TurnierModel:
         """Löscht alle Gruppen-Uhrzeiten"""
         self.group_times = {}
 
+    def get_all_group_dates(self):
+        """Gibt alle explizit gesetzten Gruppen-Daten zurück"""
+        return self.group_dates.copy()
+
+    def clear_group_dates(self):
+        """Löscht alle explizit gesetzten Gruppen-Daten"""
+        self.group_dates = {}
+
     def get_pdf_font_sizes(self):
         """Gibt die aktuellen PDF-Schriftgrößen zurück"""
         return copy.deepcopy(self.pdf_font_sizes)
@@ -553,6 +699,7 @@ class TurnierModel:
         self.mannschaften = []
         self.ergebnisse = {}
         self.group_times = {}
+        self.group_dates = {}
         self.pdf_font_sizes = copy.deepcopy(DEFAULT_PDF_FONT_SIZES)
         self._touch()
 

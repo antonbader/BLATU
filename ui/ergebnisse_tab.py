@@ -77,7 +77,7 @@ class ErgebnisseTab:
         
         self.schuetzen_tree = ttk.Treeview(
             list_frame, 
-            columns=("Name", "Vorname", "Klasse", "Gruppe", "Scheibe", "Gesamt"),
+            columns=("Name", "Vorname", "Klasse", "Tag", "Gruppe", "Scheibe", "Gesamt"),
             show="headings", 
             yscrollcommand=list_scrollbar.set, 
             height=20
@@ -85,15 +85,17 @@ class ErgebnisseTab:
         self.schuetzen_tree.heading("Name", text="Name", command=lambda: self.sort_by_column("Name"))
         self.schuetzen_tree.heading("Vorname", text="Vorname", command=lambda: self.sort_by_column("Vorname"))
         self.schuetzen_tree.heading("Klasse", text="Klasse", command=lambda: self.sort_by_column("Klasse"))
+        self.schuetzen_tree.heading("Tag", text="Tag", command=lambda: self.sort_by_column("Tag"))
         self.schuetzen_tree.heading("Gruppe", text="Gruppe", command=lambda: self.sort_by_column("Gruppe"))
         self.schuetzen_tree.heading("Scheibe", text="Scheibe", command=lambda: self.sort_by_column("Scheibe"))
         self.schuetzen_tree.heading("Gesamt", text="Gesamt", command=lambda: self.sort_by_column("Gesamt"))
-        self.schuetzen_tree.column("Name", width=120)
-        self.schuetzen_tree.column("Vorname", width=120)
-        self.schuetzen_tree.column("Klasse", width=100)
-        self.schuetzen_tree.column("Gruppe", width=80)
-        self.schuetzen_tree.column("Scheibe", width=80)
-        self.schuetzen_tree.column("Gesamt", width=80)
+        self.schuetzen_tree.column("Name", width=110)
+        self.schuetzen_tree.column("Vorname", width=110)
+        self.schuetzen_tree.column("Klasse", width=90)
+        self.schuetzen_tree.column("Tag", width=80, anchor="center")
+        self.schuetzen_tree.column("Gruppe", width=60, anchor="center")
+        self.schuetzen_tree.column("Scheibe", width=60, anchor="center")
+        self.schuetzen_tree.column("Gesamt", width=70, anchor="center")
         self.schuetzen_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         list_scrollbar.config(command=self.schuetzen_tree.yview)
         self.schuetzen_tree.bind("<<TreeviewSelect>>", self.on_schuetze_selected)
@@ -291,8 +293,9 @@ class ErgebnisseTab:
                 'name': schuetze['name'],
                 'vorname': schuetze['vorname'],
                 'klasse': schuetze['klasse'],
-                'gruppe': schuetze.get('gruppe', ''),
-                'scheibe': schuetze.get('scheibe', ''),
+                'tag': self.turnier_model.get_schuetze_tag(schuetze),
+                'gruppe': schuetze.get('gruppe', '') if schuetze.get('gruppe') is not None else '',
+                'scheibe': schuetze.get('scheibe', '') if schuetze.get('scheibe') is not None else '',
                 'gesamt': gesamt,
                 'gesamt_str': gesamt_str
             })
@@ -303,6 +306,7 @@ class ErgebnisseTab:
                 "Name": "name",
                 "Vorname": "vorname",
                 "Klasse": "klasse",
+                "Tag": "tag",
                 "Gruppe": "gruppe",
                 "Scheibe": "scheibe",
                 "Gesamt": "gesamt"
@@ -321,7 +325,8 @@ class ErgebnisseTab:
             self.schuetzen_tree.insert("", tk.END, values=(
                 schuetze['name'], 
                 schuetze['vorname'], 
-                schuetze['klasse'], 
+                schuetze['klasse'],
+                schuetze['tag'],
                 schuetze['gruppe'],
                 schuetze['scheibe'],
                 schuetze['gesamt_str']
